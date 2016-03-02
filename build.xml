@@ -9,7 +9,7 @@
 
 	<target name="javacc">
 		<javacc
-			target="src/grammar/jspetrinet.jj"
+			target="grammar/jspetrinet.jj"
 			outputdirectory="src/jspetrinet/parser"
 			javacchome="lib"
 		/>
