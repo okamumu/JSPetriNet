@@ -1,0 +1,41 @@
+<project name="JSPetriNet" default="compile" basedir=".">
+
+	<property name="version" value="0.9.0"/>
+
+	<target name="init">
+		<mkdir dir="bin"/>
+		<mkdir dir="lib"/>
+	</target>
+
+	<target name="javacc">
+		<javacc
+			target="src/grammar/jspetrinet.jj"
+			outputdirectory="src/jspetrinet/parser"
+			javacchome="lib"
+		/>
+	</target>
+
+	<target name="compile" depends="init,javacc">
+		<javac srcdir="src" destdir="bin"
+			includeantruntime="false"/>
+	</target>
+
+	<target name="jar" depends="compile">
+		<jar jarfile="${ant.project.name}-${version}.jar" basedir="bin">
+			<manifest>
+				<attribute name="Main-Class" value="testMain"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="clean">
+		<delete verbose="true">
+		   <fileset dir="bin" includes="**/*.class"/>
+   		</delete>
+   		<delete verbose="true">
+   			<fileset dir="src/jspetrinet/parser" excludes="**/PairValue*.java"/>
+   		</delete>
+		<delete file="${ant.project.name}-${version}.jar" verbose="true"/>
+ 	</target>
+
+</project>

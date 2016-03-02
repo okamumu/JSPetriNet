@@ -1,0 +1,585 @@
+options{
+    STATIC=false;
+}
+
+PARSER_BEGIN (JSPetriNetParser)
+package jspetrinet.parser;
+import jspetrinet.ast.*;
+import jspetrinet.exception.*;
+import jspetrinet.petri.*;
+public class JSPetriNetParser {
+	private Net current;
+	private Net global;
+
+	public void setNet(Net global) {
+		this.global = global;
+		this.current = global;
+	}
+}
+PARSER_END (JSPetriNetParser)
+ 
+SKIP: {
+	" " | "\t" 
+	| "/*" : WithinComment
+}
+
+<WithinComment> SKIP: {
+	"*/" : DEFAULT
+}
+
+<WithinComment> MORE: {
+	<~[]>
+}
+
+TOKEN: {
+	<PLACE: "place">
+	| <EXPTRANS: "exp">
+	| <IMMTRANS: "imm">
+	| <GENTRANS: "gen">
+	| <ARC: "arc">
+	| <IARC: "iarc">
+	| <OARC: "oarc">
+	| <HARC: "harc">
+	| <IFELSE: "ifelse">
+	| <TO: "to">
+	| <NET: "net">
+	| <MARK: "mark">
+	| <BEGIN: "{">
+	| <END: "}">
+	| <COMMENT: "//" (~["\n", "\r"])*>
+	| <REAL: (["0"-"9"])*"."(["0"-"9"])+>
+	| <INTEGER: (["0"-"9"])+>
+	| <STRING: "\""(~["\""])+"\"">
+	| <PLUS: "+">
+	| <MINUS: "-">
+	| <MULTIPLY: "*">
+	| <DIVIDE: "/">
+	| <MOD: "%">
+	| <OR: "||">
+	| <AND: "&&">
+	| <NOT: "!">
+	| <EQ: "==">
+	| <NEQ: "!=">
+	| <GT: ">">
+	| <LT: "<">
+	| <GTE: ">=">
+	| <LTE: "<=">
+	| <IDENTIFIER: ["A"-"Z", "a"-"z", "_"](["0"-"9", "A"-"Z", "a"-"z", "_", "."])*>
+	| <GLOBAL_NTOKEN: "##">
+	| <NTOKEN: "#">
+	| <OPEN: "(">
+	| <CLOSE: ")">
+	| <NL: "\r\n" | "\n" | "\r">
+	| <SEND: ";">
+}
+
+void makeNet() throws ASTException: {
+} {
+	((Statement())? (<COMMENT>)? (<SEND>|<NL>))*
+}
+
+void Statement() throws ASTException: {} {
+	 block()
+	| Declaration()
+	| Expression()
+}
+
+void block() throws ASTException: {} {
+	bbegin() makeNet() bend()
+}
+
+void bbegin() throws ASTException: {} {
+	<BEGIN> (Statement())? (<COMMENT>)? (<SEND>|<NL>)
+}
+
+void bend() throws ASTException: {} {
+	<END> (<SEND>|<NL>)
+}
+
+void Declaration() throws ASTException: {} {
+	NetDeclaration()
+	| PlaceDeclaration()
+	| ExpTransDeclaration()
+	| ImmTransDeclaration()
+	| GenTransDeclaration()
+	| ArcDeclaration()
+	| IArcDeclaration()
+	| OArcDeclaration()
+	| HArcDeclaration()
+}
+
+void NetDeclaration() throws ASTException: {
+	Token token;
+} {
+	<NET> token = <IDENTIFIER> {
+		if (current.contains(token.image)) {
+			current = current.getChild(token.image);
+		} else {
+			Net tmp = new Net(current, token.image);
+			current = tmp;
+		}
+	}
+	(<NL>)?
+	block()
+	{
+		current = current.getOuter();
+	}
+}
+
+void PlaceDeclaration() throws ASTException: {
+	Token token;
+	PairValueList optlist;
+	Place p;
+} {
+	<PLACE> token = <IDENTIFIER> {
+		p = current.createPlace(token.image, Place.DefaultMax);
+	} ("(" optlist = OptionList() {
+		for (PairValue pval : optlist.getList()) {
+			String label = pval.getLabel();
+			Object value = pval.getValue().eval(current);
+			if (label.equals("max")) {
+				if (value instanceof Integer) {
+					p.setMax((Integer) value);
+				} else {
+					throw new ASTException();
+				}
+			} else {
+				throw new UnknownOption();
+			}
+		}
+	}
+	")")?
+}
+
+void ExpTransDeclaration() throws ASTException: {
+	Token token;
+	PairValueList optlist;
+	ExpTrans tr;
+} {
+	<EXPTRANS> token = <IDENTIFIER> {
+		tr = current.createExpTrans(token.image,
+			new ASTVariable(token.image + ".rate"));
+		tr.setGuard(new ASTVariable(token.image + ".guard"));
+		current.put(token.image + ".rate", new ASTValue(0.0));
+		current.put(token.image + ".guard", new ASTValue(true));
+	} ("(" optlist = OptionList() {
+		for (PairValue pval : optlist.getList()) {
+			String label = pval.getLabel();
+			ASTree value = pval.getValue();
+			if (label.equals("rate")) {
+				current.put(token.image + ".rate", value);
+			} else if (label.equals("guard")) {
+				current.put(token.image + ".guard", value);
+			} else {
+				throw new UnknownOption();
+			}
+		}
+	}
+	")")?
+}
+
+void ImmTransDeclaration() throws ASTException: {
+	Token token;
+	PairValueList optlist;
+	ImmTrans tr;
+} {
+	<IMMTRANS> token = <IDENTIFIER> {
+		tr = current.createImmTrans(token.image,
+			new ASTVariable(token.image + ".weight"));
+		tr.setGuard(new ASTVariable(token.image + ".guard"));
+		current.put(token.image + ".weight", new ASTValue(1.0));
+		current.put(token.image + ".guard", new ASTValue(true));		
+	} ("(" optlist = OptionList() {
+		for (PairValue pval : optlist.getList()) {
+			String label = pval.getLabel();
+			ASTree value = pval.getValue();
+			if (label.equals("weight")) {
+				current.put(token.image + ".weight", value);
+			} else if (label.equals("guard")) {
+				current.put(token.image + ".guard", value);
+			} else {
+				throw new UnknownOption();
+			}
+		}
+	}
+	")")?
+}
+
+void GenTransDeclaration() throws ASTException: {
+	Token token;
+	PairValueList optlist;
+} {
+	<GENTRANS> token = <IDENTIFIER> {
+		current.createGenTrans(token.image,
+		new ASTValue(token.image), GenTrans.DefaultPolicy);
+	} ("(" optlist = OptionList() {
+		for (PairValue pval : optlist.getList()) {
+			String label = pval.getLabel();
+			ASTree value = pval.getValue();
+			GenTrans tr = (GenTrans) current.getTrans(token.image);
+			if (label.equals("dist")) {
+				tr.setDist(value);
+			} else if (label.equals("policy")) {
+				Object v = value.eval(current);
+				if (v instanceof Integer) {
+					int pol = ((Integer) v).intValue();
+					if (pol == 0) {
+						tr.setPolicy(GenTransPolicy.PRD);
+					} else if (pol == 1) {
+						tr.setPolicy(GenTransPolicy.PRS);
+					} else {
+						throw new UnknownOption();
+					}
+				} else {
+					throw new UnknownOption();
+				}
+			} else if (label.equals("guard")) {
+				tr.setGuard(value);
+			} else {
+				throw new UnknownOption();
+			}
+		}
+	}
+	")")?
+}
+
+void ArcDeclaration() throws ASTException: {
+	Token src;
+	Token dest;
+	PairValueList optlist;
+	ArcBase a;
+} {
+	<ARC> src = <IDENTIFIER> { } <TO> dest = <IDENTIFIER> {
+		try {
+			Place p =current.getPlace(src.image);
+			Trans tr = current.getTrans(dest.image);
+			a = current.createNormalInArc(p, tr, new ASTValue(1));
+		} catch (NotFindObjectException e1) {
+			try {
+				Trans tr = current.getTrans(src.image);
+				Place p =current.getPlace(dest.image);
+				a = current.createNormalOutArc(tr, p, new ASTValue(1));
+			} catch (NotFindObjectException e2) {
+				System.out.println("Did not find " + src.image + " -> " + dest.image);
+				throw new NotFindObjectException();
+			} catch (AlreadyExistException e3) {
+				System.out.println("Already exist " + src.image + " -> " + dest.image);
+				throw new NotFindObjectException();
+			}
+		} catch (AlreadyExistException e4) {
+				System.out.println("Already exist " + src.image + " -> " + dest.image);
+				throw new NotFindObjectException();
+		}
+	} ("(" optlist = OptionList() {
+		for (PairValue pval : optlist.getList()) {
+			String label = pval.getLabel();
+			ASTree value = pval.getValue();
+			if (label.equals("multi")) {
+				a.setMulti(value);
+			} else if (label.equals("firing")) {
+				a.setFiring(value);
+			} else {
+				throw new UnknownOption();
+			}
+		}
+	}
+	")")?
+}
+
+void IArcDeclaration() throws ASTException: {
+	Token src;
+	Token dest;
+	PairValueList optlist;
+	ArcBase a;
+} {
+	<IARC> src = <IDENTIFIER> { } <TO> dest = <IDENTIFIER> {
+		Place p =current.getPlace(src.image);
+		Trans tr = current.getTrans(dest.image);
+		a = current.createNormalInArc(p, tr, new ASTValue(1));
+	} ("(" optlist = OptionList() {
+		for (PairValue pval : optlist.getList()) {
+			String label = pval.getLabel();
+			ASTree value = pval.getValue();
+			if (label.equals("multi")) {
+				a.setMulti(value);
+			} else if (label.equals("firing")) {
+				a.setFiring(value);
+			} else {
+				throw new UnknownOption();
+			}
+		}
+	}
+	")")?
+}
+
+void OArcDeclaration() throws ASTException: {
+	Token src;
+	Token dest;
+	PairValueList optlist;
+	ArcBase a;
+} {
+	<OARC> src = <IDENTIFIER> { } <TO> dest = <IDENTIFIER> {
+		Place p =current.getPlace(dest.image);
+		Trans tr = current.getTrans(src.image);
+		a = current.createNormalOutArc(tr, p, new ASTValue(1));
+	} ("(" optlist = OptionList() {
+		for (PairValue pval : optlist.getList()) {
+			String label = pval.getLabel();
+			ASTree value = pval.getValue();
+			if (label.equals("multi")) {
+				a.setMulti(value);
+			} else if (label.equals("firing")) {
+				a.setFiring(value);
+			} else {
+				throw new UnknownOption();
+			}
+		}
+	}
+	")")?
+}
+
+void HArcDeclaration() throws ASTException: {
+	Token src;
+	Token dest;
+	PairValueList optlist;
+	ArcBase a;
+} {
+	<HARC> src = <IDENTIFIER> { } <TO> dest = <IDENTIFIER> {
+		Place p =current.getPlace(src.image);
+		Trans tr = current.getTrans(dest.image);
+		a = current.createInhibitArc(p, tr, new ASTValue(1));
+	} ("(" optlist = OptionList() {
+		for (PairValue pval : optlist.getList()) {
+			String label = pval.getLabel();
+			ASTree value = pval.getValue();
+			if (label.equals("multi")) {
+				a.setMulti(value);
+			} else {
+				throw new UnknownOption();
+			}
+		}
+	}
+	")")?
+}
+
+PairValueList OptionList() throws ASTException: {
+	PairValueList optlist;
+	PairValue val;
+} {
+	val = OptionValue() {
+		optlist = new PairValueList();
+		optlist.add(val);
+	} ("," val = OptionValue() {
+		optlist.add(val);
+	} )* {
+		return optlist;
+	}
+} 
+
+PairValue OptionValue() throws ASTException: {
+	Token token;
+	ASTree val;
+}{
+	token = <IDENTIFIER>
+	"="
+	val = Expression() {
+		return new PairValue(token.image, val);
+	}
+}
+
+ASTree getASTree() throws ASTException: {
+	ASTree val;
+} {
+	val = Expression() (<SEND> | <EOF>) {
+		return val;
+	}
+}
+
+void getASTTest() throws ASTException: {
+	ASTree val;
+} {
+	(val = Expression() {
+		System.out.println(val.eval(current));
+	} (<SEND> | <NL> | <EOF>))* { }
+}
+
+/////
+ASTree Expression() throws ASTException: {
+	ASTree val;
+} {
+	(LOOKAHEAD(2) val = AssignExpression()
+	| val = OrExpression()) {
+		return val;
+	}
+}
+
+ASTree AssignExpression() throws ASTException: {
+	Token token;
+	ASTree val;
+} {
+	token = <IDENTIFIER> { }
+	(":=" val = Expression() { }
+	| "=" val = Expression() { })
+/*	| "=" val = Expression() {
+		Object result = val.eval(current);
+		if (result instanceof Integer) {
+			val = new ASTValue((Integer) result);
+		} else if (result instanceof Double) {
+			val = new ASTValue((Double) result);
+		} else if (result instanceof Boolean) {
+			val = new ASTValue((Boolean) result);
+		} else {
+			val = null;
+		}
+	}) */
+	{
+		current.put(token.image, val);
+		return val;
+	}
+}
+
+ASTree OrExpression() throws ASTException: {
+	ASTree val1;
+	ASTree val2;
+} {
+	val1 = AndExpression() (
+		<OR> val2 = AndExpression() {
+			val1 = new ASTOr(val1, val2);
+		}
+	)* {
+		return val1;
+	}
+}
+
+ASTree AndExpression() throws ASTException: {
+	ASTree val1;
+	ASTree val2;
+} {
+	val1 = EqExpression() (
+		<AND> val2 = EqExpression() {
+			val1 = new ASTAnd(val1, val2);
+		}
+	)* {
+		return val1;
+	}
+}
+
+ASTree EqExpression() throws ASTException: {
+	ASTree val1;
+	ASTree val2;
+} {
+	val1 = CompareExpression() (
+		<EQ> val2 = CompareExpression() {
+			val1 = new ASTEq(val1, val2);
+		}
+		| <NEQ> val2 = CompareExpression() {
+			val1 = new ASTNeq(val1, val2);
+		}
+	)* {
+		return val1;
+	}
+}
+
+ASTree CompareExpression() throws ASTException: {
+	ASTree val1;
+	ASTree val2;
+} {
+	val1 = TermExpression() (
+		<GT> val2 = TermExpression() {
+			val1 = new ASTGt(val1, val2);
+		}
+		| <GTE> val2 = TermExpression() {
+			val1 = new ASTGte(val1, val2);
+		}
+		| <LT> val2 = TermExpression() {
+			val1 = new ASTLt(val1, val2);		
+		}
+		| <LTE> val2 = TermExpression() {
+			val1 = new ASTLte(val1, val2);		
+		}
+	)* {
+		return val1;
+	}
+}
+
+ASTree TermExpression() throws ASTException: {
+	ASTree val1;
+	ASTree val2;
+} {
+	val1 = MultiplyExpression() (
+		<PLUS> val2 = MultiplyExpression() {
+			val1 = new ASTPlus(val1, val2);
+		}
+		| <MINUS> val2 = MultiplyExpression() {
+			val1 = new ASTMinus(val1, val2);
+		}
+	)* {
+		return val1;
+	}
+}
+
+ASTree MultiplyExpression() throws ASTException: {
+	ASTree val1;
+	ASTree val2;
+} {
+	val1 = Factor() (
+		<MULTIPLY> val2 = Factor() {
+			val1 = new ASTMulti(val1, val2);
+		}
+		| <DIVIDE> val2 = Factor() {
+			val1 = new ASTDivide(val1, val2);
+		}
+		| <MOD> val2 = Factor() {
+			val1 = new ASTMod(val1, val2);
+		}
+	)* {
+		return val1;
+	}
+}
+
+ASTree Factor() throws ASTException: {
+	ASTree val1;
+} {
+	val1 = PrimaryExpression() {
+		return val1;
+	}
+	| <NOT> val1 = PrimaryExpression() {
+		return new ASTNot(val1);
+	}
+	| <PLUS> val1 = PrimaryExpression() {
+		return val1;
+	}
+	| <MINUS> val1 = PrimaryExpression() {
+		return new ASTUnaryMinus(val1);
+	}
+}
+
+ASTree PrimaryExpression() throws ASTException: {
+	ASTree val1, val2, val3;
+	Token token;
+} {
+	token = <INTEGER> {
+		return new ASTValue(Integer.parseInt(token.image));
+	}
+	| token = <REAL> {
+		return new ASTValue(Double.parseDouble(token.image));
+	}
+	| token = <STRING> {
+		return new ASTValue(token.image);
+	}
+	| <NTOKEN> token = <IDENTIFIER> {
+		return new ASTNumOfToken(current.getPlace(token.image));
+	}
+	| <GLOBAL_NTOKEN> token = <IDENTIFIER> {
+		return new ASTNumOfToken(current.getPlace(token.image, global));
+	}
+	| token = <IDENTIFIER> {
+		return new ASTVariable(token.image);
+	}
+	| (<IFELSE> "(" val1 = Expression() "," val2 = Expression() "," val3 = Expression() ")") {
+		return new ASTIfThenElse(val1, val2, val3);
+	}
+	| (<OPEN> val1 = Expression() <CLOSE>) {
+		return val1;
+	}
+}
