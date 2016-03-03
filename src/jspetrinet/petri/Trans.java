@@ -3,9 +3,9 @@ package jspetrinet.petri;
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.ASTree;
 import jspetrinet.exception.*;
-import jspetrinet.graph.Node;
+import jspetrinet.graph.LabeledNode;
 
-abstract public class Trans extends Node {
+abstract public class Trans extends LabeledNode {
 
 	private int index;
 	private ASTree guard;
@@ -24,10 +24,6 @@ abstract public class Trans extends Node {
 		this.index = index;
 	}
 	
-	public final ASTree getGuard() {
-		return guard;
-	}
-
 	public final void setGuard(ASTree guard) {
 		this.guard = guard;
 	}

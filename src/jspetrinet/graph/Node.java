@@ -5,32 +5,15 @@ import java.util.List;
 
 public class Node implements Component {
 
-	private String label;
 	private final List<Arc> inarc;
 	private final List<Arc> outarc;
 
 	// constructor
 	public Node() {
-		label = "";
-		inarc = new ArrayList<Arc>();
-		outarc = new ArrayList<Arc>();
-	}
-
-	public Node(String label) {
-		this.label = label;
 		inarc = new ArrayList<Arc>();
 		outarc = new ArrayList<Arc>();
 	}
 	
-	// getter
-	public final String getLabel() {
-		return label;
-	}
-	
-	public final void setLabel(String label) {
-		this.label = label;
-	}
-
 	public final List<Arc> getInArc() {
 		return inarc;
 	}

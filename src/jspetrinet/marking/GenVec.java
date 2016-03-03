@@ -4,44 +4,42 @@ import java.util.Arrays;
 
 public final class GenVec {
 
-	private final String label;
-	private final int[] vec;
+	private final byte[] vec;
 
 //	public GenVec(String label, int length) {
 //		this.label = label;
 //		this.vec = new int [length];
 //	}
 
-	public GenVec(String label, int[] v) {
-		this.label = label;
-		this.vec = v;
+//	public GenVec(String label, int[] v) {
+//		this.label = label;
+//		this.vec = v;
+//	}
+
+	public GenVec(int size) {
+		this.vec = new byte [size];
 	}
 
 	// getter
-	public final int[] get() {
-		return vec;
-	}
+//	public final int[] get() {
+//		return vec;
+//	}
 
 	public final int get(int i) {
 		return vec[i];
 	}
 	
 	public final void set(int i, int value) {
+		vec[i] = (byte) value;
+	}
+	
+	public final void set(int i, byte value) {
 		vec[i] = value;
 	}
-	
-	@Override
-	public String toString() {
-		return label;
-//		return Arrays.toString(vec);
-	}
-	
+
 	@Override
 	public final int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(vec);
-		return result;
+		return Arrays.hashCode(vec);
 	}
 
 	@Override

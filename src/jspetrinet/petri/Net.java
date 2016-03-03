@@ -313,36 +313,24 @@ public class Net extends ASTEnv {
 	
 	/// utils
 	
-	public final int[] toMarkVec(Map<String,Integer> map) {
-		int[] vec = new int[getNumOfPlace()];
-		try {
-			for (Map.Entry<String, Integer> e : map.entrySet()) {
-				vec[getPlace(e.getKey()).getIndex()] = e.getValue();
-			}
-		} catch (ASTException e1) {
-			e1.printStackTrace();
-		}
-		return vec;
-	}
-	
-	public final String markToString(int[] vec) {
+	public final String markToString(Mark vec) {
 		String result = "";
-		for (int i=0; i<vec.length; i++) {
-			if (vec[i] != 0) {
+		for (int i=0; i<getNumOfPlace(); i++) {
+			if (vec.get(i) != 0) {
 				if (result.equals("")) {
-					result = placeIndex.get(i).getLabel() + "->" + vec[i];
+					result = placeIndex.get(i).getLabel() + "->" + vec.get(i);
 				} else {
-					result = result + " " + placeIndex.get(i).getLabel() + "->" + vec[i];					
+					result = result + " " + placeIndex.get(i).getLabel() + "->" + vec.get(i);
 				}
 			}
 		}
 		return result;
 	}
 	
-	public final String genvecToString(int[] v) {
+	public final String genvecToString(GenVec genv) {
 		String result = "(";
 		for (Trans t: genTransSet.values()) {
-			switch(v[t.getIndex()]) {
+			switch(genv.get(t.getIndex())) {
 			case 0:
 //				if (!result.equals("(")) {
 //					result += " ";
@@ -372,16 +360,22 @@ public class Net extends ASTEnv {
 	}
 
 	public final Mark mark(Map<String,Integer> map) {
-		int[] vec = this.toMarkVec(map);
-		return new Mark(this.markToString(vec), vec);
+		Mark m = new Mark(getNumOfPlace());
+		try {
+			for (Map.Entry<String, Integer> e : map.entrySet()) {
+				m.set(getPlace(e.getKey()).getIndex(), e.getValue());
+			}
+		} catch (ASTException e1) {
+			e1.printStackTrace();
+		}
+		return m;
 	}
 
 	public final GenVec genvec(Map<String,Integer> map) {
-		int[] v = new int [getNumOfGenTrans()];
+		GenVec gv = new GenVec(getNumOfGenTrans());
 		for (Map.Entry<String,Integer> e: map.entrySet()) {			
-			v[genTransSet.get(e.getKey()).getIndex()] = e.getValue();
+			gv.set(genTransSet.get(e.getKey()).getIndex(), e.getValue());
 		}
-		GenVec gv = new GenVec(this.genvecToString(v), v);
 		return gv;
 	}
 

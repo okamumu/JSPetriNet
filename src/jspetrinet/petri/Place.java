@@ -1,13 +1,13 @@
 package jspetrinet.petri;
 
-import jspetrinet.graph.Node;
+import jspetrinet.graph.LabeledNode;
 
-public class Place extends Node {
+public class Place extends LabeledNode {
 	
-	static public int DefaultMax = 10;
+	static public final int DefaultMax = 10;
 	
 	private int index;
-	private int max;
+	private final int max;
 	
 	public Place(String label, int max) {
 		super(label);
@@ -28,8 +28,4 @@ public class Place extends Node {
 		return max;
 	}
 
-	public void setMax(int max) {
-		this.max = max;
-	}
-	
 }

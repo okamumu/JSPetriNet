@@ -1,7 +1,5 @@
 package jspetrinet.marking;
 
-import java.util.Arrays;
-
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.exception.ASTException;
 import jspetrinet.graph.Arc;
@@ -69,23 +67,22 @@ public final class PetriAnalysis {
 	}
 
 	public final static Mark doFiring(Net env, Trans tr) throws ASTException {
-		Mark m = env.getCurrentMark();
-		int[] nextVec = Arrays.copyOf(m.get(), m.get().length);
+		Mark nextVec = new Mark(env.getCurrentMark());
 		for (Arc arc : tr.getInArc()) {
 			Place place = (Place) arc.getSrc();
 			ArcBase arcBase = (ArcBase) arc;
-			if (nextVec[place.getIndex()] <= place.getMax()) {
-				nextVec[place.getIndex()] -= arcBase.firing(env);
+			if (nextVec.get(place.getIndex()) <= place.getMax()) {
+				nextVec.set(place.getIndex(), nextVec.get(place.getIndex()) - arcBase.firing(env));
 			}
 		}
 		for (Arc arc : tr.getOutArc()) {
 			Place place = (Place) arc.getDest();
 			ArcBase arcBase = (ArcBase) arc;
-			nextVec[place.getIndex()] += arcBase.firing(env);
-			if (nextVec[place.getIndex()] > place.getMax()) {
-				nextVec[place.getIndex()] = place.getMax() + 1;
+			nextVec.set(place.getIndex(), nextVec.get(place.getIndex()) + arcBase.firing(env));
+			if (nextVec.get(place.getIndex()) > place.getMax()) {
+				nextVec.set(place.getIndex(), place.getMax() + 1);
 			}
 		}
-		return new Mark(env.markToString(nextVec), nextVec);
+		return nextVec;
 	}
 }

@@ -22,7 +22,7 @@ public class VizPrint implements Visitor {
 		if (component instanceof Node) {
 			Node nc =  (Node) component;
 			bw.println("\"" + nc + "\" [shape = circle, label = \""
-					+ nc.getLabel() + "\"];");
+					+ nc.toString() + "\"];");
 			hash.add(component);
 			for (Arc a : nc.getInArc()) {
 				a.accept(this);

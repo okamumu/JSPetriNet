@@ -10,9 +10,9 @@ import jspetrinet.petri.*;
 public class testMain {
 	
 	public static void prog10(Net global) throws ASTException {
-		JSPetriNet.load(global, "/Users/okamu/Dropbox/JSPetriNet/cloud.spn");
+		JSPetriNet.load(global, "cloud.spn");
 		try {
-			PrintStream out = new PrintStream("/Users/okamu/Desktop/petri.dot");
+			PrintStream out = new PrintStream("petri.dot");
 			out.println("digraph { layout=dot; overlap=false; splines=true; node [fontsize=10];");
 			global.getPlace("Ph").accept(new jspetrinet.petri.VizPrint(out));
 			out.println("}");
@@ -23,11 +23,12 @@ public class testMain {
 		global.setIndex();
 
 		Map<String,Integer> initmark = new HashMap<String,Integer>();
-		initmark.put("Ph", 2);
-		initmark.put("Pw", 2);
-		initmark.put("Pc", 2);
-		int[] vec = global.toMarkVec(initmark);
-		Mark m1 = new Mark(global.markToString(vec), vec);
+		initmark.put("Ph", 8);
+		initmark.put("Pw", 8);
+		initmark.put("Pc", 8);
+		Mark m1 = global.mark(initmark);
+//		int[] vec = global.toMarkVec(initmark);
+//		Mark m1 = new Mark(global.markToString(vec), vec);
 
 		MarkingProcess mp = global.marking(m1);
 		

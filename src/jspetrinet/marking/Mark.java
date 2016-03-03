@@ -9,7 +9,7 @@ import jspetrinet.graph.Arc;
 public final class Mark extends jspetrinet.graph.Node {
 
 	private int index;
-	private final int[] vec;
+	private final byte[] vec;
 	private MarkGroup markGroup;
 
 //	public Mark(Net net, Map<String,Integer> map) {
@@ -31,21 +31,35 @@ public final class Mark extends jspetrinet.graph.Node {
 //		markGroup = null;
 //	}
 
-	public Mark(String label, int[] vec) {
-		super(label);
-		this.vec = Arrays.copyOf(vec, vec.length);
+//	public Mark(String label, int[] vec) {
+//		super(label);
+//		this.vec = Arrays.copyOf(vec, vec.length);
+//		markGroup = null;
+//	}
+
+	public Mark(int size) {
+		this.vec = new byte [size];
+		markGroup = null;
+	}
+
+	public Mark(Mark m) {
+		this.vec = Arrays.copyOf(m.vec, m.vec.length);
 		markGroup = null;
 	}
 
 	// getter
-	public final int[] get() {
-		return vec;
-	}
-
+//	public final int[] get() {
+//		return vec;
+//	}
+//
 	public final int get(int i) {
 		return vec[i];
 	}
 	
+	public final void set(int i, int v) {
+		vec[i] = (byte) v;
+	}
+
 	public final int index() {
 		return index;
 	}
@@ -62,11 +76,6 @@ public final class Mark extends jspetrinet.graph.Node {
 		return next;
 	}
 	
-	@Override
-	public String toString() {
-		return getLabel();
-	}
-	
 	public final MarkGroup getMarkGroup() {
 		return markGroup;
 	}
@@ -81,10 +90,13 @@ public final class Mark extends jspetrinet.graph.Node {
 	
 	@Override
 	public final int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(vec);
-		return result;
+//		final int prime = 31;
+//		int result = 1;
+//		result = prime * result + Arrays.hashCode(vec);
+//		return result;
+//		final int prime = 31;
+//		int result = 1;
+		return Arrays.hashCode(vec);
 	}
 
 	@Override

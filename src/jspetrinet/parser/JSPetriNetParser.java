@@ -292,9 +292,12 @@ current = current.getOuter();
   final public void PlaceDeclaration() throws ParseException, ASTException {Token token;
         PairValueList optlist;
         Place p;
+        int pmax;
     jj_consume_token(PLACE);
     token = jj_consume_token(IDENTIFIER);
-p = current.createPlace(token.image, Place.DefaultMax);
+pmax = Place.DefaultMax;
+//		p = current.createPlace(token.image, Place.DefaultMax);
+
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
       jj_consume_token(OPEN);
@@ -304,7 +307,7 @@ for (PairValue pval : optlist.getList()) {
                         Object value = pval.getValue().eval(current);
                         if (label.equals("max")) {
                                 if (value instanceof Integer) {
-                                        p.setMax((Integer) value);
+                                        pmax = (Integer) value;
                                 } else {
                                         {if (true) throw new ASTException();}
                                 }
@@ -319,6 +322,7 @@ for (PairValue pval : optlist.getList()) {
       jj_la1[11] = jj_gen;
       ;
     }
+p = current.createPlace(token.image, pmax);
   }
 
   final public void ExpTransDeclaration() throws ParseException, ASTException {Token token;

@@ -5,13 +5,13 @@ public enum TransStatus {
 	ENABLE(1),
 	PREEMPTION(2);
 	
-	private int value;
+	private final int value;
 	
 	TransStatus(int value) {
 		this.value = value;
 	}
 	
-	public int getIntValue() {
+	public final int getIntValue() {
 		return value;
 	}
 }

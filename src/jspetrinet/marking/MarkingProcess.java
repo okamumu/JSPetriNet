@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import jspetrinet.exception.*;
 import jspetrinet.petri.ExpTrans;
@@ -196,10 +195,11 @@ public final class MarkingProcess {
 
 		numOfGenTrans = net.getNumOfGenTrans();
 		immGroup.clear();
-		int[] v = new int [numOfGenTrans];
-		immGroup.put(new GenVec(net.genvecToString(v), v), new MarkGroup());
+//		int[] v = new int [numOfGenTrans];
+		GenVec genv = new GenVec(numOfGenTrans);
+		immGroup.put(genv, new MarkGroup());
 		genGroup.clear();
-		genGroup.put(new GenVec(net.genvecToString(v), v), new MarkGroup());
+		genGroup.put(genv, new MarkGroup());
 
 		Stack<Mark> novisited = new Stack<Mark>();
 		novisited.push(init);
@@ -217,19 +217,20 @@ public final class MarkingProcess {
 			markSet.put(m, m);
 
 			// make genvec
-			int[] v = new int [numOfGenTrans];
+//			int[] v = new int [numOfGenTrans];
+			GenVec genv = new GenVec(numOfGenTrans);
 			for (Trans tr : net.getGenTransSet().values()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:
-					v[tr.getIndex()] = 1;
+					genv.set(tr.getIndex(), 1);
 					break;
 				case PREEMPTION:
-					v[tr.getIndex()] = 2;
+					genv.set(tr.getIndex(), 2);
 					break;
 				default:
 				}
 			}
-			GenVec genv = new GenVec(net.genvecToString(v), v);
+//			GenVec genv = new GenVec(net.genvecToString(v), v);
 			if (!immGroup.containsKey(genv)) {
 				immGroup.put(genv, new MarkGroup());
 			}
