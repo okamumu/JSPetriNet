@@ -130,16 +130,18 @@ void PlaceDeclaration() throws ASTException: {
 	Token token;
 	PairValueList optlist;
 	Place p;
+	int pmax;
 } {
 	<PLACE> token = <IDENTIFIER> {
-		p = current.createPlace(token.image, Place.DefaultMax);
+		pmax = Place.DefaultMax;
+//		p = current.createPlace(token.image, Place.DefaultMax);
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
 			Object value = pval.getValue().eval(current);
 			if (label.equals("max")) {
 				if (value instanceof Integer) {
-					p.setMax((Integer) value);
+					pmax = (Integer) value;
 				} else {
 					throw new ASTException();
 				}
@@ -148,7 +150,9 @@ void PlaceDeclaration() throws ASTException: {
 			}
 		}
 	}
-	")")?
+	")")? {
+		p = current.createPlace(token.image, pmax);	
+	}
 }
 
 void ExpTransDeclaration() throws ASTException: {
