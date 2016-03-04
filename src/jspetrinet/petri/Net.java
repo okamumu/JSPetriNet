@@ -16,7 +16,6 @@ import jspetrinet.marking.MarkingProcess;
 public class Net extends ASTEnv {
 	
 	private final String label;
-	private final JSPetriNet jspn;
 	private final Net outer;
 	private final Map<String,Net> child;
 	
@@ -30,24 +29,12 @@ public class Net extends ASTEnv {
 	protected ASTree reward;
 	
 	public Net(String label) {
-		this.label = label;
-		this.outer = null;
-		this.jspn = new JSPetriNet();
-		placeSet = new HashMap<String,Place>();
-		immTransSet = new HashMap<String,Trans>();
-		expTransSet = new HashMap<String,Trans>();
-		genTransSet = new HashMap<String,Trans>();
-		placeIndex = new HashMap<Integer,Place>();
-		child = new HashMap<String,Net>();
-		if (outer != null) {
-			outer.setChild(label, this);
-		}
+		this(null, label);
 	}
 
 	public Net(Net outer, String label) {
 		this.label = label;
 		this.outer = outer;
-		this.jspn = new JSPetriNet();
 		placeSet = new HashMap<String,Place>();
 		immTransSet = new HashMap<String,Trans>();
 		expTransSet = new HashMap<String,Trans>();
@@ -357,51 +344,5 @@ public class Net extends ASTEnv {
 			result += "all->disable";
 		}
 		return result + ")";
-	}
-
-	public final Mark mark(Map<String,Integer> map) {
-		Mark m = new Mark(getNumOfPlace());
-		try {
-			for (Map.Entry<String, Integer> e : map.entrySet()) {
-				m.set(getPlace(e.getKey()).getIndex(), e.getValue());
-			}
-		} catch (ASTException e1) {
-			e1.printStackTrace();
-		}
-		return m;
-	}
-
-	public final GenVec genvec(Map<String,Integer> map) {
-		GenVec gv = new GenVec(getNumOfGenTrans());
-		for (Map.Entry<String,Integer> e: map.entrySet()) {			
-			gv.set(genTransSet.get(e.getKey()).getIndex(), e.getValue());
-		}
-		return gv;
-	}
-
-	public final MarkingProcess marking(Mark m) {
-//		this.setIndex();
-		MarkingProcess mp = new MarkingProcess();
-		try {
-			System.out.print("Create marking...");
-			long start = System.nanoTime();
-			mp.create(m, this);
-			System.out.println("done");
-			System.out.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
-			mp.createIndex(true);
-			System.out.println(mp.toString());
-		} catch (ASTException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return mp;
-	}
-	
-	public final void eval(String config) {
-		jspn.eval(this, config);
-	}
-
-	public final String toViz(String startPlace) throws ASTException {
-		return jspn.toViz(this, startPlace);
 	}
 }

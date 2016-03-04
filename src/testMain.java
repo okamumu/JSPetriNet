@@ -23,14 +23,14 @@ public class testMain {
 		global.setIndex();
 
 		Map<String,Integer> initmark = new HashMap<String,Integer>();
-		initmark.put("Ph", 8);
-		initmark.put("Pw", 8);
-		initmark.put("Pc", 8);
-		Mark m1 = global.mark(initmark);
+		initmark.put("Ph", 5);
+		initmark.put("Pw", 5);
+		initmark.put("Pc", 5);
+		Mark m1 = JSPetriNet.mark(global, initmark);
 //		int[] vec = global.toMarkVec(initmark);
 //		Mark m1 = new Mark(global.markToString(vec), vec);
 
-		MarkingProcess mp = global.marking(m1);
+		MarkingProcess mp = JSPetriNet.marking(global, m1);
 		
 		String param = "Thr.rate = 100.0;"
 				+ "lambda_h = 5.0;"
@@ -44,7 +44,7 @@ public class testMain {
 				+ "Tcwm.rate = 100000.0;"
 				+ "Tcr.rate = 10.0;"
 				+ "Twcm.rate = 10.0;";
-		global.eval(param);
+		JSPetriNet.eval(global, param);
 		
 //		CooMatrixWithMarkingProcess cmat = new CooMatrixWithMarkingProcess(mp, global, true);
 //		mp.createIndex(true);
