@@ -8,15 +8,19 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import jspetrinet.exception.ASTException;
 import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
+import jspetrinet.marking.MarkGroup;
 import jspetrinet.marking.MarkingProcess;
 import jspetrinet.parser.JSPetriNetParser;
 import jspetrinet.parser.ParseException;
 import jspetrinet.parser.TokenMgrError;
 import jspetrinet.petri.Net;
+import jspetrinet.petri.Place;
+import jspetrinet.petri.Trans;
 
 public class JSPetriNet {
 	
@@ -154,13 +158,93 @@ public class JSPetriNet {
 			mp.create(m, global);
 			System.out.println("done");
 			System.out.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
-			mp.createIndex(true);
-			System.out.println(mp.toString());
+//			mp.createIndex(true);
+			System.out.println(markingToString(global, mp));
 		} catch (ASTException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return mp;
+	}
+
+	/// utils
+	
+	public static String markToString(Net net, Mark vec) {
+		String result = "";
+		for (Map.Entry<String,Place> e : net.getPlaceSet().entrySet()) {
+			if (vec.get(e.getValue().getIndex()) != 0) {
+				if (result.equals("")) {
+					result = e.getKey() + ":" + vec.get(e.getValue().getIndex());
+				} else {
+					result = result + "," + e.getKey() + ":" + vec.get(e.getValue().getIndex());
+				}
+			}
+		}
+		return result;
+	}
+
+	public static String genvecToString(Net net, GenVec genv) {
+		String result = "(";
+		for (Trans t: net.getGenTransSet().values()) {
+			switch(genv.get(t.getIndex())) {
+			case 0:
+//				if (!result.equals("(")) {
+//					result += " ";
+//				}
+//				result += t.getLabel() + "->disable";
+				break;
+			case 1:
+				if (!result.equals("(")) {
+					result += " ";
+				}
+				result += t.getLabel() + "->enable";
+				break;
+			case 2:
+				if (!result.equals("(")) {
+					result += " ";
+				}
+				result += t.getLabel() + "->preemption";
+				break;
+			default:
+				break;
+			}
+		}
+		if (result.equals("(")) {
+			result += "EXP";
+		}
+		return result + ")";
+	}
+
+	public static String markingToString(Net net, MarkingProcess mp) {
+		String linesep = System.getProperty("line.separator").toString();
+		String res = "";
+		int total = mp.count();
+		int immtotal = mp.immcount();
+		res += "# of total states   : " + total + linesep;
+		res += "# of IMM states     : " + immtotal + linesep;
+		res += "# of EXP/GEN states : " + (total - immtotal) + linesep;
+		for (Entry<GenVec, MarkGroup> e : mp.getImmGroup().entrySet()) {
+			String g = genvecToString(net, e.getKey());
+			int im = e.getValue().size();
+			int em = mp.getGenGroup().get(e.getKey()).size();
+			res += g + linesep;
+			res += "  # of IMM states     : " + im + linesep;
+			res += "  # of EXP/GEN states : " + em + linesep;
+		}
+		return res;
+	}
+	
+	public static void writeDotfile(Net net, String file, String placeLabel) {
+		try {
+			PrintStream out = new PrintStream(file);
+			out.println("digraph { layout=dot; overlap=false; splines=true; node [fontsize=10];");
+			net.getPlace(placeLabel).accept(new jspetrinet.petri.VizPrint(out));
+			out.println("}");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (ASTException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

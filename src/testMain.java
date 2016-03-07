@@ -432,6 +432,20 @@ public class testMain {
 ////		System.out.println(bs2.countEven());
 //	}
 	
+	public static void prog11(Net global) throws ASTException {
+		JSPetriNet.load(global, "raid6.spn");
+		JSPetriNet.writeDotfile(global, "petri1.dot", "Pn");
+		JSPetriNet.writeDotfile(global, "petri2.dot", "Pnormal");
+
+		global.setIndex();
+
+		Map<String,Integer> initmark = new HashMap<String,Integer>();
+		initmark.put("Pn", 10);
+		initmark.put("Pnormal", 1);
+		Mark m1 = JSPetriNet.mark(global, initmark);
+		MarkingProcess mp = JSPetriNet.marking(global, m1);
+	}
+		
 	public static void main(String[] args) throws ASTException {
 		// prog0();
 		// prog1();
@@ -440,8 +454,8 @@ public class testMain {
 		// prog3(net);
 		// prog4(new Net(null, "global"));
 		// prog40(new Net(null));
-		prog10(new Net(null, "global"));
-//		prog11(new Net(null, "global"));
+//		prog10(new Net(null, "global"));
+		prog11(new Net(null, "global"));
 //		prog0();
 		// prog20();
 	}

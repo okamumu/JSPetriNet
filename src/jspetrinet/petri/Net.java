@@ -9,9 +9,6 @@ import jspetrinet.ast.ASTValue;
 import jspetrinet.ast.ASTree;
 import jspetrinet.exception.*;
 import jspetrinet.graph.Arc;
-import jspetrinet.marking.GenVec;
-import jspetrinet.marking.Mark;
-import jspetrinet.marking.MarkingProcess;
 
 public class Net extends ASTEnv {
 	
@@ -24,7 +21,7 @@ public class Net extends ASTEnv {
 	protected final Map<String,Trans> expTransSet;
 	protected final Map<String,Trans> genTransSet;
 
-	protected final Map<Integer,Place> placeIndex;
+//	protected final Map<Integer,Place> placeIndex;
 	
 	protected ASTree reward;
 	
@@ -39,7 +36,7 @@ public class Net extends ASTEnv {
 		immTransSet = new HashMap<String,Trans>();
 		expTransSet = new HashMap<String,Trans>();
 		genTransSet = new HashMap<String,Trans>();
-		placeIndex = new HashMap<Integer,Place>();
+//		placeIndex = new HashMap<Integer,Place>();
 		child = new HashMap<String,Net>();
 		if (outer != null) {
 			outer.setChild(label, this);
@@ -189,15 +186,15 @@ public class Net extends ASTEnv {
 	}
 	
 	// initialize
-	public void init() {
-		setIndex();
-	}
+//	public void init() {
+//		setIndex();
+//	}
 	
 	public void setIndex() {
 		int i = 0;
 		for (Place p : placeSet.values()) {
 			p.setIndex(i);
-			placeIndex.put(i, p);
+//			placeIndex.put(i, p);
 			i++;
 		}
 		
@@ -298,51 +295,4 @@ public class Net extends ASTEnv {
 		return tmp;
 	}
 	
-	/// utils
-	
-	public final String markToString(Mark vec) {
-		String result = "";
-		for (int i=0; i<getNumOfPlace(); i++) {
-			if (vec.get(i) != 0) {
-				if (result.equals("")) {
-					result = placeIndex.get(i).getLabel() + "->" + vec.get(i);
-				} else {
-					result = result + " " + placeIndex.get(i).getLabel() + "->" + vec.get(i);
-				}
-			}
-		}
-		return result;
-	}
-	
-	public final String genvecToString(GenVec genv) {
-		String result = "(";
-		for (Trans t: genTransSet.values()) {
-			switch(genv.get(t.getIndex())) {
-			case 0:
-//				if (!result.equals("(")) {
-//					result += " ";
-//				}
-//				result += t.getLabel() + "->disable";
-				break;
-			case 1:
-				if (!result.equals("(")) {
-					result += " ";
-				}
-				result += t.getLabel() + "->enable";
-				break;
-			case 2:
-				if (!result.equals("(")) {
-					result += " ";
-				}
-				result += t.getLabel() + "->preemption";
-				break;
-			default:
-				break;
-			}
-		}
-		if (result.equals("(")) {
-			result += "all->disable";
-		}
-		return result + ")";
-	}
 }
