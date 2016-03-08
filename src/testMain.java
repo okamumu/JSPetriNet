@@ -1,5 +1,7 @@
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.*;
 
 import jspetrinet.*;
@@ -10,13 +12,13 @@ import jspetrinet.petri.*;
 public class testMain {
 	
 	public static void prog10(Net global) throws ASTException {
-		JSPetriNet.load(global, "cloud.spn");
 		try {
-			PrintStream out = new PrintStream("petri.dot");
-			out.println("digraph { layout=dot; overlap=false; splines=true; node [fontsize=10];");
-			global.getPlace("Ph").accept(new jspetrinet.petri.VizPrint(out));
-			out.println("}");
+		global = JSPetriNet.load("", null, new FileInputStream("cloud.spn"));
+			PrintWriter bw = new PrintWriter("petri.dot");
+			JSPetriNet.writeDotfile(global, bw);
+			bw.close();
 		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -433,9 +435,16 @@ public class testMain {
 //	}
 	
 	public static void prog11(Net global) throws ASTException {
-		JSPetriNet.load(global, "raid6.spn");
-		JSPetriNet.writeDotfile(global, "petri1.dot", "Pn");
-		JSPetriNet.writeDotfile(global, "petri2.dot", "Pnormal");
+		PrintWriter bw;
+		try {
+			global = JSPetriNet.load("", null, new FileInputStream("raid6.spn"));
+			bw = new PrintWriter("petri1.dot");
+			JSPetriNet.writeDotfile(global, bw);
+			bw.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		global.setIndex();
 

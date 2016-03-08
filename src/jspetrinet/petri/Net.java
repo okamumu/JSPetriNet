@@ -1,14 +1,20 @@
 package jspetrinet.petri;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import jspetrinet.JSPetriNet;
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.ASTValue;
 import jspetrinet.ast.ASTree;
 import jspetrinet.exception.*;
 import jspetrinet.graph.Arc;
+import jspetrinet.graph.Component;
 
 public class Net extends ASTEnv {
 	
@@ -61,6 +67,48 @@ public class Net extends ASTEnv {
 			throw new NotFindObjectException();
 		}
 		return child.get(label);
+	}
+
+	private final List<Component> sortedComponentPlace(Map<String,Place> m) {
+		List<Map.Entry<String,Place>> entries = new ArrayList<Map.Entry<String,Place>>(m.entrySet());
+		Collections.sort(entries, new Comparator<Map.Entry<String,Place>>() {
+			@Override
+			public int compare(Entry<String,Place> entry1, Entry<String,Place> entry2) {
+				return entry2.getKey().compareTo(entry1.getKey());
+			}
+		});
+		List<Component> result = new LinkedList<Component>();
+		for (Entry<String,Place> c : entries) {
+			result.add(c.getValue());
+		}
+		return result;
+	}
+	
+	private final List<Component> sortedComponentTrans(Map<String,Trans> m) {
+		List<Map.Entry<String,Trans>> entries = new ArrayList<Map.Entry<String,Trans>>(m.entrySet());
+		Collections.sort(entries, new Comparator<Map.Entry<String,Trans>>() {
+			@Override
+			public int compare(Entry<String,Trans> entry1, Entry<String,Trans> entry2) {
+				return entry2.getKey().compareTo(entry1.getKey());
+			}
+		});
+		List<Component> result = new LinkedList<Component>();
+		for (Entry<String,Trans> c : entries) {
+			result.add(c.getValue());
+		}
+		return result;
+	}
+
+	public final List<Component> getAllComponent() {
+		List<Component> all = new LinkedList<Component>();
+		for (Net c : child.values()) {
+			all.addAll(c.getAllComponent());
+		}
+		all.addAll(sortedComponentPlace(placeSet));
+		all.addAll(sortedComponentTrans(immTransSet));
+		all.addAll(sortedComponentTrans(expTransSet));
+		all.addAll(sortedComponentTrans(genTransSet));
+		return all;
 	}
 
 	public final Map<String,Place> getPlaceSet() {

@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,36 +22,16 @@ import jspetrinet.parser.TokenMgrError;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.Place;
 import jspetrinet.petri.Trans;
+import jspetrinet.petri.VizPrint;
 
 public class JSPetriNet {
 	
-	public static void load(Net global, String fn) {
+	public static Net load(String label, Net parent, InputStream in) {
+		Net net = new Net(parent, label);
 		try {
-			InputStream in = new FileInputStream(fn);
 			JSPetriNetParser parser = new JSPetriNetParser(in);
-			parser.setNet(global);
+			parser.setNet(net);
 			parser.makeNet();
-//			for (Place p : global.getPlaceSet().values()) {
-////				System.out.println(p.getLabel() + " max:" + p.getMax());
-//				System.out.println("place: " + p.getLabel());
-//			}
-//			for (Trans tr : global.getExpTransSet().values()) {
-//				ExpTrans etr = (ExpTrans) tr;
-////				System.out.println(etr.getLabel() + " rate:" + etr.getRate(global));			
-//				System.out.println("EXP: " + etr.getLabel());
-//			}
-//			for (Trans tr : global.getImmTransSet().values()) {
-//				ImmTrans etr = (ImmTrans) tr;
-////				System.out.println(etr.getLabel() + " weight:" + etr.getWeight(global));			
-//				System.out.println("IMM: " + etr.getLabel());			
-//			}
-//			for (Trans tr : global.getGenTransSet().values()) {
-//				GenTrans etr = (GenTrans) tr;
-//				System.out.println("GEN: " + etr.getLabel() + " policy:" + etr.getPolicy());
-//			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (TokenMgrError ex) {
 			System.out.println("token error: " + ex.getMessage());
 		} catch (ParseException ex) {
@@ -59,46 +40,7 @@ public class JSPetriNet {
 			System.out.println("Error");
 			e.printStackTrace();
 		}
-	}
-
-	public static Net load(String label, String fn) {
-		Net global = new Net(null, label);
-		try {
-			InputStream in = new FileInputStream(fn);
-			JSPetriNetParser parser = new JSPetriNetParser(in);
-			parser.setNet(global);
-			parser.makeNet();
-//			for (Place p : global.getPlaceSet().values()) {
-////				System.out.println(p.getLabel() + " max:" + p.getMax());
-//				System.out.println("place: " + p.getLabel());
-//			}
-//			for (Trans tr : global.getExpTransSet().values()) {
-//				ExpTrans etr = (ExpTrans) tr;
-////				System.out.println(etr.getLabel() + " rate:" + etr.getRate(global));			
-//				System.out.println("EXP: " + etr.getLabel());
-//			}
-//			for (Trans tr : global.getImmTransSet().values()) {
-//				ImmTrans etr = (ImmTrans) tr;
-////				System.out.println(etr.getLabel() + " weight:" + etr.getWeight(global));			
-//				System.out.println("IMM: " + etr.getLabel());			
-//			}
-//			for (Trans tr : global.getGenTransSet().values()) {
-//				GenTrans etr = (GenTrans) tr;
-//				System.out.println("GEN: " + etr.getLabel() + " policy:" + etr.getPolicy());
-//			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TokenMgrError ex) {
-			System.out.println("token error: " + ex.getMessage());
-		} catch (ParseException ex) {
-			System.out.println("parse error: " + ex.getMessage());			
-		} catch (ASTException e) {
-			System.out.println("Error");
-			e.printStackTrace();
-		}
-		global.setIndex();
-		return global;
+		return net;
 	}
 
 	public static void eval(Net global, String text) {
@@ -121,15 +63,6 @@ public class JSPetriNet {
 		}
 	}
 
-	public static String toViz(Net global, String startPlace) throws ASTException {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		PrintStream out = new PrintStream(bos);
-		out.println("digraph { layout=dot; overlap=false; splines=true; node [fontsize=10];");
-		global.getPlace(startPlace).accept(new jspetrinet.petri.VizPrint(out));
-		out.println("}");
-		return bos.toString();		
-	}
-	
 	public static Mark mark(Net net, Map<String,Integer> map) {
 		Mark m = new Mark(net.getNumOfPlace());
 		try {
@@ -234,17 +167,9 @@ public class JSPetriNet {
 		return res;
 	}
 	
-	public static void writeDotfile(Net net, String file, String placeLabel) {
-		try {
-			PrintStream out = new PrintStream(file);
-			out.println("digraph { layout=dot; overlap=false; splines=true; node [fontsize=10];");
-			net.getPlace(placeLabel).accept(new jspetrinet.petri.VizPrint(out));
-			out.println("}");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (ASTException e) {
-			e.printStackTrace();
-		}
+	public static void writeDotfile(Net net, PrintWriter bw) {
+		VizPrint vp = new VizPrint(net);
+		vp.toviz(bw);
 	}
 
 }
