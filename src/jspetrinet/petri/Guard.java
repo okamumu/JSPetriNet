@@ -1,13 +1,19 @@
 package jspetrinet.petri;
 
 import java.io.ByteArrayInputStream;
+import java.io.Serializable;
 
 import jspetrinet.ast.*;
 import jspetrinet.exception.ASTException;
 import jspetrinet.parser.*;
 
-public class Guard {
+public class Guard implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8127649463467917612L;
+
 	static public ASTree createGuard(Net global, String formula) throws ASTException {
 		JSPetriNetParser parser = new JSPetriNetParser(new ByteArrayInputStream(formula.getBytes()));
 		parser.setNet(global);

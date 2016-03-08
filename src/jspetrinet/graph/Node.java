@@ -5,6 +5,10 @@ import java.util.List;
 
 public class Node implements Component {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 508386811662413437L;
 	private final List<Arc> inarc;
 	private final List<Arc> outarc;
 

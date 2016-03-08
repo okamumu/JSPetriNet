@@ -7,6 +7,10 @@ import jspetrinet.graph.LabeledNode;
 
 abstract public class Trans extends LabeledNode {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8924675835076592109L;
 	private int index;
 	private ASTree guard;
 

@@ -1,13 +1,18 @@
 package jspetrinet.marking;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Set;
 
 import jspetrinet.exception.*;
 import jspetrinet.petri.*;
 
 public final class MarkingProcessBounded extends MarkingProcess {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -259220822809671118L;
 	private final int firingBound;
 	
 	public MarkingProcessBounded(int firingBound) {
@@ -16,21 +21,14 @@ public final class MarkingProcessBounded extends MarkingProcess {
 	}
 
 	@Override
-	protected void create(Stack<Mark> novisited, Net net) throws ASTException {
-		while (!novisited.empty()) {
-			Mark m = novisited.pop();
-			System.out.println(m.getFiring());
-			if (this.firingBound != 0 && m.getFiring() > this.firingBound) {
+	protected void create(LinkedList<Mark> novisited, Net net) throws ASTException {
+		while (!novisited.isEmpty()) {
+			Mark m = novisited.poll();
+			if (m.getFiring() > this.firingBound) {
 				continue;
 			}
 			net.setCurrentMark(m);
 			if (markSet.containsKey(m)) {
-				if (this.firingBound != 0 && markSet.get(m).getFiring() > m.getFiring()) {
-					System.out.println("!!");
-					markSet.get(m).setFiring(m.getFiring());
-					novisited.push(markSet.get(m));
-					markSet.remove(m);
-				}
 				continue;
 			}
 			markSet.put(m, m);
@@ -62,12 +60,9 @@ public final class MarkingProcessBounded extends MarkingProcess {
 					hasImmTrans = true;
 					Mark dest = PetriAnalysis.doFiring(net, tr);
 					if (arcSet.containsKey(dest)) {
-						if (dest.getFiring() < arcSet.get(dest).getFiring()) {
-							arcSet.get(dest).setFiring(dest.getFiring());
-						}
 						dest = arcSet.get(dest);
 					} else {
-						novisited.push(dest);
+						novisited.offer(dest);
 						arcSet.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
@@ -87,12 +82,9 @@ public final class MarkingProcessBounded extends MarkingProcess {
 				case ENABLE:
 					Mark dest = PetriAnalysis.doFiring(net, tr);
 					if (arcSet.containsKey(dest)) {
-						if (dest.getFiring() < arcSet.get(dest).getFiring()) {
-							arcSet.get(dest).setFiring(dest.getFiring());
-						}
 						dest = arcSet.get(dest);
 					} else {
-						novisited.push(dest);
+						novisited.offer(dest);
 						arcSet.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
@@ -106,12 +98,9 @@ public final class MarkingProcessBounded extends MarkingProcess {
 				case ENABLE:
 					Mark dest = PetriAnalysis.doFiring(net, tr);
 					if (arcSet.containsKey(dest)) {
-						if (dest.getFiring() < arcSet.get(dest).getFiring()) {
-							arcSet.get(dest).setFiring(dest.getFiring());
-						}
 						dest = arcSet.get(dest);
 					} else {
-						novisited.push(dest);
+						novisited.offer(dest);
 						arcSet.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);

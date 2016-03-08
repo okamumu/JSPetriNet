@@ -4,6 +4,10 @@ import jspetrinet.ast.ASTree;
 
 public final class ImmTrans extends Trans {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2310124733004675596L;
 	private ASTree weight;
 	
 	public ImmTrans(String label, ASTree weight) {

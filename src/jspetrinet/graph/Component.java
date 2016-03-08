@@ -1,6 +1,8 @@
 package jspetrinet.graph;
 
-abstract public interface Component {
+import java.io.Serializable;
+
+abstract public interface Component extends Serializable {
 	
 	abstract void accept(Visitor visitor);
 

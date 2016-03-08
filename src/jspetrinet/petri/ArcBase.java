@@ -8,6 +8,10 @@ import jspetrinet.graph.Arc;
 
 abstract public class ArcBase extends Arc {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8877599612739319271L;
 	private ASTree multi;
 	private ASTree firingFunc;
 	

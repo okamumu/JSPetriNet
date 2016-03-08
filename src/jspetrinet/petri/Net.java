@@ -18,6 +18,10 @@ import jspetrinet.graph.Component;
 
 public class Net extends ASTEnv {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4117385827010934380L;
 	private final String label;
 	private final Net outer;
 	private final Map<String,Net> child;
@@ -27,8 +31,6 @@ public class Net extends ASTEnv {
 	protected final Map<String,Trans> expTransSet;
 	protected final Map<String,Trans> genTransSet;
 
-//	protected final Map<Integer,Place> placeIndex;
-	
 	protected ASTree reward;
 	
 	public Net(String label) {
@@ -42,7 +44,6 @@ public class Net extends ASTEnv {
 		immTransSet = new HashMap<String,Trans>();
 		expTransSet = new HashMap<String,Trans>();
 		genTransSet = new HashMap<String,Trans>();
-//		placeIndex = new HashMap<Integer,Place>();
 		child = new HashMap<String,Net>();
 		if (outer != null) {
 			outer.setChild(label, this);

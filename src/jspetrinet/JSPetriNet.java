@@ -4,9 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -65,7 +69,7 @@ public class JSPetriNet {
 	}
 
 	public static Mark mark(Net net, Map<String,Integer> map) {
-		Mark m = new Mark(net.getNumOfPlace(), 0);
+		Mark m = new Mark(net.getNumOfPlace());
 		try {
 			for (Map.Entry<String, Integer> e : map.entrySet()) {
 				m.set(net.getPlace(e.getKey()).getIndex(), e.getValue());
@@ -85,7 +89,12 @@ public class JSPetriNet {
 	}
 
 	public static MarkingProcess marking(Net global, Mark m, int depth) {
-		MarkingProcess mp = new MarkingProcessBounded(depth);
+		MarkingProcess mp;
+		if (depth == 0) {
+			mp = new MarkingProcess();
+		} else {
+			mp = new MarkingProcessBounded(depth);
+		}
 		try {
 			System.out.print("Create marking...");
 			long start = System.nanoTime();
@@ -173,4 +182,15 @@ public class JSPetriNet {
 		vp.toviz(bw);
 	}
 
+	public static void writeMarkingProcess(Serializable mp) {
+		ObjectOutputStream oos;
+		try {
+			oos = new ObjectOutputStream(new FileOutputStream("test.obj"));
+			oos.writeObject(mp);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

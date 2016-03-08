@@ -1,12 +1,21 @@
 package jspetrinet.marking;
 
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 import jspetrinet.exception.*;
 import jspetrinet.petri.*;
 
-public class MarkingProcess {
+public class MarkingProcess implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4650765905602529452L;
+
+	protected Net net;
 
 	protected final Map<Mark,Mark> markSet;
 	protected final Map<Mark,Mark> arcSet;
@@ -171,7 +180,8 @@ public class MarkingProcess {
 //		return genGroup.get(gv);
 //	}
 
-	public final Mark create(Mark init, Net net) throws ASTException {
+	public Mark create(Mark init, Net net) throws ASTException {
+		this.net = net;
 		markSet.clear();
 		arcSet.clear();
 		arcSet.put(init, init);
@@ -183,14 +193,14 @@ public class MarkingProcess {
 		genGroup.clear();
 		genGroup.put(genv, new MarkGroup());
 
-		Stack<Mark> novisited = new Stack<Mark>();
+		LinkedList<Mark> novisited = new LinkedList<Mark>();
 		novisited.push(init);
 		create(novisited, net);
 		return init;
 	}
 	
-	protected void create(Stack<Mark> novisited, Net net) throws ASTException {
-		while (!novisited.empty()) {
+	protected void create(LinkedList<Mark> novisited, Net net) throws ASTException {
+		while (!novisited.isEmpty()) {
 			Mark m = novisited.pop();
 			net.setCurrentMark(m);
 			if (markSet.containsKey(m)) {

@@ -4,6 +4,11 @@ import jspetrinet.graph.LabeledNode;
 
 public class Place extends LabeledNode {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3638774403733132484L;
+
 	static public final int DefaultMax = 10;
 	
 	private int index;
