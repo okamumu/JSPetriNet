@@ -23,9 +23,10 @@ class Opts {
 	public static String MARKING="marking";
 	
 	// options
-	public static String INPETRI="i";
-	public static String OUTPETRI="o";
+	public static String INPETRI="spn";
+	public static String OUTPETRI="dot";
 	public static String INITMARK="imark";
+	public static String DEPTH="depth";
 }
 
 public class CommandLineMain {
@@ -92,6 +93,7 @@ public class CommandLineMain {
 		Options options = new Options();
 		options.addOption(Opts.INPETRI, true, "input Petrinet file");
 		options.addOption(Opts.INITMARK, true, "initial marking");
+		options.addOption(Opts.DEPTH, true, "depth for DFS");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
 		try {
@@ -116,6 +118,13 @@ public class CommandLineMain {
 		}
 		net.setIndex();
 
+		int depth;
+		if (cmd.hasOption(Opts.DEPTH)) {
+			depth = Integer.parseInt(cmd.getOptionValue(Opts.DEPTH));
+		} else {
+			depth = 0;
+		}
+
 		Mark imark;
 		if (cmd.hasOption(Opts.INITMARK)) {
 			imark = JSPetriNet.mark(net, parseMark(cmd.getOptionValue(Opts.INITMARK)));
@@ -125,7 +134,7 @@ public class CommandLineMain {
 			return;
 		}
 		
-		MarkingProcess mp = JSPetriNet.marking(net, imark);
+		MarkingProcess mp = JSPetriNet.marking(net, imark, depth);
 	}
 
 	public static void main(String[] args) throws ASTException {

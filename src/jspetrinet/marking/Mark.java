@@ -9,49 +9,31 @@ import jspetrinet.graph.Arc;
 public final class Mark extends jspetrinet.graph.Node {
 
 	private int index;
+	private int minfiring;
 	private final byte[] vec;
 	private MarkGroup markGroup;
 
-//	public Mark(Net net, Map<String,Integer> map) {
-//		super(map.toString());
-//		vec = new int[net.getNumOfPlace()];
-//		try {
-//			for (Map.Entry<String, Integer> e : map.entrySet()) {
-//				vec[net.getPlace(e.getKey()).getIndex()] = e.getValue();
-//			}
-//		} catch (ASTException e1) {
-//			e1.printStackTrace();
-//		}
-//		markGroup = null;
-//	}
-//
-//	public Mark(int[] vec) {
-//		super(Arrays.toString(vec));
-//		this.vec = Arrays.copyOf(vec, vec.length);
-//		markGroup = null;
-//	}
-
-//	public Mark(String label, int[] vec) {
-//		super(label);
-//		this.vec = Arrays.copyOf(vec, vec.length);
-//		markGroup = null;
-//	}
-
-	public Mark(int size) {
+	public Mark(int size, int firing) {
 		this.vec = new byte [size];
+		this.minfiring = firing;
 		markGroup = null;
 	}
 
 	public Mark(Mark m) {
 		this.vec = Arrays.copyOf(m.vec, m.vec.length);
+		this.minfiring = m.minfiring;
 		markGroup = null;
 	}
 
 	// getter
-//	public final int[] get() {
-//		return vec;
-//	}
-//
+	public final void setFiring(int k) {
+		this.minfiring = k;
+	}
+
+	public final int getFiring() {
+		return this.minfiring;
+	}
+
 	public final int get(int i) {
 		return vec[i];
 	}

@@ -32,7 +32,7 @@ public class testMain {
 //		int[] vec = global.toMarkVec(initmark);
 //		Mark m1 = new Mark(global.markToString(vec), vec);
 
-		MarkingProcess mp = JSPetriNet.marking(global, m1);
+		MarkingProcess mp = JSPetriNet.marking(global, m1, 0);
 		
 		String param = "Thr.rate = 100.0;"
 				+ "lambda_h = 5.0;"
@@ -452,7 +452,7 @@ public class testMain {
 		initmark.put("Pn", 10);
 		initmark.put("Pnormal", 1);
 		Mark m1 = JSPetriNet.mark(global, initmark);
-		MarkingProcess mp = JSPetriNet.marking(global, m1);
+		MarkingProcess mp = JSPetriNet.marking(global, m1, 0);
 	}
 		
 	public static void main(String[] args) throws ASTException {

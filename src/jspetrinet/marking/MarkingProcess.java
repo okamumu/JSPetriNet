@@ -1,28 +1,20 @@
 package jspetrinet.marking;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import jspetrinet.exception.*;
-import jspetrinet.petri.ExpTrans;
-import jspetrinet.petri.GenTrans;
-import jspetrinet.petri.ImmTrans;
-import jspetrinet.petri.Net;
-import jspetrinet.graph.*;
-import jspetrinet.petri.Trans;
+import jspetrinet.petri.*;
 
-public final class MarkingProcess {
+public class MarkingProcess {
 
-	private final Map<Mark,Mark> markSet;
-	private final Map<Mark,Mark> arcSet;
-	private final Map<Integer,Mark> index;
+	protected final Map<Mark,Mark> markSet;
+	protected final Map<Mark,Mark> arcSet;
+	protected final Map<Integer,Mark> index;
 
-	private int numOfGenTrans;
-	private final Map<GenVec,MarkGroup> genGroup;
-	private final Map<GenVec,MarkGroup> immGroup;
+	protected int numOfGenTrans;
+	protected final Map<GenVec,MarkGroup> genGroup;
+	protected final Map<GenVec,MarkGroup> immGroup;
 	
 	public MarkingProcess() {
 		markSet = new HashMap<Mark,Mark>();
@@ -186,7 +178,6 @@ public final class MarkingProcess {
 
 		numOfGenTrans = net.getNumOfGenTrans();
 		immGroup.clear();
-//		int[] v = new int [numOfGenTrans];
 		GenVec genv = new GenVec(numOfGenTrans);
 		immGroup.put(genv, new MarkGroup());
 		genGroup.clear();
@@ -198,7 +189,7 @@ public final class MarkingProcess {
 		return init;
 	}
 	
-	private final void create(Stack<Mark> novisited, Net net) throws ASTException {
+	protected void create(Stack<Mark> novisited, Net net) throws ASTException {
 		while (!novisited.empty()) {
 			Mark m = novisited.pop();
 			net.setCurrentMark(m);
@@ -208,7 +199,6 @@ public final class MarkingProcess {
 			markSet.put(m, m);
 
 			// make genvec
-//			int[] v = new int [numOfGenTrans];
 			GenVec genv = new GenVec(numOfGenTrans);
 			for (Trans tr : net.getGenTransSet().values()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
@@ -221,7 +211,6 @@ public final class MarkingProcess {
 				default:
 				}
 			}
-//			GenVec genv = new GenVec(net.genvecToString(v), v);
 			if (!immGroup.containsKey(genv)) {
 				immGroup.put(genv, new MarkGroup());
 			}

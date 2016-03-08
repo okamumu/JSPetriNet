@@ -83,6 +83,7 @@ public final class PetriAnalysis {
 				nextVec.set(place.getIndex(), place.getMax() + 1);
 			}
 		}
+		nextVec.setFiring(nextVec.getFiring() + 1);
 		return nextVec;
 	}
 }

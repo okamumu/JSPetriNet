@@ -16,6 +16,7 @@ import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkGroup;
 import jspetrinet.marking.MarkingProcess;
+import jspetrinet.marking.MarkingProcessBounded;
 import jspetrinet.parser.JSPetriNetParser;
 import jspetrinet.parser.ParseException;
 import jspetrinet.parser.TokenMgrError;
@@ -64,7 +65,7 @@ public class JSPetriNet {
 	}
 
 	public static Mark mark(Net net, Map<String,Integer> map) {
-		Mark m = new Mark(net.getNumOfPlace());
+		Mark m = new Mark(net.getNumOfPlace(), 0);
 		try {
 			for (Map.Entry<String, Integer> e : map.entrySet()) {
 				m.set(net.getPlace(e.getKey()).getIndex(), e.getValue());
@@ -83,8 +84,8 @@ public class JSPetriNet {
 		return gv;
 	}
 
-	public static MarkingProcess marking(Net global, Mark m) {
-		MarkingProcess mp = new MarkingProcess();
+	public static MarkingProcess marking(Net global, Mark m, int depth) {
+		MarkingProcess mp = new MarkingProcessBounded(depth);
 		try {
 			System.out.print("Create marking...");
 			long start = System.nanoTime();
