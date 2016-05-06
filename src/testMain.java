@@ -1,13 +1,14 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import jspetrinet.*;
-import jspetrinet.exception.*;
-import jspetrinet.marking.*;
-import jspetrinet.petri.*;
+import jspetrinet.JSPetriNet;
+import jspetrinet.exception.ASTException;
+import jspetrinet.marking.Mark;
+import jspetrinet.marking.MarkingProcess;
+import jspetrinet.petri.Net;
 
 public class testMain {
 	
@@ -437,8 +438,8 @@ public class testMain {
 	public static void prog11(Net global) throws ASTException {
 		PrintWriter bw;
 		try {
-			global = JSPetriNet.load("", null, new FileInputStream("raid6.spn"));
-			bw = new PrintWriter("petri1.dot");
+			global = JSPetriNet.load("", null, new FileInputStream("ex1.spn"));
+			bw = new PrintWriter("ex1.dot");
 			JSPetriNet.writeDotfile(global, bw);
 			bw.close();
 		} catch (FileNotFoundException e) {
@@ -449,8 +450,8 @@ public class testMain {
 		global.setIndex();
 
 		Map<String,Integer> initmark = new HashMap<String,Integer>();
-		initmark.put("Pn", 10);
-		initmark.put("Pnormal", 1);
+		initmark.put("p1", 1);
+		//initmark.put("Pnormal", 1);
 		Mark m1 = JSPetriNet.mark(global, initmark);
 		MarkingProcess mp = JSPetriNet.marking(global, m1, 0);
 	}

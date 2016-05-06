@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import jspetrinet.exception.*;
-import jspetrinet.petri.*;
+import jspetrinet.exception.ASTException;
+import jspetrinet.petri.Net;
+import jspetrinet.petri.Trans;
+import rnd.Sfmt;
 
 public class MarkingProcess implements Serializable {
 
@@ -200,7 +202,24 @@ public class MarkingProcess implements Serializable {
 	}
 	
 	protected void create(LinkedList<Mark> novisited, Net net) throws ASTException {
+		int count=1;
+		String[] pname = new String[net.getNumOfPlace()];
+		int n = 0;
+		for(String str : net.getPlaceSet().keySet()){
+			pname[n] = str;
+			n++;
+		}
+		double total = 0;
 		while (!novisited.isEmpty()) {
+			System.out.println("M"+count);
+			count++;
+			for(int i=0;i<net.getNumOfPlace();i++){
+				System.out.println(pname[i]+":"+novisited.get(0).get(i));
+			}
+			int[] init_key = {(int) System.currentTimeMillis(), (int) Runtime.getRuntime().freeMemory()};
+			Sfmt rnd = new Sfmt(init_key);
+			total += rnd.NextExp();
+			System.out.println(total);
 			Mark m = novisited.pop();
 			net.setCurrentMark(m);
 			if (markSet.containsKey(m)) {
