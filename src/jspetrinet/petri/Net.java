@@ -12,7 +12,10 @@ import java.util.Map.Entry;
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.ASTValue;
 import jspetrinet.ast.ASTree;
-import jspetrinet.exception.*;
+import jspetrinet.exception.ASTException;
+import jspetrinet.exception.AlreadyExistException;
+import jspetrinet.exception.NotFindObjectException;
+import jspetrinet.exception.TypeMismatch;
 import jspetrinet.graph.Arc;
 import jspetrinet.graph.Component;
 
@@ -246,7 +249,7 @@ public class Net extends ASTEnv {
 //			placeIndex.put(i, p);
 			i++;
 		}
-		
+
 		int j = 0;
 		for (Trans tr : genTransSet.values()) {
 			tr.setIndex(j);

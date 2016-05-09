@@ -1,14 +1,11 @@
 package jspetrinet;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -96,7 +93,7 @@ public class JSPetriNet {
 			mp = new MarkingProcessBounded(depth);
 		}
 		try {
-			System.out.print("Create marking...");
+			System.out.println("Create marking...");
 			long start = System.nanoTime();
 			mp.create(m, global);
 			System.out.println("done");
