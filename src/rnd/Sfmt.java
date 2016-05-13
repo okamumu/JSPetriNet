@@ -62,7 +62,7 @@ public class Sfmt
         period_certification();
     }
 
-    Sfmt(int s) { InitMt(s); }
+    public Sfmt(int s) { InitMt(s); }
 
     /* �z�� init_key �ɂ�鏉���� */
     /*synchronized*/ public void InitMtEx(int[]init_key) {

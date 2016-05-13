@@ -9,6 +9,7 @@ import jspetrinet.exception.ASTException;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingProcess;
 import jspetrinet.petri.Net;
+import jspetrinet.sim.MCSimulation;
 
 public class testMain {
 	
@@ -454,6 +455,9 @@ public class testMain {
 		//initmark.put("Pnormal", 1);
 		Mark m1 = JSPetriNet.mark(global, initmark);
 		MarkingProcess mp = JSPetriNet.marking(global, m1, 0);
+		
+		MCSimulation mcs = new MCSimulation();
+		mcs.mcSimulation(m1, global, 5, 300);
 	}
 		
 	public static void main(String[] args) throws ASTException {

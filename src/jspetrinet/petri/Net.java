@@ -146,6 +146,14 @@ public class Net extends ASTEnv {
 		return genTransSet.size();
 	}
 
+	public final int getNumOfImmTrans() {
+		return immTransSet.size();
+	}
+	
+	public final int getNumOfExpTrans() {
+		return expTransSet.size();
+	}
+	
 	public final int getNumOfPlace() {
 		return placeSet.size();
 	}

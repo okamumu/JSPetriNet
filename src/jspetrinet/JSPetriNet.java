@@ -93,7 +93,7 @@ public class JSPetriNet {
 			mp = new MarkingProcessBounded(depth);
 		}
 		try {
-			System.out.println("Create marking...");
+			System.out.print("Create marking...");
 			long start = System.nanoTime();
 			mp.create(m, global);
 			System.out.println("done");
