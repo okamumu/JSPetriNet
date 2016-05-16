@@ -19,6 +19,15 @@ import rnd.Sfmt;
 public class MCSimulation {
 	
 	protected Net net;
+	protected final ArrayList<String> eventMarking;
+	protected final ArrayList<Double> eventTime;
+	protected final Map<String, Mark> marking;//結果表示用に通ったマーキングを保存
+	
+	public MCSimulation() {
+		eventMarking = new ArrayList<String>();
+		eventTime = new ArrayList<Double>();
+		marking = new HashMap<String, Mark>();
+	}
 	
 	protected double exponentDelayTime(Trans tr, double x) throws ASTException {
 		Object lambda = ((ExpTrans)tr).getRate().eval(net);
@@ -82,7 +91,6 @@ public class MCSimulation {
 	
 	public void mcSimulation(Mark visited, Net net, double t, int seed) throws ASTException {
 		this.net = net;
-		Map<String, Mark> marking = new HashMap<String, Mark>();//結果表示用に通ったマーキングを保存
 		int count=1;
 		double total = 0;
 		Mark dest = visited;
@@ -90,9 +98,9 @@ public class MCSimulation {
 		//int[] init_key = {(int) System.currentTimeMillis(), (int) Runtime.getRuntime().freeMemory()};
 		Sfmt rnd = new Sfmt(seed);
 		
-		System.out.print(String.format("%.2f", total));
 		marking.put("M"+count, visited);
-		System.out.println(" : M"+count);
+		eventMarking.add("M"+count);
+		eventTime.add(total);
 		count++;
 		while (total<t) {
 			eTrans.clear();//発火可能トランジションを削除
@@ -156,22 +164,24 @@ public class MCSimulation {
 			//発火処理
 			dest = PetriAnalysis.doFiring(net, eTrans.get(0));
 			new MarkingArc(m, dest, eTrans.get(0));
-			System.out.print(String.format("%.2f", total));
+			eventTime.add(total);
 			if(!marking.containsValue(dest)){//発火先がmarkingになければ追加
 				marking.put("M"+count, dest);
-				System.out.println(" : M"+count);
+				eventMarking.add("M"+count);
 				count++;
 			}else{//発火先がmarkingにある場合、destと一致するvalueを持つkeyを探して表示
 				for(Iterator<String> i = marking.keySet().iterator(); i.hasNext();){
 					String k = i.next();
 					Mark v = marking.get(k);
 					if(dest.equals(v)){
-						System.out.println(" : "+k);
+						eventMarking.add(k);
 					}
 				}
 			}
 		}
-		
+		for(int i=0;i<eventMarking.size();i++){
+			System.out.println(String.format("%.2f", eventTime.get(i))+" : "+eventMarking.get(i));
+		}
 		for(Map.Entry<String, Mark> hoge : marking.entrySet()){
 			System.out.print(hoge.getKey() + ":");
 			for(int i=0;i<net.getNumOfPlace();i++){
@@ -179,5 +189,18 @@ public class MCSimulation {
 			}
 			System.out.println("");
 		}
+	}
+	
+	//getter
+	public final String geteventMarking(int index){
+		return eventMarking.get(index);
+	}
+	
+	public final double geteventTime(int index){
+		return eventTime.get(index);
+	}
+	
+	public final Mark getMarking(String label){
+		return marking.get(label);
 	}
 }
