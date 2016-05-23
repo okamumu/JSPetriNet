@@ -2,107 +2,44 @@ package jspetrinet.sim;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import jspetrinet.exception.ASTException;
-import jspetrinet.exception.TypeMismatch;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingArc;
 import jspetrinet.marking.PetriAnalysis;
-import jspetrinet.petri.ExpTrans;
-import jspetrinet.petri.ImmTrans;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.Trans;
 import rnd.Sfmt;
+import rnd.TimeCalc;
 
 public class MCSimulation {
 	
 	protected Net net;
-	protected final ArrayList<String> eventMarking;
+	protected final ArrayList<Mark> eventMarking;
 	protected final ArrayList<Double> eventTime;
-	protected final Map<String, Mark> marking;//結果表示用に通ったマーキングを保存
+	protected final Map<Mark, Mark> marking;//結果表示用に通ったマーキングを保存
 	
 	public MCSimulation() {
-		eventMarking = new ArrayList<String>();
+		eventMarking = new ArrayList<Mark>();
 		eventTime = new ArrayList<Double>();
-		marking = new HashMap<String, Mark>();
-	}
-	
-	protected double exponentDelayTime(Trans tr, double x) throws ASTException {
-		Object lambda = ((ExpTrans)tr).getRate().eval(net);
-		if (lambda instanceof Integer) {
-			return ((Integer)lambda * Math.exp(-(Integer)lambda * x));
-		}else if (lambda instanceof Double) {
-			return ((Double)lambda * Math.exp(-(Double)lambda * x));
-		}else {
-			throw new TypeMismatch();
-		}
-	}
-	
-	protected double generalDelayTime(Trans tr, double x) throws ASTException {
-		Object lambda = ((ExpTrans)tr).getRate().eval(net);
-		if (lambda instanceof Integer) {
-			return ((Integer)lambda * Math.exp(-(Integer)lambda * x));
-		}else if (lambda instanceof Double) {
-			return ((Double)lambda * Math.exp(-(Double)lambda * x));
-		}else {
-			throw new TypeMismatch();
-		}
-	}
-	
-	//渡された即時トランジションのリストからweightを用いてIndexを得る
-	protected int getRandomIndex(ArrayList<Trans> etr, int seed) throws ASTException{
-		double totalWeight = 0;
-		for(Trans tr : etr){
-			Object weight = ((ImmTrans)tr).getWeight().eval(net);
-			if (weight instanceof Integer) {
-				totalWeight += (Integer)((ImmTrans)tr).getWeight().eval(net);
-			}else if (weight instanceof Double) {
-				totalWeight += (Double)((ImmTrans)tr).getWeight().eval(net);
-			}else {
-				throw new TypeMismatch();
-			}
-		}
-		
-		Sfmt rnd = new Sfmt(seed);
-		double value = rnd.NextUnif()*totalWeight;
-		int retIndex = -1;
-		for(int i=0;i<etr.size();i++){
-			Object weight = ((ImmTrans)etr.get(i)).getWeight().eval(net);
-			if (weight instanceof Integer) {
-				if((Integer)((ImmTrans)etr.get(i)).getWeight().eval(net) >= value){
-					retIndex = i;
-					break;
-				}
-				value -= (Integer)((ImmTrans)etr.get(i)).getWeight().eval(net);
-			}else if (weight instanceof Double) {
-				if((Double)((ImmTrans)etr.get(i)).getWeight().eval(net) >= value){
-					retIndex = i;
-					break;
-				}
-				value -= (Double)((ImmTrans)etr.get(i)).getWeight().eval(net);
-			}else {
-				throw new TypeMismatch();
-			}
-		}
-		return retIndex;
+		marking = new HashMap<Mark, Mark>();
 	}
 	
 	public void mcSimulation(Mark visited, Net net, double t, int seed) throws ASTException {
 		this.net = net;
-		int count=1;
+		TimeCalc tCalc = new TimeCalc(net);
 		double total = 0;
 		Mark dest = visited;
 		ArrayList<Trans> eTrans = new ArrayList<Trans>();//発火可能なトランジションのリスト
+		ArrayList<Trans> gTrans = new ArrayList<Trans>();//発火可能な一般トランジションのリスト
 		//int[] init_key = {(int) System.currentTimeMillis(), (int) Runtime.getRuntime().freeMemory()};
 		Sfmt rnd = new Sfmt(seed);
 		
-		marking.put("M"+count, visited);
-		eventMarking.add("M"+count);
+		marking.put(visited, visited);
+		eventMarking.add(visited);
 		eventTime.add(total);
-		count++;
-		while (total<t) {
+		while (true) {
 			eTrans.clear();//発火可能トランジションを削除
 			
 			Mark m = dest;
@@ -118,25 +55,28 @@ public class MCSimulation {
 				default:
 				}
 			}
-			
+			int selectGen = -1;
 			if(hasImmTrans){
 				//重み付きランダムで選択されたトランジションをリストの先頭へ
-				int index = getRandomIndex(eTrans, rnd.NextInt(seed));
+				int index = tCalc.Multinomial(tCalc.getImmTransWeigth(eTrans, net), rnd);
+				//int index = getRandomIndex(eTrans, rnd.NextInt(seed));
 				eTrans.set(0, eTrans.get(index));
 			}else{
+				boolean hasExpTrans = false;
 				//発火可能なトランジションを格納
-				for (Trans tr : net.getGenTransSet().values()) {
-					switch (PetriAnalysis.isEnable(net, tr)) {
-					case ENABLE:
-						eTrans.add(tr);
-						break;
-					default:
-					}
-				}
 				for (Trans tr : net.getExpTransSet().values()) {
 					switch (PetriAnalysis.isEnable(net, tr)) {
 					case ENABLE:
 						eTrans.add(tr);
+						hasExpTrans = true;
+						break;
+					default:
+					}
+				}
+				for (Trans tr : net.getGenTransSet().values()) {
+					switch (PetriAnalysis.isEnable(net, tr)) {
+					case ENABLE:
+						gTrans.add(tr);
 						break;
 					default:
 					}
@@ -144,10 +84,15 @@ public class MCSimulation {
 				
 				//最少の発火遅延時間とそれを持つトランジションを決める
 				//一般発火トランジションをリストに含む場合に修正する
-				double mindt = exponentDelayTime(eTrans.get(0), rnd.NextUnif());
+				double mindt;
+				if(hasExpTrans){
+					mindt = tCalc.nextExp(eTrans.get(0), net, rnd);
+				}else{
+					mindt = tCalc.nextCertain(gTrans.get(0), net);
+				}
 				if(eTrans.size()!=1){
 					for(int i=1;i<eTrans.size();i++){
-						double dt = exponentDelayTime(eTrans.get(i), rnd.NextUnif());
+						double dt = tCalc.nextExp(eTrans.get(i), net, rnd);
 						if(dt < mindt){
 							mindt = dt;
 							eTrans.remove(i-1);
@@ -158,49 +103,68 @@ public class MCSimulation {
 						}
 					}
 				}
+				for(int i=0;i<gTrans.size();i++){
+					double dt = tCalc.nextCertain(gTrans.get(i), net);
+					if(dt < mindt){
+						mindt = dt;
+						selectGen = i;
+					}
+				}
+				//一定分布のレジューム再セット
+				for(int i=0;i<gTrans.size();i++){
+					if(tCalc.resumeTime.containsKey(gTrans.get(i))&&selectGen!=i){
+						tCalc.resumeTime.put(gTrans.get(i), tCalc.resumeTime.get(gTrans.get(i))-mindt);
+					}
+				}
 				total += mindt;
 			}
-
+			if(total>t){
+				break;
+			}
 			//発火処理
-			dest = PetriAnalysis.doFiring(net, eTrans.get(0));
+			if(selectGen==-1){
+				dest = PetriAnalysis.doFiring(net, eTrans.get(0));
+			}else{
+				dest = PetriAnalysis.doFiring(net, gTrans.get(selectGen));
+			}
 			new MarkingArc(m, dest, eTrans.get(0));
 			eventTime.add(total);
 			if(!marking.containsValue(dest)){//発火先がmarkingになければ追加
-				marking.put("M"+count, dest);
-				eventMarking.add("M"+count);
-				count++;
-			}else{//発火先がmarkingにある場合、destと一致するvalueを持つkeyを探して表示
-				for(Iterator<String> i = marking.keySet().iterator(); i.hasNext();){
-					String k = i.next();
-					Mark v = marking.get(k);
-					if(dest.equals(v)){
-						eventMarking.add(k);
-					}
-				}
+				marking.put(dest, dest);
+				eventMarking.add(dest);
+			}else{//発火先がmarkingにある場合、
+				eventMarking.add(dest);
 			}
 		}
+		resultEvent();
+		resultMarking();
+	}
+	
+	public void resultEvent(){
 		for(int i=0;i<eventMarking.size();i++){
-			System.out.println(String.format("%.2f", eventTime.get(i))+" : "+eventMarking.get(i));
+			System.out.print(String.format("%.2f", eventTime.get(i))+" : ");
+			for(int j=0;j<net.getNumOfPlace();j++){
+				System.out.print(eventMarking.get(i).get(j));
+			}
+			System.out.println("");
 		}
-		for(Map.Entry<String, Mark> hoge : marking.entrySet()){
-			System.out.print(hoge.getKey() + ":");
+	}
+	
+	public void resultMarking(){
+		for(Mark mark : marking.keySet()){
 			for(int i=0;i<net.getNumOfPlace();i++){
-				System.out.print(hoge.getValue().get(i));
+				System.out.print(mark.get(i));
 			}
 			System.out.println("");
 		}
 	}
 	
 	//getter
-	public final String geteventMarking(int index){
+	public final Mark geteventMarking(int index){
 		return eventMarking.get(index);
 	}
 	
 	public final double geteventTime(int index){
 		return eventTime.get(index);
-	}
-	
-	public final Mark getMarking(String label){
-		return marking.get(label);
 	}
 }

@@ -457,7 +457,7 @@ public class testMain {
 		MarkingProcess mp = JSPetriNet.marking(global, m1, 0);
 		
 		MCSimulation mcs = new MCSimulation();
-		mcs.mcSimulation(m1, global, 5, 300);
+		mcs.mcSimulation(m1, global, 30, 300);
 	}
 		
 	public static void main(String[] args) throws ASTException {
