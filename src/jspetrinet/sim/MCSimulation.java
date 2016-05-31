@@ -8,9 +8,9 @@ import jspetrinet.exception.ASTException;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingArc;
 import jspetrinet.marking.PetriAnalysis;
+import jspetrinet.petri.GenTrans;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.Trans;
-import rnd.Sfmt;
 import rnd.TimeCalc;
 
 public class MCSimulation {
@@ -19,22 +19,46 @@ public class MCSimulation {
 	protected final ArrayList<Mark> eventMarking;
 	protected final ArrayList<Double> eventTime;
 	protected final Map<Mark, Mark> marking;//結果表示用に通ったマーキングを保存
+	protected Map<Trans, Double> remaingTime;//一般発火トランジションの残り時間
 	
-	public MCSimulation() {
+	public MCSimulation(Net net) throws ASTException {
 		eventMarking = new ArrayList<Mark>();
 		eventTime = new ArrayList<Double>();
 		marking = new HashMap<Mark, Mark>();
+		remaingTime = new HashMap<Trans, Double>();
+		remaingTimeGenTrans(net);
+	}
+
+	private void remaingTimeGenTrans(Net net) throws ASTException{
+		for (Trans tr : net.getGenTransSet().values()) {
+			double t = new TimeCalc(net, 0).convertObject(((GenTrans)tr).getDist().eval(net));
+			remaingTime.put(tr, t);
+		}
+	}
+	
+	private void resetRemaingTime(Trans selTrans,double elapsedTime) throws ASTException{
+		for (Trans tr : net.getGenTransSet().values()) {
+			switch (PetriAnalysis.isEnable(net, tr)) {
+			case ENABLE:
+				if(tr.equals(selTrans)){//発火したトランジションの残り時間を初期化
+					double t = new TimeCalc(net, 0).convertObject(((GenTrans)tr).getDist().eval(net));
+					remaingTime.put(tr, t);
+				}else{//発火可能だったものの発火しなかったトランジションは残り時間を更新
+					remaingTime.put(tr, remaingTime.get(tr)-elapsedTime);
+				}
+				break;
+			default:
+			}
+		}
 	}
 	
 	public void mcSimulation(Mark visited, Net net, double t, int seed) throws ASTException {
 		this.net = net;
-		TimeCalc tCalc = new TimeCalc(net);
+		TimeCalc tCalc = new TimeCalc(net, seed);
 		double total = 0;
 		Mark dest = visited;
-		ArrayList<Trans> eTrans = new ArrayList<Trans>();//発火可能なトランジションのリスト
-		ArrayList<Trans> gTrans = new ArrayList<Trans>();//発火可能な一般トランジションのリスト
+		ArrayList<Trans> eTrans = new ArrayList<Trans>();//発火可能な即時トランジションのリスト
 		//int[] init_key = {(int) System.currentTimeMillis(), (int) Runtime.getRuntime().freeMemory()};
-		Sfmt rnd = new Sfmt(seed);
 		
 		marking.put(visited, visited);
 		eventMarking.add(visited);
@@ -55,20 +79,21 @@ public class MCSimulation {
 				default:
 				}
 			}
-			int selectGen = -1;
+			Trans selTrans = null;
 			if(hasImmTrans){
 				//重み付きランダムで選択されたトランジションをリストの先頭へ
-				int index = tCalc.Multinomial(tCalc.getImmTransWeigth(eTrans, net), rnd);
-				//int index = getRandomIndex(eTrans, rnd.NextInt(seed));
-				eTrans.set(0, eTrans.get(index));
+				int index = tCalc.nextMultinomial(tCalc.getImmTransWeigth(eTrans, net));
+				selTrans = eTrans.get(index);
 			}else{
-				boolean hasExpTrans = false;
-				//発火可能なトランジションを格納
+				double mindt = Double.POSITIVE_INFINITY;
 				for (Trans tr : net.getExpTransSet().values()) {
 					switch (PetriAnalysis.isEnable(net, tr)) {
 					case ENABLE:
-						eTrans.add(tr);
-						hasExpTrans = true;
+						double dt = tCalc.nextExpTrans(tr, net);
+						if(dt < mindt){
+							mindt = dt;
+							selTrans = tr;
+						}
 						break;
 					default:
 					}
@@ -76,58 +101,25 @@ public class MCSimulation {
 				for (Trans tr : net.getGenTransSet().values()) {
 					switch (PetriAnalysis.isEnable(net, tr)) {
 					case ENABLE:
-						gTrans.add(tr);
+						double dt = tCalc.nextConstTrans(remaingTime.get(tr));
+						if(dt < mindt){
+							mindt = dt;
+							selTrans = tr;
+						}
 						break;
 					default:
 					}
 				}
-				
-				//最少の発火遅延時間とそれを持つトランジションを決める
-				//一般発火トランジションをリストに含む場合に修正する
-				double mindt;
-				if(hasExpTrans){
-					mindt = tCalc.nextExp(eTrans.get(0), net, rnd);
-				}else{
-					mindt = tCalc.nextCertain(gTrans.get(0), net);
-				}
-				if(eTrans.size()!=1){
-					for(int i=1;i<eTrans.size();i++){
-						double dt = tCalc.nextExp(eTrans.get(i), net, rnd);
-						if(dt < mindt){
-							mindt = dt;
-							eTrans.remove(i-1);
-							i--;
-						}else{
-							eTrans.remove(i);
-							i--;
-						}
-					}
-				}
-				for(int i=0;i<gTrans.size();i++){
-					double dt = tCalc.nextCertain(gTrans.get(i), net);
-					if(dt < mindt){
-						mindt = dt;
-						selectGen = i;
-					}
-				}
-				//一定分布のレジューム再セット
-				for(int i=0;i<gTrans.size();i++){
-					if(tCalc.resumeTime.containsKey(gTrans.get(i))&&selectGen!=i){
-						tCalc.resumeTime.put(gTrans.get(i), tCalc.resumeTime.get(gTrans.get(i))-mindt);
-					}
-				}
+				//一般発火トランジションの残り時間再セット
+				resetRemaingTime(selTrans, mindt);
 				total += mindt;
 			}
 			if(total>t){
 				break;
 			}
-			//発火処理
-			if(selectGen==-1){
-				dest = PetriAnalysis.doFiring(net, eTrans.get(0));
-			}else{
-				dest = PetriAnalysis.doFiring(net, gTrans.get(selectGen));
-			}
-			new MarkingArc(m, dest, eTrans.get(0));
+			//発火処理			
+			dest = PetriAnalysis.doFiring(net, selTrans);
+			new MarkingArc(m, dest, selTrans);
 			eventTime.add(total);
 			if(!marking.containsValue(dest)){//発火先がmarkingになければ追加
 				marking.put(dest, dest);

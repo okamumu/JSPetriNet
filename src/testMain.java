@@ -456,7 +456,7 @@ public class testMain {
 		Mark m1 = JSPetriNet.mark(global, initmark);
 		MarkingProcess mp = JSPetriNet.marking(global, m1, 0);
 		
-		MCSimulation mcs = new MCSimulation();
+		MCSimulation mcs = new MCSimulation(global);
 		mcs.mcSimulation(m1, global, 30, 300);
 	}
 		
