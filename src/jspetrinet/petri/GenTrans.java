@@ -2,7 +2,7 @@ package jspetrinet.petri;
 
 import jspetrinet.ast.ASTree;
 
-public final class GenTrans extends Trans {
+public class GenTrans extends Trans {
 
 	/**
 	 * 
@@ -20,6 +20,11 @@ public final class GenTrans extends Trans {
 		this.policy = policy;
 	}
 	
+	public GenTrans(String label, GenTransPolicy policy) {
+		super(label);
+		this.policy = policy;
+	}
+
 	// getter
 	public final ASTree getDist() {
 		return dist;

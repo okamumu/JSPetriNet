@@ -36,7 +36,8 @@ TOKEN: {
 	| <EXPTRANS: "exp">
 	| <IMMTRANS: "imm">
 	| <GENTRANS: "gen">
-	| <UNIFTRANS: "unif">
+	| <GENCONSTTRANS: "gen.const">
+	| <GENUNIFTRANS: "gen.unif">
 	| <ARC: "arc">
 	| <IARC: "iarc">
 	| <OARC: "oarc">
@@ -254,12 +255,12 @@ void UniformTransDeclaration() throws ASTException: {
 } {
 	<GENTRANS> token = <IDENTIFIER> {
 		current.createGenTrans(token.image,
-		new ASTValue(token.image), UnifTrans.DefaultPolicy);
+		new ASTValue(token.image), SimGenUnifTrans.DefaultPolicy);
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
 			ASTree value = pval.getValue();
-			UnifTrans tr = (UnifTrans) current.getTrans(token.image);
+			SimGenUnifTrans tr = (SimGenUnifTrans) current.getTrans(token.image);
 			if (label.equals("lower")) {
 				tr.setLower(value);
 			} else if (label.equals("upper")) {

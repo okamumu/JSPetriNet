@@ -9,9 +9,9 @@ import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingArc;
 import jspetrinet.marking.PetriAnalysis;
 import jspetrinet.petri.GenTrans;
+import jspetrinet.petri.ImmTrans;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.Trans;
-import rnd.TimeCalc;
 
 public class MCSimulation {
 	
@@ -19,32 +19,26 @@ public class MCSimulation {
 	protected final ArrayList<Mark> eventMarking;
 	protected final ArrayList<Double> eventTime;
 	protected final Map<Mark, Mark> marking;//結果表示用に通ったマーキングを保存
-	protected Map<Trans, Double> remaingTime;//一般発火トランジションの残り時間
+	protected final Map<Trans, Double> remainingTime;//一般発火トランジションの残り時間
 	
 	public MCSimulation(Net net) throws ASTException {
 		eventMarking = new ArrayList<Mark>();
 		eventTime = new ArrayList<Double>();
 		marking = new HashMap<Mark, Mark>();
-		remaingTime = new HashMap<Trans, Double>();
-		remaingTimeGenTrans(net);
-	}
-
-	private void remaingTimeGenTrans(Net net) throws ASTException{
+		remainingTime = new HashMap<Trans, Double>();
 		for (Trans tr : net.getGenTransSet().values()) {
-			double t = new TimeCalc(net, 0).convertObject(((GenTrans)tr).getDist().eval(net));
-			remaingTime.put(tr, t);
+			remainingTime.put(tr, 0.0);
 		}
 	}
 	
-	private void resetRemaingTime(Trans selTrans,double elapsedTime) throws ASTException{
+	private void updateRemainingTime(Trans selTrans,double elapsedTime) throws ASTException{
 		for (Trans tr : net.getGenTransSet().values()) {
 			switch (PetriAnalysis.isEnable(net, tr)) {
 			case ENABLE:
-				if(tr.equals(selTrans)){//発火したトランジションの残り時間を初期化
-					double t = new TimeCalc(net, 0).convertObject(((GenTrans)tr).getDist().eval(net));
-					remaingTime.put(tr, t);
+				if(tr.equals(selTrans)){//発火したことがわかるよう残り時間を0に
+					remainingTime.put(tr, 0.0);
 				}else{//発火可能だったものの発火しなかったトランジションは残り時間を更新
-					remaingTime.put(tr, remaingTime.get(tr)-elapsedTime);
+					remainingTime.put(tr, remainingTime.get(tr)-elapsedTime);
 				}
 				break;
 			default:
@@ -57,35 +51,63 @@ public class MCSimulation {
 		TimeCalc tCalc = new TimeCalc(net, seed);
 		double total = 0;
 		Mark dest = visited;
-		ArrayList<Trans> eTrans = new ArrayList<Trans>();//発火可能な即時トランジションのリスト
 		//int[] init_key = {(int) System.currentTimeMillis(), (int) Runtime.getRuntime().freeMemory()};
 		
 		marking.put(visited, visited);
 		eventMarking.add(visited);
 		eventTime.add(total);
-		while (true) {
-			eTrans.clear();//発火可能トランジションを削除
-			
+		while (true) {			
 			Mark m = dest;
 			net.setCurrentMark(m);
 			
-			boolean hasImmTrans = false;
-			for (Trans tr : net.getImmTransSet().values()) {
-				switch (PetriAnalysis.isEnable(net, tr)) {
+			
+			for (Trans tr : net.getGenTransSet().values()) {
+				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:
-					hasImmTrans = true;
-					eTrans.add(tr);
+					if(remainingTime.get(tr)==0){//残り時間0とは前回がDISABLE,もしくは発火したことを示すので残り時間を初期化
+						remainingTime.put(tr, tCalc.convertObject(((GenTrans)tr).getDist().eval(net)));
+					}//それ以外は残り時間継続
+					break;
+				case PREEMPTION:
+					//ガードがあり、PolicyがPRSのため残り時間は減らない
+					break;
+				case DISABLE:
+					remainingTime.put(tr, 0.0);
 					break;
 				default:
 				}
 			}
 			Trans selTrans = null;
-			if(hasImmTrans){
-				//重み付きランダムで選択されたトランジションをリストの先頭へ
-				int index = tCalc.nextMultinomial(tCalc.getImmTransWeigth(eTrans, net));
-				selTrans = eTrans.get(index);
-			}else{
+			boolean hasImmTrans = false;
+			double totalWeight = 0;
+			double weight = 0;
+			for (Trans tr : net.getImmTransSet().values()) {
+				switch (PetriAnalysis.isEnable(net, tr)) {
+				case ENABLE:
+					weight = tCalc.convertObject(((ImmTrans)tr).getWeight().eval(net));
+					if(tCalc.nextMultinomial(weight, totalWeight)){
+						selTrans = tr;
+					}
+					totalWeight += weight;
+					hasImmTrans = true;
+					break;
+				default:
+				}
+			}
+			if(!hasImmTrans){
 				double mindt = Double.POSITIVE_INFINITY;
+				for (Trans tr : net.getGenTransSet().values()) {
+					switch (PetriAnalysis.isEnable(net, tr)) {
+					case ENABLE:
+						double dt = tCalc.nextConstTrans(tr, net);
+						if(dt < mindt){
+							mindt = dt;
+							selTrans = tr;
+						}
+						break;
+					default:
+					}
+				}
 				for (Trans tr : net.getExpTransSet().values()) {
 					switch (PetriAnalysis.isEnable(net, tr)) {
 					case ENABLE:
@@ -98,20 +120,8 @@ public class MCSimulation {
 					default:
 					}
 				}
-				for (Trans tr : net.getGenTransSet().values()) {
-					switch (PetriAnalysis.isEnable(net, tr)) {
-					case ENABLE:
-						double dt = tCalc.nextConstTrans(remaingTime.get(tr));
-						if(dt < mindt){
-							mindt = dt;
-							selTrans = tr;
-						}
-						break;
-					default:
-					}
-				}
 				//一般発火トランジションの残り時間再セット
-				resetRemaingTime(selTrans, mindt);
+				updateRemainingTime(selTrans, mindt);
 				total += mindt;
 			}
 			if(total>t){

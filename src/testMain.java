@@ -10,6 +10,7 @@ import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingProcess;
 import jspetrinet.petri.Net;
 import jspetrinet.sim.MCSimulation;
+import jspetrinet.sim.SimNet;
 
 public class testMain {
 	
@@ -456,8 +457,11 @@ public class testMain {
 		Mark m1 = JSPetriNet.mark(global, initmark);
 		MarkingProcess mp = JSPetriNet.marking(global, m1, 0);
 		
-		MCSimulation mcs = new MCSimulation(global);
-		mcs.mcSimulation(m1, global, 30, 300);
+		Net simGlobal = new SimNet(null, "global");
+		simGlobal = global;
+		
+		MCSimulation mcs = new MCSimulation(simGlobal);
+		mcs.mcSimulation(m1, simGlobal, 30, 300);
 	}
 		
 	public static void main(String[] args) throws ASTException {

@@ -1,4 +1,4 @@
-package rnd;
+package jspetrinet.sim;
 
 import java.util.ArrayList;
 
@@ -8,8 +8,7 @@ import jspetrinet.petri.ExpTrans;
 import jspetrinet.petri.ImmTrans;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.Trans;
-import jspetrinet.petri.UnifTrans;
-import jspetrinet.sim.Calculate;
+import rnd.Sfmt;
 
 public class TimeCalc implements Calculate{
 
@@ -39,7 +38,7 @@ public class TimeCalc implements Calculate{
 		return weight;
 	}
 	
-	@Override
+	/*@Override
 	public int nextMultinomial(double[] weight) throws ASTException {
 		double totalWeight = 0;
 		for(int i=0; i<weight.length;i++){
@@ -56,6 +55,16 @@ public class TimeCalc implements Calculate{
 			value -= weight[i];
 		}
 		return retIndex;
+	}*/
+	
+	@Override
+	public boolean nextMultinomial(double w1, double w2){
+		double value = nextUnif() * (w1 + w2);
+		if(w1>=value){
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	@Override
@@ -65,14 +74,21 @@ public class TimeCalc implements Calculate{
 	}
 	
 	@Override
-	public double nextConstTrans(double time) throws ASTException{
-		return time;
-	}
-	
-	@Override
 	public double nextGenTrans(Trans tr, Net net) throws ASTException {
 		// TODO 自動生成されたメソッド・スタブ
 		return 0;
+	}
+	
+	@Override
+	public double nextConstTrans(Trans tr, Net net) throws ASTException{
+		return convertObject(((SimGenConstTrans)tr).getConstant().eval(net));
+	}
+
+	@Override
+	public double nextUnifTrans(Trans tr, Net net) throws ASTException {
+		double upper = convertObject(((SimGenUnifTrans)tr).getUpper().eval(net));
+		double lower = convertObject(((SimGenUnifTrans)tr).getLower().eval(net));
+		return rnd.NextUnif()%(upper - lower + 1) + upper;
 	}
 
 	@Override
@@ -83,12 +99,5 @@ public class TimeCalc implements Calculate{
 	@Override
 	public double nextExp() {
 		return rnd.NextExp();
-	}
-
-	@Override
-	public double nextUnifTrans(Trans tr, Net net) throws ASTException {
-		double upper = convertObject(((UnifTrans)tr).getUpper().eval(net));
-		double lower = convertObject(((UnifTrans)tr).getLower().eval(net));
-		return rnd.NextUnif()%(upper - lower + 1) + upper;
 	}
 }

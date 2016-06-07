@@ -9,7 +9,7 @@ public interface Calculate {
 	abstract double nextExp();
 	abstract double nextExpTrans(Trans tr, Net net) throws ASTException;
 	abstract double nextGenTrans(Trans tr, Net net) throws ASTException;
-	abstract double nextConstTrans(double time) throws ASTException;
+	abstract double nextConstTrans(Trans tr, Net net) throws ASTException;
 	abstract double nextUnifTrans(Trans tr, Net net) throws ASTException;
-	abstract int nextMultinomial(double[] weight) throws ASTException;
+	abstract boolean nextMultinomial(double w1, double w2) throws ASTException;
 }
