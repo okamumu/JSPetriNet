@@ -7,6 +7,7 @@ package jspetrinet.parser;
 import jspetrinet.ast.*;
 import jspetrinet.exception.*;
 import jspetrinet.petri.*;
+import jspetrinet.sim.*;
 public class JSPetriNetParser {
 	private Net current;
 	private Net global;
@@ -104,6 +105,8 @@ void Declaration() throws ASTException: {} {
 	| ExpTransDeclaration()
 	| ImmTransDeclaration()
 	| GenTransDeclaration()
+	| GenConstTransDeclaration()
+	| GenUnifTransDeclaration()
 	| ArcDeclaration()
 	| IArcDeclaration()
 	| OArcDeclaration()
@@ -249,13 +252,51 @@ void GenTransDeclaration() throws ASTException: {
 	")")?
 }
 
-void UniformTransDeclaration() throws ASTException: {
+void GenConstTransDeclaration() throws ASTException: {
 	Token token;
 	PairValueList optlist;
 } {
-	<GENTRANS> token = <IDENTIFIER> {
-		current.createGenTrans(token.image,
-		new ASTValue(token.image), SimGenUnifTrans.DefaultPolicy);
+	<GENCONSTTRANS> token = <IDENTIFIER> {
+		current.createSimGenConstTrans(token.image,
+		new ASTValue(token.image), SimGenConstTrans.DefaultPolicy);
+	} ("(" optlist = OptionList() {
+		for (PairValue pval : optlist.getList()) {
+			String label = pval.getLabel();
+			ASTree value = pval.getValue();
+			SimGenConstTrans tr = (SimGenConstTrans) current.getTrans(token.image);
+			if (label.equals("value")) {
+				tr.setConst(value);
+			} else if (label.equals("policy")) {
+				Object v = value.eval(current);
+				if (v instanceof Integer) {
+					int pol = ((Integer) v).intValue();
+					if (pol == 0) {
+						tr.setPolicy(GenTransPolicy.PRD);
+					} else if (pol == 1) {
+						tr.setPolicy(GenTransPolicy.PRS);
+					} else {
+						throw new UnknownOption();
+					}
+				} else {
+					throw new UnknownOption();
+				}
+			} else if (label.equals("guard")) {
+				tr.setGuard(value);
+			} else {
+				throw new UnknownOption();
+			}
+		}
+	}
+	")")?
+}
+
+void GenUnifTransDeclaration() throws ASTException: {
+	Token token;
+	PairValueList optlist;
+} {
+	<GENUNIFTRANS> token = <IDENTIFIER> {
+		current.createSimGenUnifTrans(token.image,
+		new ASTValue(token.image), new ASTValue(token.image), SimGenUnifTrans.DefaultPolicy);
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();

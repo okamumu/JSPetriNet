@@ -1,8 +1,8 @@
 package jspetrinet.sim;
 
+import jspetrinet.exception.ASTException;
 import jspetrinet.petri.Net;
-import jspetrinet.petri.Trans;
 
 public interface SimTimedCalc {
-	double nextTime(Trans tr, Net net);
+	double nextTime(Net net, Random rnd) throws ASTException;
 }

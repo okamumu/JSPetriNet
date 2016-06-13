@@ -1,0 +1,42 @@
+// 
+
+place p1
+place p2
+place p3
+place p4
+place p5
+
+//exp t1 (rate = lambda1)
+//exp t2 (rate = lambda2)
+//exp t3 (rate = lambda3)
+//exp t4 (rate = lambda4)
+//exp t5 (rate = lambda5)
+
+exp t1 (rate = 1.5)
+exp t2 (rate = 0.9)
+exp t3 (rate = 0.5)
+exp t4 (rate = 1.2)
+gen.unif t5 (lower=0, upper=1)
+//exp t5 (rate = 1)
+//gen.const t5 (value=1)
+
+//t5.rate = 1.7
+
+//imm t1
+//gen t5 (dist = 1)
+
+//gen.unif t9 (lower=0, upper=1)
+
+arc p1 to t1
+arc t1 to p2
+arc t1 to p3
+arc p2 to t2
+arc p3 to t3
+arc t2 to p4
+arc t3 to p5
+arc p4 to t4
+arc p4 to t5
+arc p5 to t4
+arc t4 to p1
+arc t5 to p2
+

@@ -18,6 +18,9 @@ import jspetrinet.exception.NotFindObjectException;
 import jspetrinet.exception.TypeMismatch;
 import jspetrinet.graph.Arc;
 import jspetrinet.graph.Component;
+import jspetrinet.sim.SimExpTrans;
+import jspetrinet.sim.SimGenConstTrans;
+import jspetrinet.sim.SimGenUnifTrans;
 
 public class Net extends ASTEnv {
 	
@@ -289,7 +292,7 @@ public class Net extends ASTEnv {
 		if (expTransSet.containsKey(label) || immTransSet.containsKey(label) || genTransSet.containsKey(label)) {
 			throw new AlreadyExistException();
 		}
-		ExpTrans tmp = new ExpTrans(label, rate);
+		ExpTrans tmp = new SimExpTrans(label, rate);
 		expTransSet.put(tmp.getLabel(), tmp);
 		put(label, tmp);
 		return tmp;
@@ -318,6 +321,26 @@ public class Net extends ASTEnv {
 			throw new AlreadyExistException();
 		}
 		GenTrans tmp = new GenTrans(label, dist, policy);
+		genTransSet.put(tmp.getLabel(),  tmp);
+		put(label, tmp);
+		return tmp;
+	}
+	
+	public final GenTrans createSimGenConstTrans(String label, ASTree constant, GenTransPolicy policy) throws ASTException {
+		if (expTransSet.containsKey(label) || immTransSet.containsKey(label) || genTransSet.containsKey(label)) {
+			throw new AlreadyExistException();
+		}
+		GenTrans tmp = new SimGenConstTrans(label, constant, policy);
+		genTransSet.put(tmp.getLabel(),  tmp);
+		put(label, tmp);
+		return tmp;
+	}
+	
+	public final GenTrans createSimGenUnifTrans(String label, ASTree lower, ASTree upper, GenTransPolicy policy) throws ASTException {
+		if (expTransSet.containsKey(label) || immTransSet.containsKey(label) || genTransSet.containsKey(label)) {
+			throw new AlreadyExistException();
+		}
+		GenTrans tmp = new SimGenUnifTrans(label, lower, upper, policy);
 		genTransSet.put(tmp.getLabel(),  tmp);
 		put(label, tmp);
 		return tmp;
