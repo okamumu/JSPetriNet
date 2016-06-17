@@ -2,7 +2,6 @@ package jspetrinet.sim;
 
 import jspetrinet.ast.ASTree;
 import jspetrinet.exception.ASTException;
-import jspetrinet.exception.TypeMismatch;
 import jspetrinet.petri.GenTransPolicy;
 import jspetrinet.petri.Net;
 
@@ -17,34 +16,18 @@ public class SimGenUnifTrans extends SimGenTrans{
 		this.upper = upper;
 	}
 
-	public void setLower(ASTree lower) {
+	public final void setLower(ASTree lower) {
 		this.lower = lower;
 	}
 
-	public void setUpper(ASTree upper) {
+	public final void setUpper(ASTree upper) {
 		this.upper = upper;
 	}
 
 	@Override
 	public double nextTime(Net net, Random rnd) throws ASTException {
-		Object obj = lower.eval(net);
-		double lower;
-		if(obj instanceof Integer){
-			lower = (Integer)obj;
-		}else if(obj instanceof Double){
-			lower = (Double)obj;
-		}else {
-			throw new TypeMismatch();
-		}
-		obj = upper.eval(net);
-		double upper;
-		if(obj instanceof Integer){
-			upper = (Integer)obj;
-		}else if(obj instanceof Double){
-			upper = (Double)obj;
-		}else {
-			throw new TypeMismatch();
-		}
-		return rnd.nextUnif()%(upper - lower + 1) + lower;
+		double lower = Utility.convertObjctToDouble(this.lower.eval(net));
+		double upper = Utility.convertObjctToDouble(this.upper.eval(net));
+		return rnd.nextUnif(lower, upper);
 	}
 }

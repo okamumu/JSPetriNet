@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import jspetrinet.exception.ASTException;
-import jspetrinet.exception.TypeMismatch;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingArc;
 import jspetrinet.marking.PetriAnalysis;
@@ -17,39 +16,18 @@ public class MCSimulation {
 	
 	protected Net net;
 	protected Random rnd;
-	protected final ArrayList<Mark> eventMarking;
-	protected final ArrayList<Double> eventTime;
-	protected final Map<Mark, Mark> marking;//結果表示用に通ったマーキングを保存
+	protected final ArrayList<EventValue> eventValues;
+	protected final Map<Mark, Mark> markSet;//結果表示用に通ったマーキングを保存
+	protected final Map<PairMark, PairMark> arcSet;
 	protected final Map<Trans, Double> remainingTime;//一般発火トランジションの残り時間
 	
 	public MCSimulation(Net net) throws ASTException {
-		eventMarking = new ArrayList<Mark>();
-		eventTime = new ArrayList<Double>();
-		marking = new HashMap<Mark, Mark>();
+		eventValues = new ArrayList<EventValue>();
+		markSet = new HashMap<Mark, Mark>();
+		arcSet = new HashMap<PairMark, PairMark>();
 		remainingTime = new HashMap<Trans, Double>();
 		for (Trans tr : net.getGenTransSet().values()) {
 			remainingTime.put(tr, 0.0);
-		}
-	}
-	
-	public double convertObject(Object obj) throws ASTException{
-		double doubleType;
-		if(obj instanceof Integer){
-			doubleType = (Integer)obj;
-		}else if(obj instanceof Double){
-			doubleType = (Double)obj;
-		}else {
-			throw new TypeMismatch();
-		}
-		return doubleType;
-	}
-	
-	public boolean nextMultinomial(double w1, double w2){
-		double value = rnd.nextUnif() * (w1 + w2);
-		if(w1>=value){
-			return true;
-		}else{
-			return false;
 		}
 	}
 	
@@ -68,17 +46,16 @@ public class MCSimulation {
 		}
 	}
 	
-	public void mcSimulation(Mark visited, Net net, double t, int seed) throws ASTException {
+	public ArrayList<EventValue> runSimulation(Mark initMarking, Net net, double t, int seed) throws ASTException {
 		this.net = net;
-		rnd = new Adapter(net, seed);
-		double total = 0;
-		Mark dest = visited;
+		rnd = new RandomGenerator(seed);
+		double currentTime = 0;
+		Mark currentMarking = initMarking;
 		
-		marking.put(visited, visited);
-		eventMarking.add(visited);
-		eventTime.add(total);
+		markSet.put(initMarking, initMarking);
+		eventValues.add(new EventValue(initMarking, currentTime));
 		while (true) {			
-			Mark m = dest;
+			Mark m = currentMarking;
 			net.setCurrentMark(m);
 			
 			for (Trans tr : net.getGenTransSet().values()) {
@@ -98,24 +75,21 @@ public class MCSimulation {
 				}
 			}
 			Trans selTrans = null;
-			boolean hasImmTrans = false;
 			double totalWeight = 0;
-			double weight = 0;
 			for (Trans tr : net.getImmTransSet().values()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
-					weight = convertObject(((ImmTrans)tr).getWeight().eval(net));
-					if(nextMultinomial(weight, totalWeight)){
+					double weight = Utility.convertObjctToDouble(((ImmTrans)tr).getWeight().eval(net));
+					if(weight>=(rnd.nextUnif01()*(weight+totalWeight))){
 						selTrans = tr;
 					}
 					totalWeight += weight;
-					hasImmTrans = true;
 					break;
 				default:
 				}
 			}
-			if(!hasImmTrans){
-				double mindt = Double.POSITIVE_INFINITY;
+			double mindt = Double.POSITIVE_INFINITY;
+			if(totalWeight==0){
 				for (Trans tr : net.getGenTransSet().values()) {
 					switch (PetriAnalysis.isEnable(net, tr)) {
 					case ENABLE:
@@ -140,53 +114,152 @@ public class MCSimulation {
 					default:
 					}
 				}
-				//一般発火トランジションの残り時間再セット
-				updateRemainingTime(selTrans, mindt);
-				total += mindt;
 			}
-			if(total>t){
+			if(selTrans==null){
+				break;
+			}
+			//一般発火トランジションの残り時間再セット
+			updateRemainingTime(selTrans, mindt);
+			currentTime += mindt;
+			if(currentTime>t){
 				break;
 			}
 			//発火処理			
-			dest = PetriAnalysis.doFiring(net, selTrans);
-			new MarkingArc(m, dest, selTrans);
-			eventTime.add(total);
-			if(!marking.containsValue(dest)){//発火先がmarkingになければ追加
-				marking.put(dest, dest);
-				eventMarking.add(dest);
-			}else{//発火先がmarkingにある場合、
-				eventMarking.add(dest);
+			currentMarking = PetriAnalysis.doFiring(net, selTrans);
+			if(!markSet.containsValue(currentMarking)){//発火先がmarkSetになければ追加
+				markSet.put(currentMarking, currentMarking);
+			}else{//発火先がmarkSetにある場合、
+				currentMarking = markSet.get(currentMarking);
+			}
+ 			PairMark pairMark = new PairMark(m, currentMarking);
+			if(!arcSet.containsValue(pairMark)){
+				arcSet.put(pairMark, pairMark);
+				new MarkingArc(m, currentMarking, selTrans);
+
+			}
+			eventValues.add(new EventValue(currentMarking, currentTime));
+		}
+		resultEvent();
+		resultMarking();
+		return eventValues;
+	}
+	
+	public ArrayList<EventValue> runSimulation(Mark initMarking, Net net, Mark finalMarking, int seed) throws ASTException {
+		this.net = net;
+		rnd = new RandomGenerator(seed);
+		double currentTime = 0;
+		Mark currentMarking = initMarking;
+		
+		markSet.put(initMarking, initMarking);
+		eventValues.add(new EventValue(initMarking, currentTime));
+		while (true) {			
+			if(currentMarking.equals(finalMarking)){
+				break;
+			}
+			Mark m = currentMarking;
+			net.setCurrentMark(m);
+			
+			for (Trans tr : net.getGenTransSet().values()) {
+				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
+				case ENABLE:
+					if(remainingTime.get(tr)==0){//残り時間0とは前回がDISABLE,もしくは発火したことを示すので残り時間を初期化
+						//remainingTime.put(tr, ((SimGenTrans)tr).nextTime(net, rnd));
+					}//それ以外は残り時間継続
+					break;
+				case PREEMPTION:
+					//ガードがあり、PolicyがPRSのため残り時間は減らない
+					break;
+				case DISABLE:
+					remainingTime.put(tr, 0.0);
+					break;
+				default:
+				}
+			}
+			Trans selTrans = null;
+			double totalWeight = 0;
+			for (Trans tr : net.getImmTransSet().values()) {
+				switch (PetriAnalysis.isEnable(net, tr)) {
+				case ENABLE:
+					double weight = Utility.convertObjctToDouble(((ImmTrans)tr).getWeight().eval(net));
+					if(weight>=(rnd.nextUnif01()*(weight+totalWeight))){
+						selTrans = tr;
+					}
+					totalWeight += weight;
+					break;
+				default:
+				}
+			}
+			double mindt = Double.POSITIVE_INFINITY;
+			if(totalWeight==0){
+				for (Trans tr : net.getGenTransSet().values()) {
+					switch (PetriAnalysis.isEnable(net, tr)) {
+					case ENABLE:
+						double dt = ((SimGenTrans)tr).nextTime(net, rnd);
+						if(dt < mindt){
+							mindt = dt;
+							selTrans = tr;
+						}
+						break;
+					default:
+					}
+				}
+				for (Trans tr : net.getExpTransSet().values()) {
+					switch (PetriAnalysis.isEnable(net, tr)) {
+					case ENABLE:
+						double dt = ((SimExpTrans)tr).nextTime(net, rnd);
+						if(dt < mindt){
+							mindt = dt;
+							selTrans = tr;
+						}
+						break;
+					default:
+					}
+				}
+			}
+			if(selTrans==null){
+				break;
+			}
+			//一般発火トランジションの残り時間再セット
+			updateRemainingTime(selTrans, mindt);
+			currentTime += mindt;
+			//発火処理			
+			currentMarking = PetriAnalysis.doFiring(net, selTrans);
+			if(!markSet.containsValue(currentMarking)){//発火先がmarkSetになければ追加
+				markSet.put(currentMarking, currentMarking);
+			}else{//発火先がmarkSetにある場合、
+				currentMarking = markSet.get(currentMarking);
+			}
+ 			PairMark pairMark = new PairMark(m, currentMarking);
+			if(!arcSet.containsValue(pairMark)){
+				arcSet.put(pairMark, pairMark);
+				new MarkingArc(m, currentMarking, selTrans);
+			}
+			eventValues.add(new EventValue(currentMarking, currentTime));
+			if(currentMarking.equals(finalMarking)){
+				break;
 			}
 		}
 		resultEvent();
 		resultMarking();
+		return eventValues;
 	}
 	
 	public void resultEvent(){
-		for(int i=0;i<eventMarking.size();i++){
-			System.out.print(String.format("%.2f", eventTime.get(i))+" : ");
+		for(int i=0;i<eventValues.size();i++){
+			System.out.print(String.format("%.2f", eventValues.get(i).getEventTime())+" : ");
 			for(int j=0;j<net.getNumOfPlace();j++){
-				System.out.print(eventMarking.get(i).get(j));
+				System.out.print(eventValues.get(i).getEventMarking().get(j));
 			}
 			System.out.println("");
 		}
 	}
 	
 	public void resultMarking(){
-		for(Mark mark : marking.keySet()){
+		for(Mark mark : markSet.keySet()){
 			for(int i=0;i<net.getNumOfPlace();i++){
 				System.out.print(mark.get(i));
 			}
 			System.out.println("");
 		}
-	}
-	
-	//getter
-	public final Mark geteventMarking(int index){
-		return eventMarking.get(index);
-	}
-	
-	public final double geteventTime(int index){
-		return eventTime.get(index);
 	}
 }

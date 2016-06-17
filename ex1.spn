@@ -15,10 +15,10 @@ place p5
 exp t1 (rate = 1.5)
 exp t2 (rate = 0.9)
 exp t3 (rate = 0.5)
-exp t4 (rate = 1.2)
-gen.unif t5 (lower=0, upper=1)
+//exp t4 (rate = 1.2)
+gen.unif t4 (lower=0, upper=1)
 //exp t5 (rate = 1)
-//gen.const t5 (value=1)
+gen.const t5 (value=1)
 
 //t5.rate = 1.7
 
