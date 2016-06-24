@@ -3,9 +3,11 @@ package jspetrinet.petri;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 
-import jspetrinet.ast.*;
+import jspetrinet.ast.ASTree;
 import jspetrinet.exception.ASTException;
-import jspetrinet.parser.*;
+import jspetrinet.parser.JSPetriNetParser;
+import jspetrinet.parser.ParseException;
+import jspetrinet.parser.TokenMgrError;
 
 public class Guard implements Serializable {
 	

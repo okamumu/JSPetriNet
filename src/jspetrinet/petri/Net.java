@@ -38,6 +38,7 @@ public class Net extends ASTEnv {
 	protected final Map<String,Trans> genTransSet;
 
 	protected ASTree reward;
+	protected ASTree stopCondition;
 	
 	public Net(String label) {
 		this(null, label);
@@ -143,6 +144,10 @@ public class Net extends ASTEnv {
 		} else {
 			throw new TypeMismatch();
 		}
+	}
+	
+	public final ASTree getStopCondition() throws ASTException {
+		return stopCondition;
 	}
 	
 	public final int getNumOfGenTrans() {
@@ -273,6 +278,15 @@ public class Net extends ASTEnv {
 		Object tmp = this.get(reward);
 		if (tmp instanceof ASTree) {
 			this.reward = (ASTree) tmp;
+		} else {
+			throw new TypeMismatch();
+		}
+	}
+	
+	public void setStopCondition(String stopCondition) throws ASTException {
+		Object tmp = this.get(stopCondition);
+		if (tmp instanceof ASTree) {
+			this.stopCondition = (ASTree) tmp;
 		} else {
 			throw new TypeMismatch();
 		}

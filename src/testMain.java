@@ -449,6 +449,7 @@ public class testMain {
 		}
 
 		global.setIndex();
+		global.setStopCondition("availability");
 
 		Map<String,Integer> initmark = new HashMap<String,Integer>();
 		initmark.put("p1", 1);
@@ -458,15 +459,11 @@ public class testMain {
 		
 		//SimNet simGlobal = (SimNet)global;
 		
-		Map<String,Integer> finalmark = new HashMap<String,Integer>();
-		finalmark.put("p4", 1);
-		finalmark.put("p5", 1);
 		//initmark.put("Pnormal", 1);
-		Mark m2 = JSPetriNet.mark(global, finalmark);
 		
 		MCSimulation mcs = new MCSimulation(global);
-		//mcs.runSimulation(m1, global, 30, 200);
-		mcs.runSimulation(m1, global, m2, 200);
+		//mcs.runSimulation(m1, 0, 30, 10, 200);
+		mcs.runSimulation(m1, 0, 30, global.getStopCondition(), 10, 200);
 	}
 		
 	public static void main(String[] args) throws ASTException {
