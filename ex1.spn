@@ -44,4 +44,4 @@ arc t5 to p2
 g1 := #p1 < 3
 
 availability := ifelse(#p5 == 1, 1, 0)
-reward1 := ifelse(#p1 != 0, 1.0, 0.0)
+reward1 := ifelse(#p1 == 0, 1.0, 0.0)

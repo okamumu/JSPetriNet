@@ -1,6 +1,7 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +10,7 @@ import jspetrinet.exception.ASTException;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingProcess;
 import jspetrinet.petri.Net;
+import jspetrinet.sim.EventValue;
 import jspetrinet.sim.MCSimulation;
 
 public class testMain {
@@ -450,22 +452,25 @@ public class testMain {
 
 		global.setIndex();
 		global.setStopCondition("availability");
+		global.setReward("reward1");
 
 		Map<String,Integer> initmark = new HashMap<String,Integer>();
 		initmark.put("p1", 1);
 		//initmark.put("Pnormal", 1);
 		Mark m1 = JSPetriNet.mark(global, initmark);
 		MarkingProcess mp = JSPetriNet.marking(global, m1, 0);
-		
+		//System.out.println(global.getReward());
+
 		//SimNet simGlobal = (SimNet)global;
 		
 		//initmark.put("Pnormal", 1);
 		
 		MCSimulation mcs = new MCSimulation(global);
 		//mcs.runSimulation(m1, 0, 30, 10, 200);
-		mcs.runSimulation(m1, 0, 30, global.getStopCondition(), 10, 200);
+		ArrayList<EventValue> simResult = mcs.runSimulation(m1, 0, 30, global.getStopCondition(), 10, 200);
+		System.out.println(mcs.resultReward(global, simResult, 2, 3));
 	}
-		
+	
 	public static void main(String[] args) throws ASTException {
 		// prog0();
 		// prog1();

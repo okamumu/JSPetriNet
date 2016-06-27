@@ -271,6 +271,31 @@ public class MCSimulation {
 		return eventValues;
 	}
 
+	public double resultReward(Net net, ArrayList<EventValue> simResult, double startTime, double endTime) throws ASTException {
+		double totalReward = 0;
+		for(int i=0;i<simResult.size();i++){
+			net.setCurrentMark(simResult.get(i).getEventMarking());
+			if(startTime<=simResult.get(i).getEventTime()){
+				if(i==simResult.size()-1){
+					totalReward += (endTime - simResult.get(i).getEventTime()) * net.getReward();
+					break;
+				}else{
+					if(endTime>=simResult.get(i+1).getEventTime()){
+						totalReward += (simResult.get(i+1).getEventTime() - simResult.get(i).getEventTime()) * net.getReward();
+					}else{
+						totalReward += (endTime - simResult.get(i).getEventTime()) * net.getReward();
+						break;
+					}
+				}
+			}else if(i==simResult.size()-1){
+				totalReward += (endTime - startTime) * net.getReward();
+			}else if(startTime<=simResult.get(i+1).getEventTime()){
+				totalReward += (simResult.get(i+1).getEventTime() - startTime) * net.getReward();
+			}
+		}
+		return totalReward;
+	}
+	
 	public void resultEvent(ArrayList<EventValue> eventValues){
 		for(int i=0;i<eventValues.size();i++){
 			System.out.print(String.format("%.2f", eventValues.get(i).getEventTime())+" : ");
