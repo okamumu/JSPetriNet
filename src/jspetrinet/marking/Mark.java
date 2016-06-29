@@ -12,7 +12,7 @@ public final class Mark extends jspetrinet.graph.Node {
 	 * 
 	 */
 	private static final long serialVersionUID = -812297444841411911L;
-	private int index;
+//	private int index;
 	private int minfiring;
 	private final byte[] vec;
 	private MarkGroup markGroup;
@@ -46,13 +46,13 @@ public final class Mark extends jspetrinet.graph.Node {
 		vec[i] = (byte) v;
 	}
 
-	public final int index() {
-		return index;
-	}
-
-	public final void setIndex(int i) {
-		index = i;
-	}
+//	public final int index() {
+//		return index;
+//	}
+//
+//	public final void setIndex(int i) {
+//		index = i;
+//	}
 	
 	public final List<Mark> next() {
 		List<Mark> next = new ArrayList<Mark>();

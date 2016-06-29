@@ -1,6 +1,10 @@
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -25,6 +29,7 @@ class Opts {
 	// options
 	public static String INPETRI="spn";
 	public static String OUTPETRI="dot";
+	public static String OUTMAT="out";
 	public static String INITMARK="imark";
 	public static String DEPTH="depth";
 }
@@ -94,6 +99,7 @@ public class CommandLineMain {
 		options.addOption(Opts.INPETRI, true, "input Petrinet file");
 		options.addOption(Opts.INITMARK, true, "initial marking");
 		options.addOption(Opts.DEPTH, true, "depth for DFS");
+		options.addOption(Opts.OUTMAT, true, "matrix (output)");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
 		try {
@@ -135,6 +141,157 @@ public class CommandLineMain {
 		}
 		
 		MarkingProcess mp = JSPetriNet.marking(net, imark, depth);
+		MarkingMatrix mat = new MarkingMatrix(mp, true);
+
+		PrintWriter pw1, pw2;
+		if (cmd.hasOption(Opts.OUTMAT)) {
+			try {
+				pw1 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUTMAT) + ".states")));
+				pw2 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUTMAT) + ".matrix")));
+			} catch (FileNotFoundException e) {
+				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTMAT));
+				return;
+			} catch (IOException e) {
+				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTMAT));
+				return;
+			}			
+		} else {
+			pw1 = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+			pw2 = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+		}
+
+		writeMarkSet(pw1, mat);
+		writeMatrix(pw2, mat);
+		pw1.close();
+		pw2.close();
+	}
+
+	public static void writeMarkSet(PrintWriter pw, MarkingMatrix mat) {
+		MarkingProcess mp = mat.getMarkingProcess();
+		Net net = mp.getNet();
+		pw.println("IMM");
+		for (GenVec gv: mp.getImmGroup().keySet()) {
+			pw.println(mat.getImmMatrixLabel().get(gv) + " " + JSPetriNet.genvecToString(net, gv));
+			List< List<Object> > s = mat.getMakingSet(mp.getImmGroup().get(gv));
+			for (List<Object> e: s) {
+				pw.print(e.get(0) + " : ");
+				Mark m = (Mark) e.get(1);
+				pw.println(JSPetriNet.markToString(net, m));
+			}
+		}
+		pw.println("GEN");
+		for (GenVec gv: mp.getGenGroup().keySet()) {
+			pw.println(mat.getGenMatrixLabel().get(gv) + " " + JSPetriNet.genvecToString(net, gv));
+			List< List<Object> > s = mat.getMakingSet(mp.getGenGroup().get(gv));
+			for (List<Object> e: s) {
+				pw.print(e.get(0) + " : ");
+				Mark m = (Mark) e.get(1);
+				pw.println(JSPetriNet.markToString(net, m));
+			}
+		}
+	}
+
+	public static void writeMatrix(PrintWriter pw, MarkingMatrix mat) {
+		MarkingProcess mp = mat.getMarkingProcess();
+		Net net = mp.getNet();
+		for (GenVec gv: mp.getImmGroup().keySet()) {
+			MarkGroup src = mp.getImmGroup().get(gv);
+			for (GenVec gv2: mp.getImmGroup().keySet()) {
+				MarkGroup dest = mp.getImmGroup().get(gv2);
+				if (dest.size() != 0) {
+					List< List<Object> > s = mat.getMatrixI(net, src, dest);
+					if (s.size() != 0) {
+						String matname = mat.getImmMatrixLabel().get(gv) + mat.getImmMatrixLabel().get(gv2);
+						pw.println("# " + matname + " " + JSPetriNet.genvecToString(net, gv) + " >>> " + JSPetriNet.genvecToString(net, gv2));
+						pw.println(matname + " <- Matrix(0," + src.size() + "," + dest.size() + ")");
+						for (List<Object> e: s) {
+							pw.println(matname + "[" + e.get(0) + "," + e.get(1) + "] <- " + e.get(2));
+						}
+					}
+				}
+			}
+		}
+		for (GenVec gv: mp.getImmGroup().keySet()) {
+			MarkGroup src = mp.getImmGroup().get(gv);
+			for (GenVec gv2: mp.getGenGroup().keySet()) {
+				MarkGroup dest = mp.getGenGroup().get(gv2);
+				if (dest.size() != 0) {
+					List< List<Object> > s = mat.getMatrixI(net, src, dest);
+					if (s.size() != 0) {
+						String matname = mat.getImmMatrixLabel().get(gv) + mat.getGenMatrixLabel().get(gv2);
+						pw.println("# " + matname + " " + JSPetriNet.genvecToString(net, gv) + " >>> " + JSPetriNet.genvecToString(net, gv2));
+						pw.println(matname + " <- Matrix(0," + src.size() + "," + dest.size() + ")");
+						for (List<Object> e: s) {
+							pw.println(matname + "[" + e.get(0) + "," + e.get(1) + "] <- " + e.get(2));
+						}
+					}
+				}
+			}
+		}
+		for (GenVec gv: mp.getGenGroup().keySet()) {
+			MarkGroup src = mp.getGenGroup().get(gv);
+			for (GenVec gv2: mp.getImmGroup().keySet()) {
+				MarkGroup dest = mp.getImmGroup().get(gv2);
+				if (dest.size() != 0) {
+					Map<Integer,List<List<Object>>> elem = mat.getMatrixG(net, src, dest);
+					List<List<Object>> s = elem.get(MarkingMatrix.ExpTransIndex);
+					if (s.size() != 0) {
+						String matname = mat.getGenMatrixLabel().get(gv) + mat.getImmMatrixLabel().get(gv2) + "E";
+						pw.println("# " + matname + " " + JSPetriNet.genvecToString(net, gv) + " >>> " + JSPetriNet.genvecToString(net, gv2));
+						pw.println(matname + " <- Matrix(0," + src.size() + "," + dest.size() + ")");
+						for (List<Object> e: s) {
+							pw.println(matname + "[" + e.get(0) + "," + e.get(1) + "] <- " + e.get(2));
+						}
+					}
+					
+					for (Map.Entry<Integer, List<List<Object>>> entry: elem.entrySet()) {
+						if (entry.getKey() != MarkingMatrix.ExpTransIndex) {
+							s = entry.getValue();
+							if (s.size() != 0) {
+								String matname = mat.getGenMatrixLabel().get(gv) + mat.getImmMatrixLabel().get(gv2) + "P" + entry.getKey();
+								pw.println("# " + matname + " " + JSPetriNet.genvecToString(net, gv) + " >>> " + JSPetriNet.genvecToString(net, gv2));
+								pw.println(matname + " <- Matrix(0," + src.size() + "," + dest.size() + ")");
+								for (List<Object> e: s) {
+									pw.println(matname + "[" + e.get(0) + "," + e.get(1) + "] <- " + e.get(2));
+								}
+							}							
+						}
+					}
+				}
+			}
+		}
+		for (GenVec gv: mp.getGenGroup().keySet()) {
+			MarkGroup src = mp.getGenGroup().get(gv);
+			for (GenVec gv2: mp.getGenGroup().keySet()) {
+				MarkGroup dest = mp.getGenGroup().get(gv2);
+				if (dest.size() != 0) {
+					Map<Integer,List<List<Object>>> elem = mat.getMatrixG(net, src, dest);
+					List<List<Object>> s = elem.get(MarkingMatrix.ExpTransIndex);
+					if (s.size() != 0 || src == dest) {
+						String matname = mat.getGenMatrixLabel().get(gv) + mat.getGenMatrixLabel().get(gv2) + "E";
+						pw.println("# " + matname + " " + JSPetriNet.genvecToString(net, gv) + " >>> " + JSPetriNet.genvecToString(net, gv2));
+						pw.println(matname + " <- Matrix(0," + src.size() + "," + dest.size() + ")");
+						for (List<Object> e: s) {
+							pw.println(matname + "[" + e.get(0) + "," + e.get(1) + "] <- " + e.get(2));
+						}
+					}
+					
+					for (Map.Entry<Integer, List<List<Object>>> entry: elem.entrySet()) {
+						if (entry.getKey() != MarkingMatrix.ExpTransIndex) {
+							s = entry.getValue();
+							if (s.size() != 0) {
+								String matname = mat.getGenMatrixLabel().get(gv) + mat.getGenMatrixLabel().get(gv2) + "P" + entry.getKey();
+								pw.println("# " + matname + " " + JSPetriNet.genvecToString(net, gv) + " >>> " + JSPetriNet.genvecToString(net, gv2));
+								pw.println(matname + " <- Matrix(0," + src.size() + "," + dest.size() + ")");
+								for (List<Object> e: s) {
+									pw.println(matname + "[" + e.get(0) + "," + e.get(1) + "] <- " + e.get(2));
+								}
+							}							
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public static void main(String[] args) throws ASTException {

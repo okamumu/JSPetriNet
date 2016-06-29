@@ -16,7 +16,12 @@ public class ASTVariable extends ASTree {
 
 	@Override
 	public Object eval(ASTEnv env) throws ASTException {
-		Object v = env.get(label);
+		Object v;
+		try {
+			v = env.get(label);
+		} catch (NotFindObjectException e) {
+			return label;
+		}
 		if (v instanceof ASTree) {
 			return ((ASTree) v).eval(env);
 		} else {

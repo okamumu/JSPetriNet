@@ -333,7 +333,7 @@ p = current.createPlace(token.image, pmax);
 tr = current.createExpTrans(token.image,
                         new ASTVariable(token.image + ".rate"));
                 tr.setGuard(new ASTVariable(token.image + ".guard"));
-                current.put(token.image + ".rate", new ASTValue(0.0));
+                current.put(token.image + ".rate", new ASTValue(token.image + ".rate"));
                 current.put(token.image + ".guard", new ASTValue(true));
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
@@ -367,7 +367,7 @@ for (PairValue pval : optlist.getList()) {
 tr = current.createImmTrans(token.image,
                         new ASTVariable(token.image + ".weight"));
                 tr.setGuard(new ASTVariable(token.image + ".guard"));
-                current.put(token.image + ".weight", new ASTValue(1.0));
+                current.put(token.image + ".weight", new ASTValue(token.image + ".weight"));
                 current.put(token.image + ".guard", new ASTValue(true));
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
@@ -398,7 +398,7 @@ for (PairValue pval : optlist.getList()) {
     jj_consume_token(GENTRANS);
     token = jj_consume_token(IDENTIFIER);
 current.createGenTrans(token.image,
-                new ASTValue(token.image), GenTrans.DefaultPolicy);
+                new ASTValue(token.image + ".dist"), GenTrans.DefaultPolicy);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
       jj_consume_token(OPEN);

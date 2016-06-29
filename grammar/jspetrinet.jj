@@ -47,7 +47,7 @@ TOKEN: {
 	| <BEGIN: "{">
 	| <END: "}">
 	| <COMMENT: "//" (~["\n", "\r"])*>
-	| <REAL: (["0"-"9"])*"."(["0"-"9"])+>
+	| <REAL: (["0"-"9"])*"."(["0"-"9"])+(["e","E"])?(["+","-"])?(["0"-"9"])*>
 	| <INTEGER: (["0"-"9"])+>
 	| <STRING: "\""(~["\""])+"\"">
 	| <PLUS: "+">
@@ -164,7 +164,7 @@ void ExpTransDeclaration() throws ASTException: {
 		tr = current.createExpTrans(token.image,
 			new ASTVariable(token.image + ".rate"));
 		tr.setGuard(new ASTVariable(token.image + ".guard"));
-		current.put(token.image + ".rate", new ASTValue(0.0));
+		current.put(token.image + ".rate", new ASTValue(token.image + ".rate"));
 		current.put(token.image + ".guard", new ASTValue(true));
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
@@ -191,7 +191,7 @@ void ImmTransDeclaration() throws ASTException: {
 		tr = current.createImmTrans(token.image,
 			new ASTVariable(token.image + ".weight"));
 		tr.setGuard(new ASTVariable(token.image + ".guard"));
-		current.put(token.image + ".weight", new ASTValue(1.0));
+		current.put(token.image + ".weight", new ASTValue(token.image + ".weight"));
 		current.put(token.image + ".guard", new ASTValue(true));		
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
@@ -215,7 +215,7 @@ void GenTransDeclaration() throws ASTException: {
 } {
 	<GENTRANS> token = <IDENTIFIER> {
 		current.createGenTrans(token.image,
-		new ASTValue(token.image), GenTrans.DefaultPolicy);
+		new ASTValue(token.image + ".dist"), GenTrans.DefaultPolicy);
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
