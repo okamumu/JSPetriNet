@@ -2,10 +2,6 @@ package jspetrinet.graph;
 
 public class Arc implements Component {
 	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3561502349131142951L;
 	private final Node src;
 	private final Node dest;
 

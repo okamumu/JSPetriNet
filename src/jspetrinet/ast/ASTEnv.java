@@ -1,18 +1,13 @@
 package jspetrinet.ast;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import jspetrinet.exception.*;
 import jspetrinet.marking.Mark;
 
-public class ASTEnv implements Serializable {
+public class ASTEnv {
 	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7718129953918688940L;
 	private Mark currentMark;
 	private final Map<String,Object> hash;
 

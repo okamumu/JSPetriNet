@@ -26,11 +26,11 @@ public class MarkingProcess {
 		numOfGenTrans = 0;
 	}
 	
-	public final int count() {
+	public final int size() {
 		return markSet.size();
 	}
 	
-	public final int immcount() {
+	public final int immSize() {
 		int total = 0;
 		for (MarkGroup mg: immGroup.values()) {
 			total += mg.size();
@@ -61,21 +61,21 @@ public class MarkingProcess {
 		arcSet.put(init, init);
 
 		numOfGenTrans = net.getNumOfGenTrans();
-		immGroup.clear();
 		GenVec genv = new GenVec(numOfGenTrans);
-		immGroup.put(genv, new MarkGroup());
+		immGroup.clear();
+		immGroup.put(genv, new MarkGroup()); // EXP IMM group
 		genGroup.clear();
-		genGroup.put(genv, new MarkGroup());
+		genGroup.put(genv, new MarkGroup()); // EXP GEN group
 
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
 		novisited.push(init);
-		create(novisited, net);
+		createMarking(novisited, net);
 		return init;
 	}
 	
-	protected void create(LinkedList<Mark> novisited, Net net) throws ASTException {
-		while (!novisited.isEmpty()) {
-			Mark m = novisited.pop();
+	protected void createMarking(LinkedList<Mark> noVisited, Net net) throws ASTException {
+		while (!noVisited.isEmpty()) {
+			Mark m = noVisited.pop();
 			net.setCurrentMark(m);
 			if (markSet.containsKey(m)) {
 				continue;
@@ -84,7 +84,7 @@ public class MarkingProcess {
 
 			// make genvec
 			GenVec genv = new GenVec(numOfGenTrans);
-			for (Trans tr : net.getGenTransSet().values()) {
+			for (Trans tr : net.getGenTransSet()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:
 					genv.set(tr.getIndex(), 1);
@@ -95,15 +95,9 @@ public class MarkingProcess {
 				default:
 				}
 			}
-			if (!immGroup.containsKey(genv)) {
-				immGroup.put(genv, new MarkGroup());
-			}
-			if (!genGroup.containsKey(genv)) {
-				genGroup.put(genv, new MarkGroup());
-			}
 
 			boolean hasImmTrans = false;
-			for (Trans tr : net.getImmTransSet().values()) {
+			for (Trans tr : net.getImmTransSet()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					hasImmTrans = true;
@@ -111,7 +105,7 @@ public class MarkingProcess {
 					if (arcSet.containsKey(dest)) {
 						dest = arcSet.get(dest);
 					} else {
-						novisited.push(dest);
+						noVisited.push(dest);
 						arcSet.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
@@ -120,20 +114,26 @@ public class MarkingProcess {
 				}
 			}
 			if (hasImmTrans == true) {
+				if (!immGroup.containsKey(genv)) {
+					immGroup.put(genv, new MarkGroup());
+				}
 				m.setMarkGroup(immGroup.get(genv));
 				continue;
 			} else {
+				if (!genGroup.containsKey(genv)) {
+					genGroup.put(genv, new MarkGroup());
+				}
 				m.setMarkGroup(genGroup.get(genv));
 			}
 			
-			for (Trans tr : net.getGenTransSet().values()) {
+			for (Trans tr : net.getGenTransSet()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:
 					Mark dest = PetriAnalysis.doFiring(net, tr);
 					if (arcSet.containsKey(dest)) {
 						dest = arcSet.get(dest);
 					} else {
-						novisited.push(dest);
+						noVisited.push(dest);
 						arcSet.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
@@ -142,14 +142,14 @@ public class MarkingProcess {
 				}
 			}
 			
-			for (Trans tr : net.getExpTransSet().values()) {
+			for (Trans tr : net.getExpTransSet()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					Mark dest = PetriAnalysis.doFiring(net, tr);
 					if (arcSet.containsKey(dest)) {
 						dest = arcSet.get(dest);
 					} else {
-						novisited.push(dest);
+						noVisited.push(dest);
 						arcSet.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);

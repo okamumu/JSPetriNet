@@ -18,7 +18,7 @@ public final class MarkingProcessBounded extends MarkingProcess {
 	}
 
 	@Override
-	protected void create(LinkedList<Mark> novisited, Net net) throws ASTException {
+	protected void createMarking(LinkedList<Mark> novisited, Net net) throws ASTException {
 		while (!novisited.isEmpty()) {
 			Mark m = novisited.poll();
 			if (m.getFiring() > this.firingBound) {
@@ -32,7 +32,7 @@ public final class MarkingProcessBounded extends MarkingProcess {
 
 			// make genvec
 			GenVec genv = new GenVec(numOfGenTrans);
-			for (Trans tr : net.getGenTransSet().values()) {
+			for (Trans tr : net.getGenTransSet()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:
 					genv.set(tr.getIndex(), 1);
@@ -51,7 +51,7 @@ public final class MarkingProcessBounded extends MarkingProcess {
 			}
 
 			boolean hasImmTrans = false;
-			for (Trans tr : net.getImmTransSet().values()) {
+			for (Trans tr : net.getImmTransSet()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					hasImmTrans = true;
@@ -74,7 +74,7 @@ public final class MarkingProcessBounded extends MarkingProcess {
 				m.setMarkGroup(genGroup.get(genv));
 			}
 			
-			for (Trans tr : net.getGenTransSet().values()) {
+			for (Trans tr : net.getGenTransSet()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:
 					Mark dest = PetriAnalysis.doFiring(net, tr);
@@ -90,7 +90,7 @@ public final class MarkingProcessBounded extends MarkingProcess {
 				}
 			}
 			
-			for (Trans tr : net.getExpTransSet().values()) {
+			for (Trans tr : net.getExpTransSet()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					Mark dest = PetriAnalysis.doFiring(net, tr);

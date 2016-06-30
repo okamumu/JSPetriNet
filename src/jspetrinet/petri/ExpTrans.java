@@ -4,10 +4,6 @@ import jspetrinet.ast.ASTree;
 
 public final class ExpTrans extends Trans {
 	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3249950848789679031L;
 	private ASTree rate;
 	
 	public ExpTrans(String label, ASTree rate) {

@@ -406,7 +406,7 @@ current.createGenTrans(token.image,
 for (PairValue pval : optlist.getList()) {
                         String label = pval.getLabel();
                         ASTree value = pval.getValue();
-                        GenTrans tr = (GenTrans) current.getTrans(token.image);
+                        GenTrans tr = (GenTrans) current.get(token.image);
                         if (label.equals("dist")) {
                                 tr.setDist(value);
                         } else if (label.equals("policy")) {
@@ -448,13 +448,13 @@ for (PairValue pval : optlist.getList()) {
     jj_consume_token(TO);
     dest = jj_consume_token(IDENTIFIER);
 try {
-                        Place p =current.getPlace(src.image);
-                        Trans tr = current.getTrans(dest.image);
+                        Place p = (Place) current.get(src.image);
+                        Trans tr = (Trans) current.get(dest.image);
                         a = current.createNormalInArc(p, tr, new ASTValue(1));
                 } catch (NotFindObjectException e1) {
                         try {
-                                Trans tr = current.getTrans(src.image);
-                                Place p =current.getPlace(dest.image);
+                                Trans tr = (Trans) current.get(src.image);
+                                Place p = (Place) current.get(dest.image);
                                 a = current.createNormalOutArc(tr, p, new ASTValue(1));
                         } catch (NotFindObjectException e2) {
                                 System.out.println("Did not find " + src.image + " -> " + dest.image);
@@ -500,8 +500,8 @@ for (PairValue pval : optlist.getList()) {
 
     jj_consume_token(TO);
     dest = jj_consume_token(IDENTIFIER);
-Place p =current.getPlace(src.image);
-                Trans tr = current.getTrans(dest.image);
+Place p = (Place) current.get(src.image);
+                Trans tr = (Trans) current.get(dest.image);
                 a = current.createNormalInArc(p, tr, new ASTValue(1));
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
@@ -536,8 +536,8 @@ for (PairValue pval : optlist.getList()) {
 
     jj_consume_token(TO);
     dest = jj_consume_token(IDENTIFIER);
-Place p =current.getPlace(dest.image);
-                Trans tr = current.getTrans(src.image);
+Place p = (Place) current.get(dest.image);
+                Trans tr = (Trans) current.get(src.image);
                 a = current.createNormalOutArc(tr, p, new ASTValue(1));
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
@@ -572,8 +572,8 @@ for (PairValue pval : optlist.getList()) {
 
     jj_consume_token(TO);
     dest = jj_consume_token(IDENTIFIER);
-Place p =current.getPlace(src.image);
-                Trans tr = current.getTrans(dest.image);
+Place p = (Place) current.get(src.image);
+                Trans tr = (Trans) current.get(dest.image);
                 a = current.createInhibitArc(p, tr, new ASTValue(1));
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
@@ -1031,13 +1031,13 @@ val1 = new ASTMod(val1, val2);
     case NTOKEN:{
       jj_consume_token(NTOKEN);
       token = jj_consume_token(IDENTIFIER);
-{if ("" != null) return new ASTNumOfToken(current.getPlace(token.image));}
+{if ("" != null) return new ASTNumOfToken((Place) current.get(token.image));}
       break;
       }
     case GLOBAL_NTOKEN:{
       jj_consume_token(GLOBAL_NTOKEN);
       token = jj_consume_token(IDENTIFIER);
-{if ("" != null) return new ASTNumOfToken(current.getPlace(token.image, global));}
+{if ("" != null) return new ASTNumOfToken((Place) global.get(token.image));}
       break;
       }
     case IDENTIFIER:{

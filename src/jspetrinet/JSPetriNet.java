@@ -9,8 +9,11 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 
 import jspetrinet.exception.ASTException;
 import jspetrinet.marking.GenVec;
@@ -69,7 +72,13 @@ public class JSPetriNet {
 		Mark m = new Mark(net.getNumOfPlace());
 		try {
 			for (Map.Entry<String, Integer> e : map.entrySet()) {
-				m.set(net.getPlace(e.getKey()).getIndex(), e.getValue());
+				Object obj = net.get(e.getKey());
+				if (obj instanceof Place) {
+					Place p = (Place) obj;
+					m.set(p.getIndex(), e.getValue());
+				} else {
+					throw new ASTException();
+				}
 			}
 		} catch (ASTException e1) {
 			e1.printStackTrace();
@@ -77,13 +86,13 @@ public class JSPetriNet {
 		return m;
 	}
 
-	public static GenVec genvec(Net net, Map<String,Integer> map) {
-		GenVec gv = new GenVec(net.getNumOfGenTrans());
-		for (Map.Entry<String,Integer> e: map.entrySet()) {			
-			gv.set(net.getGenTransSet().get(e.getKey()).getIndex(), e.getValue());
-		}
-		return gv;
-	}
+//	public static GenVec genvec(Net net, Map<String,Integer> map) {
+//		GenVec gv = new GenVec(net.getNumOfGenTrans());
+//		for (Map.Entry<String,Integer> e: map.entrySet()) {
+//			gv.set(net.getGenTransSet().get(e.getKey()).getIndex(), e.getValue());
+//		}
+//		return gv;
+//	}
 
 	public static MarkingProcess marking(Net global, Mark m, int depth) {
 		MarkingProcess mp;
@@ -111,12 +120,12 @@ public class JSPetriNet {
 	
 	public static String markToString(Net net, Mark vec) {
 		String result = "";
-		for (Map.Entry<String,Place> e : net.getPlaceSet().entrySet()) {
-			if (vec.get(e.getValue().getIndex()) != 0) {
+		for (Place p : net.getPlaceSet()) {
+			if (vec.get(p.getIndex()) != 0) {
 				if (result.equals("")) {
-					result = e.getKey() + ":" + vec.get(e.getValue().getIndex());
+					result = p.getLabel() + ":" + vec.get(p.getIndex());
 				} else {
-					result = result + "," + e.getKey() + ":" + vec.get(e.getValue().getIndex());
+					result = result + "," + p.getLabel() + ":" + vec.get(p.getIndex());
 				}
 			}
 		}
@@ -125,7 +134,7 @@ public class JSPetriNet {
 
 	public static String genvecToString(Net net, GenVec genv) {
 		String result = "(";
-		for (Trans t: net.getGenTransSet().values()) {
+		for (Trans t: net.getGenTransSet()) {
 			switch(genv.get(t.getIndex())) {
 			case 0:
 //				if (!result.equals("(")) {
@@ -158,18 +167,25 @@ public class JSPetriNet {
 	public static String markingToString(Net net, MarkingProcess mp) {
 		String linesep = System.getProperty("line.separator").toString();
 		String res = "";
-		int total = mp.count();
-		int immtotal = mp.immcount();
+		int total = mp.size();
+		int immtotal = mp.immSize();
 		res += "# of total states   : " + total + linesep;
 		res += "# of IMM states     : " + immtotal + linesep;
 		res += "# of EXP/GEN states : " + (total - immtotal) + linesep;
-		for (Entry<GenVec, MarkGroup> e : mp.getImmGroup().entrySet()) {
-			String g = genvecToString(net, e.getKey());
-			int im = e.getValue().size();
-			int em = mp.getGenGroup().get(e.getKey()).size();
+		Set<GenVec> all = new TreeSet<GenVec>();
+		all.addAll(mp.getImmGroup().keySet());
+		all.addAll(mp.getGenGroup().keySet());
+		for (GenVec gv : all) {
+			String g = genvecToString(net, gv);
 			res += g + linesep;
-			res += "  # of IMM states     : " + im + linesep;
-			res += "  # of EXP/GEN states : " + em + linesep;
+			if (mp.getImmGroup().containsKey(gv)) {
+				int im = mp.getImmGroup().get(gv).size();
+				res += "  # of IMM states     : " + im + linesep;
+			}
+			if (mp.getGenGroup().containsKey(gv)) {
+				int em = mp.getGenGroup().get(gv).size();
+				res += "  # of EXP/GEN states : " + em + linesep;
+			}
 		}
 		return res;
 	}

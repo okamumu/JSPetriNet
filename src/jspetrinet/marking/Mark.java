@@ -8,11 +8,6 @@ import jspetrinet.graph.Arc;
 
 public final class Mark extends jspetrinet.graph.Node {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -812297444841411911L;
-//	private int index;
 	private int minfiring;
 	private final byte[] vec;
 	private MarkGroup markGroup;

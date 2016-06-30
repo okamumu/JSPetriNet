@@ -81,12 +81,12 @@ public class MarkingMatrix {
 		return this.genMatrixLabel;
 	}
 
-	public Map<Integer,List<List<Object>>> getMatrixG(Net net, MarkGroup mgms, MarkGroup mgds) {
+	public Map<Trans,List<List<Object>>> getMatrixG(Net net, MarkGroup mgms, MarkGroup mgds) {
 		Set<Mark> ms = mgms.markset();
 		Set<Mark> ds = mgds.markset();
-		Map<Integer,List<List<Object>>> result = new HashMap<Integer,List<List<Object>>>();
+		Map<Trans,List<List<Object>>> result = new HashMap<Trans,List<List<Object>>>();
 		List<List<Object> > resultE = new ArrayList<List<Object> >();
-		result.put(MarkingMatrix.ExpTransIndex, resultE);
+		result.put(null, resultE);
 		for (Mark m: ms) {
 			net.setCurrentMark(m);
 			for (Arc a: m.getOutArc()) {
@@ -113,10 +113,10 @@ public class MarkingMatrix {
 						} catch (ASTException e) {
 							System.err.println("Fail to get dist: " + tr.getLabel());
 						}
-						if (!result.containsKey(tr.getIndex())) {
-							result.put(tr.getIndex(), new ArrayList<List<Object> >());
+						if (!result.containsKey(tr)) {
+							result.put(tr, new ArrayList<List<Object> >());
 						}
-						result.get(tr.getIndex()).add(tmp);
+						result.get(tr).add(tmp);
 					}
 				}
 			}

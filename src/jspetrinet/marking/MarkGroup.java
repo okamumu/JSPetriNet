@@ -6,38 +6,14 @@ import java.util.Set;
 public class MarkGroup {
 	
 	private final Set<Mark> markSet;
-	private final Set<Mark> enterSet;
-	private final Set<Mark> exitSet;
-	private Boolean isTransient;
-	private Boolean isSlow;
 	
 	public MarkGroup() {
 		markSet = new HashSet<Mark>();
-		enterSet = new HashSet<Mark>();
-		exitSet = new HashSet<Mark>();
-		isTransient = false;
-		isSlow = false;
 	}
 	
 	@Override
 	public String toString() {
 		return "#" + markSet.size();
-	}
-
-	public final void setTransient(boolean b) {
-		isTransient = b;
-	}
-	
-	public final boolean isTransient() {
-		return isTransient;
-	}
-	
-	public final void setSlow(boolean b) {
-		isSlow = b;
-	}
-	
-	public final boolean isSlow() {
-		return isSlow;
 	}
 
 	public final void add(Mark m) {
@@ -56,26 +32,12 @@ public class MarkGroup {
 		return markSet.size();
 	}
 	
-	public final void clear() {
+	public void clear() {
 		markSet.clear();
-		exitSet.clear();
-		isTransient = false;
 	}
 	
 	public final Set<Mark> markset() {
 		return markSet;
 	}
 	
-	public final Set<Mark> getEnterMarkSet() {
-		return enterSet;
-	}
-
-	public final Set<Mark> getExitMarkSet() {
-		return exitSet;
-	}
-
-//	public final void addExit(Mark m) {
-//		exitSet.add(m);
-//	}
-
 }

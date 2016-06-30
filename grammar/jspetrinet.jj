@@ -220,7 +220,7 @@ void GenTransDeclaration() throws ASTException: {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
 			ASTree value = pval.getValue();
-			GenTrans tr = (GenTrans) current.getTrans(token.image);
+			GenTrans tr = (GenTrans) current.get(token.image);
 			if (label.equals("dist")) {
 				tr.setDist(value);
 			} else if (label.equals("policy")) {
@@ -255,13 +255,13 @@ void ArcDeclaration() throws ASTException: {
 } {
 	<ARC> src = <IDENTIFIER> { } <TO> dest = <IDENTIFIER> {
 		try {
-			Place p =current.getPlace(src.image);
-			Trans tr = current.getTrans(dest.image);
+			Place p = (Place) current.get(src.image);
+			Trans tr = (Trans) current.get(dest.image);
 			a = current.createNormalInArc(p, tr, new ASTValue(1));
 		} catch (NotFindObjectException e1) {
 			try {
-				Trans tr = current.getTrans(src.image);
-				Place p =current.getPlace(dest.image);
+				Trans tr = (Trans) current.get(src.image);
+				Place p = (Place) current.get(dest.image);
 				a = current.createNormalOutArc(tr, p, new ASTValue(1));
 			} catch (NotFindObjectException e2) {
 				System.out.println("Did not find " + src.image + " -> " + dest.image);
@@ -297,8 +297,8 @@ void IArcDeclaration() throws ASTException: {
 	ArcBase a;
 } {
 	<IARC> src = <IDENTIFIER> { } <TO> dest = <IDENTIFIER> {
-		Place p =current.getPlace(src.image);
-		Trans tr = current.getTrans(dest.image);
+		Place p = (Place) current.get(src.image);
+		Trans tr = (Trans) current.get(dest.image);
 		a = current.createNormalInArc(p, tr, new ASTValue(1));
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
@@ -323,8 +323,8 @@ void OArcDeclaration() throws ASTException: {
 	ArcBase a;
 } {
 	<OARC> src = <IDENTIFIER> { } <TO> dest = <IDENTIFIER> {
-		Place p =current.getPlace(dest.image);
-		Trans tr = current.getTrans(src.image);
+		Place p = (Place) current.get(dest.image);
+		Trans tr = (Trans) current.get(src.image);
 		a = current.createNormalOutArc(tr, p, new ASTValue(1));
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
@@ -349,8 +349,8 @@ void HArcDeclaration() throws ASTException: {
 	ArcBase a;
 } {
 	<HARC> src = <IDENTIFIER> { } <TO> dest = <IDENTIFIER> {
-		Place p =current.getPlace(src.image);
-		Trans tr = current.getTrans(dest.image);
+		Place p = (Place) current.get(src.image);
+		Trans tr = (Trans) current.get(dest.image);
 		a = current.createInhibitArc(p, tr, new ASTValue(1));
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
@@ -572,10 +572,10 @@ ASTree PrimaryExpression() throws ASTException: {
 		return new ASTValue(token.image);
 	}
 	| <NTOKEN> token = <IDENTIFIER> {
-		return new ASTNumOfToken(current.getPlace(token.image));
+		return new ASTNumOfToken((Place) current.get(token.image));
 	}
 	| <GLOBAL_NTOKEN> token = <IDENTIFIER> {
-		return new ASTNumOfToken(current.getPlace(token.image, global));
+		return new ASTNumOfToken((Place) global.get(token.image));
 	}
 	| token = <IDENTIFIER> {
 		return new ASTVariable(token.image);

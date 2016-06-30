@@ -4,11 +4,6 @@ import jspetrinet.ast.ASTree;
 
 public final class GenTrans extends Trans {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 4237973155665080274L;
-
 	static public GenTransPolicy DefaultPolicy = GenTransPolicy.PRD;
 	
 	private ASTree dist;

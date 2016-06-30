@@ -1,14 +1,17 @@
-package jspetrinet.marking;
+package jspetrinet.analysis;
 
 import java.util.*;
 
 import jspetrinet.graph.Arc;
+import jspetrinet.marking.Mark;
+import jspetrinet.marking.MarkGroup;
+import jspetrinet.marking.MarkingArc;
 import jspetrinet.petri.*;
 
 public final class MarkingAnalysis {
 
 	public static void setEnterMark(Stack<Mark> tovisite, Set<Mark> visited,
-			Set<MarkGroup> genGroup, Set<MarkGroup> immGroup) {
+			Set<BTMarkGroup> genGroup, Set<BTMarkGroup> immGroup) {
 		while (!tovisite.empty()) {
 			Mark m = tovisite.pop();
 			if (visited.contains(m)) {
@@ -20,7 +23,7 @@ public final class MarkingAnalysis {
 				Mark next = (Mark) a.getDest();
 				if (genGroup.contains(m.getMarkGroup())
 						&& immGroup.contains(next.getMarkGroup())) {
-					next.getMarkGroup().getEnterMarkSet().add(next);
+//					next.getMarkGroup().getEnterMarkSet().add(next);
 				}
 				tovisite.push(next);
 			}
@@ -41,7 +44,7 @@ public final class MarkingAnalysis {
 				remain.remove(m);
 			}
 		}		
-		slowSet.setSlow(true);
+//		slowSet.setSlow(true);
 		mgg.add(slowSet);
 
 		while (!remain.isEmpty()) {
@@ -90,8 +93,8 @@ public final class MarkingAnalysis {
 							novisited.push(dest);
 						} else {
 							determined.add(dest);
-							mg.setTransient(true);
-							mg.getExitMarkSet().add(m);
+//							mg.setTransient(true);
+//							mg.getExitMarkSet().add(m);
 						}
 					}
 				}
