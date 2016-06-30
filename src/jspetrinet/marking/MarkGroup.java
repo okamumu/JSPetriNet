@@ -1,6 +1,8 @@
 package jspetrinet.marking;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class MarkGroup {
@@ -36,7 +38,7 @@ public class MarkGroup {
 		markSet.clear();
 	}
 	
-	public final Set<Mark> markset() {
+	public final Set<Mark> getMarkSet() {
 		return markSet;
 	}
 	

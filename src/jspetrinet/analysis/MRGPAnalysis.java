@@ -1,10 +1,10 @@
 package jspetrinet.analysis;
 
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import jspetrinet.JSPetriNet;
 import jspetrinet.marking.GenVec;
@@ -25,17 +25,19 @@ public class MRGPAnalysis {
 	MarkGroup expGroup;
 	private Map<GenVec,MarkGroup> genGroup;
 	
+//	private List<MarkGroup> immGroup;
+//	MarkGroup expGroup;
+//	private List<MarkGroup> genGroup;
+
 	private String expMatNameI;
 	private String expMatNameG;
 	
-	private final Map<MarkGroup,String> groupLabel;
 	private final Map<GroupPair,String> matrixName;
 	
 	public MRGPAnalysis(MarkingMatrix mat) {
 		this.mat = mat;
 		mp = mat.getMarkingProcess();
 		net = mp.getNet();
-		groupLabel = new HashMap<MarkGroup,String>();
 		matrixName = new HashMap<GroupPair,String>();
 		immGroup = mp.getImmGroup();
 		genGroup = mp.getGenGroup();
@@ -43,36 +45,32 @@ public class MRGPAnalysis {
 	}
 
 	public void writeMarkSet(PrintWriter pw) {
-		pw.println("IMM");
-		for (GenVec gv: immGroup.keySet()) {
-			MarkGroup mg = immGroup.get(gv);
-			String glabel = JSPetriNet.genvecToString(net, gv);
-			groupLabel.put(mg, glabel);
-			pw.println(mat.getImmMatrixLabel().get(gv) + " " + glabel);
-			List< List<Object> > s = mat.getMakingSet(mg);
-			for (List<Object> e: s) {
-				Mark m = (Mark) e.get(1);
-				pw.println(e.get(0) + " : " + JSPetriNet.markToString(net, m));
+		for (GenVec gv : mat.getSortedAllGenVec()) {
+			if (immGroup.containsKey(gv)) {
+				MarkGroup mg = immGroup.get(gv);
+				String glabel = JSPetriNet.genvecToString(net, gv);
+				pw.println(mat.getGroupLabel(mg) + " " + glabel);
+				List<List<Object>> s = mat.getMakingSet(mg);
+				for (List<Object> e: s) {
+					Mark m = (Mark) e.get(1);
+					pw.println(e.get(0) + " : " + JSPetriNet.markToString(net, m));
+				}
 			}
-		}
-		pw.println("GEN");
-		for (GenVec gv: genGroup.keySet()) {
-			MarkGroup mg = genGroup.get(gv);
-			String glabel = JSPetriNet.genvecToString(net, gv);
-			groupLabel.put(mg, glabel);
-			pw.println(mat.getGenMatrixLabel().get(gv) + " " + glabel);
-			List< List<Object> > s = mat.getMakingSet(mg);
-			for (List<Object> e: s) {
-				Mark m = (Mark) e.get(1);
-				pw.println(e.get(0) + " : " + JSPetriNet.markToString(net, m));
+			if (genGroup.containsKey(gv)) {
+				MarkGroup mg = genGroup.get(gv);
+				String glabel = JSPetriNet.genvecToString(net, gv);
+				pw.println(mat.getGroupLabel(mg) + " " + glabel);
+				List<List<Object>> s = mat.getMakingSet(mg);
+				for (List<Object> e: s) {
+					Mark m = (Mark) e.get(1);
+					pw.println(e.get(0) + " : " + JSPetriNet.markToString(net, m));
+				}
 			}
 		}
 	}
 	
 	private void defineMatrix(String matrixName, MarkGroup src, MarkGroup dest) {
-		String label1 = groupLabel.get(src);
-		String label2 = groupLabel.get(dest);
-		pw.println("# " + matrixName + " " + label1 + " to " + label2);
+		pw.println("# " + matrixName + " " + mat.getGroupLabel(src) + " to " + mat.getGroupLabel(dest));
 		pw.println(matrixName + " <- Matrix(0," + src.size() + "," + dest.size() + ")");
 	}
 
@@ -80,11 +78,55 @@ public class MRGPAnalysis {
 		pw.println(matrixName + "[" + i + "," + j + "] <- " + v);
 	}
 
-	private void writeImmToImm(Set<GenVec> srcgv, Set<GenVec> destgv) {
-		for (GenVec gv: srcgv) {
-			MarkGroup src = immGroup.get(gv);
-			for (GenVec gv2: destgv) {
-				MarkGroup dest = immGroup.get(gv2);
+	private void writeImm(MarkGroup src, MarkGroup dest) {
+		if (dest.size() == 0) {
+			return;
+		}
+		List< List<Object> > s = mat.getMatrixI(net, src, dest);
+		if (s.size() == 0) {
+			return;
+		}
+		String matname = mat.getGroupLabel(src) + mat.getGroupLabel(dest);
+		this.defineMatrix(matname, src, dest);
+		for (List<Object> e: s) {
+			this.putElement(matname, e.get(0), e.get(1), e.get(2));
+		}
+		matrixName.put(new GroupPair(src, dest), matname);
+	}
+
+	private void writeGen(MarkGroup src, MarkGroup dest) {
+		if (dest.size() == 0) {
+			return;
+		}
+		Map<Trans,List<List<Object>>> elem = mat.getMatrixG(net, src, dest);
+		List<List<Object>> s = elem.get(null); // get EXP
+		if (s.size() != 0 || src == dest) {
+			String matname = mat.getGroupLabel(src) + mat.getGroupLabel(dest) + "E";
+			this.defineMatrix(matname, src, dest);
+			for (List<Object> e: s) {
+				this.putElement(matname, e.get(0), e.get(1), e.get(2));
+			}
+			matrixName.put(new GroupPair(src, dest), matname);
+		}
+		for (Map.Entry<Trans, List<List<Object>>> entry: elem.entrySet()) {
+			if (entry.getKey() != null) {
+				s = entry.getValue();
+				if (s.size() != 0) {
+					String matname = mat.getGroupLabel(src) + mat.getGroupLabel(dest)
+						+ "P" + entry.getKey().getIndex();
+					this.defineMatrix(matname, src, dest);
+					for (List<Object> e: s) {
+						this.putElement(matname, e.get(0), e.get(1), e.get(2));
+					}
+					matrixName.put(new GroupPair(src, dest, entry.getKey()), matname);
+				}
+			}
+		}
+	}
+
+	private void writeImm(Collection<MarkGroup> srcMarkGroupSet, Collection<MarkGroup> destMarkGroupSet) {
+		for (MarkGroup src: srcMarkGroupSet) {
+			for (MarkGroup dest: destMarkGroupSet) {
 				if (dest.size() == 0) {
 					continue;
 				}
@@ -92,7 +134,7 @@ public class MRGPAnalysis {
 				if (s.size() == 0) {
 					continue;
 				}
-				String matname = mat.getImmMatrixLabel().get(gv) + mat.getImmMatrixLabel().get(gv2);
+				String matname = mat.getGroupLabel(src) + mat.getGroupLabel(dest);
 				this.defineMatrix(matname, src, dest);
 				for (List<Object> e: s) {
 					this.putElement(matname, e.get(0), e.get(1), e.get(2));
@@ -102,75 +144,16 @@ public class MRGPAnalysis {
 		}
 	}
 	
-	private void writeImmToGen(Set<GenVec> srcgv, Set<GenVec> destgv) {
-		for (GenVec gv: srcgv) {
-			MarkGroup src = immGroup.get(gv);
-			for (GenVec gv2: destgv) {
-				MarkGroup dest = genGroup.get(gv2);
-				if (dest.size() == 0) {
-					continue;
-				}
-				List< List<Object> > s = mat.getMatrixI(net, src, dest);
-				if (s.size() == 0) {
-					continue;
-				}
-				String matname = mat.getImmMatrixLabel().get(gv) + mat.getGenMatrixLabel().get(gv2);
-				this.defineMatrix(matname, src, dest);
-				for (List<Object> e: s) {
-					this.putElement(matname, e.get(0), e.get(1), e.get(2));
-				}
-				matrixName.put(new GroupPair(src, dest), matname);
-			}
-		}
-	}
-
-	private void writeGenToImm(Set<GenVec> srcgv, Set<GenVec> destgv) {
-		for (GenVec gv: srcgv) {
-			MarkGroup src = genGroup.get(gv);
-			for (GenVec gv2: destgv) {
-				MarkGroup dest = immGroup.get(gv2);
+	private void writeGen(Collection<MarkGroup> srcMarkGroupSet, Collection<MarkGroup> destMarkGroupSet) {
+		for (MarkGroup src: srcMarkGroupSet) {
+			for (MarkGroup dest: destMarkGroupSet) {
 				if (dest.size() == 0) {
 					continue;
 				}
 				Map<Trans,List<List<Object>>> elem = mat.getMatrixG(net, src, dest);
-				List<List<Object>> s = elem.get(null);
-				if (s.size() != 0) {
-					String matname = mat.getGenMatrixLabel().get(gv) + mat.getImmMatrixLabel().get(gv2) + "E";
-					this.defineMatrix(matname, src, dest);
-					for (List<Object> e: s) {
-						this.putElement(matname, e.get(0), e.get(1), e.get(2));
-					}
-					matrixName.put(new GroupPair(src, dest), matname);
-				}
-				for (Map.Entry<Trans, List<List<Object>>> entry: elem.entrySet()) {
-					if (entry.getKey() != null) {
-						s = entry.getValue();
-						if (s.size() != 0) {
-							String matname = mat.getGenMatrixLabel().get(gv) + mat.getImmMatrixLabel().get(gv2) + "P" + entry.getKey().getIndex();
-							this.defineMatrix(matname, src, dest);
-							for (List<Object> e: s) {
-								this.putElement(matname, e.get(0), e.get(1), e.get(2));
-							}
-							matrixName.put(new GroupPair(src, dest, entry.getKey()), matname);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	private void writeGenToGen(Set<GenVec> srcgv, Set<GenVec> destgv) {
-		for (GenVec gv: srcgv) {
-			MarkGroup src = genGroup.get(gv);
-			for (GenVec gv2: destgv) {
-				MarkGroup dest = genGroup.get(gv2);
-				if (dest.size() == 0) {
-					continue;
-				}
-				Map<Trans,List<List<Object>>> elem = mat.getMatrixG(net, src, dest);
-				List<List<Object>> s = elem.get(null);
+				List<List<Object>> s = elem.get(null); // get EXP
 				if (s.size() != 0 || src == dest) {
-					String matname = mat.getGenMatrixLabel().get(gv) + mat.getGenMatrixLabel().get(gv2) + "E";
+					String matname = mat.getGroupLabel(src) + mat.getGroupLabel(dest) + "E";
 					this.defineMatrix(matname, src, dest);
 					for (List<Object> e: s) {
 						this.putElement(matname, e.get(0), e.get(1), e.get(2));
@@ -181,7 +164,8 @@ public class MRGPAnalysis {
 					if (entry.getKey() != null) {
 						s = entry.getValue();
 						if (s.size() != 0) {
-							String matname = mat.getGenMatrixLabel().get(gv) + mat.getGenMatrixLabel().get(gv2) + "P" + entry.getKey().getIndex();
+							String matname = mat.getGroupLabel(src) + mat.getGroupLabel(dest)
+								+ "P" + entry.getKey().getIndex();
 							this.defineMatrix(matname, src, dest);
 							for (List<Object> e: s) {
 								this.putElement(matname, e.get(0), e.get(1), e.get(2));
@@ -196,10 +180,24 @@ public class MRGPAnalysis {
 
 	public void writeMatrix(PrintWriter pw) {
 		this.pw = pw;
-		writeImmToImm(immGroup.keySet(), immGroup.keySet());
-		writeImmToGen(immGroup.keySet(), genGroup.keySet());
-		writeGenToImm(genGroup.keySet(), immGroup.keySet());
-		writeGenToGen(genGroup.keySet(), genGroup.keySet());
+		for (GenVec srcgv : mat.getSortedAllGenVec()) {
+			for (GenVec destgv : mat.getSortedAllGenVec()) {
+				if (immGroup.containsKey(srcgv) && immGroup.containsKey(destgv)) {
+					writeImm(immGroup.get(srcgv), immGroup.get(destgv));
+				}
+				if (immGroup.containsKey(srcgv) && genGroup.containsKey(destgv)) {
+					writeImm(immGroup.get(srcgv), genGroup.get(destgv));
+				}
+			}
+			for (GenVec destgv : mat.getSortedAllGenVec()) {
+				if (genGroup.containsKey(srcgv) && immGroup.containsKey(destgv)) {
+					writeGen(genGroup.get(srcgv), immGroup.get(destgv));
+				}
+				if (genGroup.containsKey(srcgv) && genGroup.containsKey(destgv)) {
+					writeGen(genGroup.get(srcgv), genGroup.get(destgv));
+				}
+			}
+		}
 		this.pw = null;
 	}
 	
