@@ -1,4 +1,4 @@
-package jspetrinet.marking;
+package jspetrinet.analysis;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,10 +8,15 @@ import java.util.Set;
 
 import jspetrinet.exception.ASTException;
 import jspetrinet.graph.Arc;
+import jspetrinet.marking.GenVec;
+import jspetrinet.marking.Mark;
+import jspetrinet.marking.MarkGroup;
+import jspetrinet.marking.MarkingArc;
+import jspetrinet.marking.MarkingGraph;
 import jspetrinet.petri.*;
 
 public class MarkingMatrix {
-	protected final MarkingProcess mp;
+	protected final MarkingGraph mp;
 	protected final Map<Mark,Integer> revIndex;
 	protected final Map<GenVec,String> genMatrixLabel;
 	protected final Map<GenVec,String> immMatrixLabel;
@@ -21,7 +26,7 @@ public class MarkingMatrix {
 	
 	public static int ExpTransIndex = -1;
 
-	public MarkingMatrix(MarkingProcess mp, boolean oneBased) {
+	public MarkingMatrix(MarkingGraph mp, boolean oneBased) {
 		this.mp = mp;
 		revIndex = new HashMap<Mark,Integer>();
 		genGroup = mp.getGenGroup();
@@ -31,7 +36,7 @@ public class MarkingMatrix {
 		this.createIndex(oneBased);
 	}
 	
-	public MarkingProcess getMarkingProcess() {
+	public MarkingGraph getMarkingProcess() {
 		return mp;
 	}
 

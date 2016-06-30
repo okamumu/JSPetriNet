@@ -10,8 +10,7 @@ import jspetrinet.JSPetriNet;
 import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkGroup;
-import jspetrinet.marking.MarkingMatrix;
-import jspetrinet.marking.MarkingProcess;
+import jspetrinet.marking.MarkingGraph;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.Trans;
 
@@ -19,7 +18,7 @@ public class MRGPAnalysis {
 
 	private PrintWriter pw;
 	private MarkingMatrix mat;
-	private MarkingProcess mp;
+	private MarkingGraph mp;
 	private Net net;
 	
 	private Map<GenVec,MarkGroup> immGroup;

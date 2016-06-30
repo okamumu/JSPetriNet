@@ -4,58 +4,53 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import jspetrinet.exception.*;
-import jspetrinet.petri.*;
+import jspetrinet.exception.ASTException;
+import jspetrinet.petri.Net;
+import jspetrinet.petri.Trans;
 
-public final class MarkingProcessBounded extends MarkingProcess {
+public class CreateMarkingBFS implements CreateMarking {
 
+	private final MarkingGraph markGraph;
+	private Map<Mark,Mark> arcSet;
+	private Map<Mark,Integer> markDepth;
 	private int depth;
-	private int maxdepth;
-	private final Map<Mark,Integer> numberOfFiring;
-	
-	public MarkingProcessBounded(int maxdepth) {
-		super();
+	private final int maxdepth;
+
+	public CreateMarkingBFS(MarkingGraph markGraph, int maxdepth) {
+		this.markGraph = markGraph;
 		this.maxdepth = maxdepth;
-		numberOfFiring = new HashMap<Mark,Integer>();
 	}
 
 	@Override
 	public Mark create(Mark init, Net net) throws ASTException {
-		this.net = net;
-		markSet.clear();
-		arcSet.clear();
-		arcSet.put(init, init);
-
-		numOfGenTrans = net.getNumOfGenTrans();
-		immGroup.clear();
-		genGroup.clear();
-
 		this.depth = 0;
+		arcSet = new HashMap<Mark,Mark>();
+		markDepth = new HashMap<Mark,Integer>();
+
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
 		novisited.offer(init);
-		numberOfFiring.put(init, depth+1);
+		markDepth.put(init, depth+1);
 		createMarking(novisited, net);
 		return init;
 	}
 
-	@Override
-	protected void createMarking(LinkedList<Mark> novisited, Net net) throws ASTException {
+	private void createMarking(LinkedList<Mark> novisited, Net net) throws ASTException {
 		while (!novisited.isEmpty()) {
 			Mark m = novisited.poll();
-			if (numberOfFiring.get(m) > this.maxdepth) {
+			if (markDepth.get(m) > this.maxdepth) {
 				continue;
 			} else {
-				depth = numberOfFiring.get(m);
+				depth = markDepth.get(m);
 			}
 
-			if (markSet.containsKey(m)) {
+			if (markGraph.containtsMark(m)) {
 				continue;
 			}
-			markSet.put(m, m);
+			markGraph.addMark(m);
 			net.setCurrentMark(m);
 
 			// make genvec
-			GenVec genv = new GenVec(numOfGenTrans);
+			GenVec genv = new GenVec(net.getGenTransSet().size());
 			for (Trans tr : net.getGenTransSet()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:
@@ -81,7 +76,7 @@ public final class MarkingProcessBounded extends MarkingProcess {
 //						}
 					} else {
 						novisited.offer(dest);
-						numberOfFiring.put(dest, depth+1);
+						markDepth.put(dest, depth+1);
 						arcSet.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
@@ -90,16 +85,16 @@ public final class MarkingProcessBounded extends MarkingProcess {
 				}
 			}
 			if (hasImmTrans == true) {
-				if (!immGroup.containsKey(genv)) {
-					immGroup.put(genv, new MarkGroup());
+				if (!markGraph.getImmGroup().containsKey(genv)) {
+					markGraph.getImmGroup().put(genv, new MarkGroup());
 				}
-				m.setMarkGroup(immGroup.get(genv));
+				m.setMarkGroup(markGraph.getImmGroup().get(genv));
 				continue;
 			} else {
-				if (!genGroup.containsKey(genv)) {
-					genGroup.put(genv, new MarkGroup());
+				if (!markGraph.getGenGroup().containsKey(genv)) {
+					markGraph.getGenGroup().put(genv, new MarkGroup());
 				}
-				m.setMarkGroup(genGroup.get(genv));
+				m.setMarkGroup(markGraph.getGenGroup().get(genv));
 			}
 			
 			for (Trans tr : net.getGenTransSet()) {
@@ -113,7 +108,7 @@ public final class MarkingProcessBounded extends MarkingProcess {
 //						}
 					} else {
 						novisited.offer(dest);
-						numberOfFiring.put(dest, depth+1);
+						markDepth.put(dest, depth+1);
 						arcSet.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
@@ -133,7 +128,7 @@ public final class MarkingProcessBounded extends MarkingProcess {
 //						}
 					} else {
 						novisited.offer(dest);
-						numberOfFiring.put(dest, depth+1);
+						markDepth.put(dest, depth+1);
 						arcSet.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);

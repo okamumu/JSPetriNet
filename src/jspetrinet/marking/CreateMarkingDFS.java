@@ -4,83 +4,39 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import jspetrinet.exception.*;
-import jspetrinet.petri.*;
+import jspetrinet.exception.ASTException;
+import jspetrinet.petri.Net;
+import jspetrinet.petri.Trans;
 
-public class MarkingProcess {
-
-	protected Net net;
-
-	protected final Map<Mark,Mark> markSet;
-	protected final Map<Mark,Mark> arcSet;
-
-	protected int numOfGenTrans;
-	protected final Map<GenVec,MarkGroup> genGroup;
-	protected final Map<GenVec,MarkGroup> immGroup;
+public class CreateMarkingDFS implements CreateMarking {
 	
-	public MarkingProcess() {
-		markSet = new HashMap<Mark,Mark>();
-		genGroup = new HashMap<GenVec,MarkGroup>();
-		immGroup = new HashMap<GenVec,MarkGroup>();
-		arcSet = new HashMap<Mark,Mark>();
-		numOfGenTrans = 0;
+	private final MarkingGraph markGraph;
+	private Map<Mark,Mark> arcSet;
+	
+	public CreateMarkingDFS(MarkingGraph markGraph) {
+		this.markGraph = markGraph;
 	}
 	
-	public final int size() {
-		return markSet.size();
-	}
-	
-	public final int immSize() {
-		int total = 0;
-		for (MarkGroup mg: immGroup.values()) {
-			total += mg.size();
-		}
-		return total;
-	}
-	
-	public final Net getNet() {
-		return net;
-	}
-
-	public final Map<GenVec,MarkGroup> getImmGroup() {
-		return immGroup;
-	}
-
-	public final Map<GenVec,MarkGroup> getGenGroup() {
-		return genGroup;
-	}
-
-	public final MarkGroup getExpGroup() {
-		return genGroup.get(new GenVec(numOfGenTrans));
-	}
-
+	@Override
 	public Mark create(Mark init, Net net) throws ASTException {
-		this.net = net;
-		markSet.clear();
-		arcSet.clear();
-		arcSet.put(init, init);
-
-		numOfGenTrans = net.getNumOfGenTrans();
-		immGroup.clear();
-		genGroup.clear();
-
+		arcSet = new HashMap<Mark,Mark>();
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
 		novisited.push(init);
 		createMarking(novisited, net);
 		return init;
 	}
-	
-	protected void createMarking(LinkedList<Mark> noVisited, Net net) throws ASTException {
-		while (!noVisited.isEmpty()) {
-			Mark m = noVisited.pop();
+
+	private void createMarking(LinkedList<Mark> novisited, Net net) throws ASTException {
+		while (!novisited.isEmpty()) {
+			Mark m = novisited.pop();
 			net.setCurrentMark(m);
-			if (markSet.containsKey(m)) {
+			if (markGraph.containtsMark(m)) {
 				continue;
 			}
-			markSet.put(m, m);
+			markGraph.addMark(m);
 
 			// make genvec
-			GenVec genv = new GenVec(numOfGenTrans);
+			GenVec genv = new GenVec(net.getGenTransSet().size());
 			for (Trans tr : net.getGenTransSet()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:
@@ -102,7 +58,7 @@ public class MarkingProcess {
 					if (arcSet.containsKey(dest)) {
 						dest = arcSet.get(dest);
 					} else {
-						noVisited.push(dest);
+						novisited.push(dest);
 						arcSet.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
@@ -111,16 +67,16 @@ public class MarkingProcess {
 				}
 			}
 			if (hasImmTrans == true) {
-				if (!immGroup.containsKey(genv)) {
-					immGroup.put(genv, new MarkGroup());
+				if (!markGraph.getImmGroup().containsKey(genv)) {
+					markGraph.getImmGroup().put(genv, new MarkGroup());
 				}
-				m.setMarkGroup(immGroup.get(genv));
+				m.setMarkGroup(markGraph.getImmGroup().get(genv));
 				continue;
 			} else {
-				if (!genGroup.containsKey(genv)) {
-					genGroup.put(genv, new MarkGroup());
+				if (!markGraph.getGenGroup().containsKey(genv)) {
+					markGraph.getGenGroup().put(genv, new MarkGroup());
 				}
-				m.setMarkGroup(genGroup.get(genv));
+				m.setMarkGroup(markGraph.getGenGroup().get(genv));
 			}
 			
 			for (Trans tr : net.getGenTransSet()) {
@@ -130,7 +86,7 @@ public class MarkingProcess {
 					if (arcSet.containsKey(dest)) {
 						dest = arcSet.get(dest);
 					} else {
-						noVisited.push(dest);
+						novisited.push(dest);
 						arcSet.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
@@ -146,7 +102,7 @@ public class MarkingProcess {
 					if (arcSet.containsKey(dest)) {
 						dest = arcSet.get(dest);
 					} else {
-						noVisited.push(dest);
+						novisited.push(dest);
 						arcSet.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);

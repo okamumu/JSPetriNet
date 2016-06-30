@@ -18,6 +18,7 @@ import org.apache.commons.cli.ParseException;
 
 import jspetrinet.*;
 import jspetrinet.analysis.MRGPAnalysis;
+import jspetrinet.analysis.MarkingMatrix;
 import jspetrinet.exception.*;
 import jspetrinet.marking.*;
 import jspetrinet.petri.*;
@@ -141,7 +142,7 @@ public class CommandLineMain {
 			return;
 		}
 		
-		MarkingProcess mp = JSPetriNet.marking(net, imark, depth);
+		MarkingGraph mp = JSPetriNet.marking(net, imark, depth);
 		MarkingMatrix mat = new MarkingMatrix(mp, true);
 
 		PrintWriter pw1, pw2;

@@ -9,25 +9,16 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
 import jspetrinet.exception.ASTException;
-import jspetrinet.marking.GenVec;
-import jspetrinet.marking.Mark;
-import jspetrinet.marking.MarkGroup;
-import jspetrinet.marking.MarkingProcess;
-import jspetrinet.marking.MarkingProcessBounded;
+import jspetrinet.marking.*;
 import jspetrinet.parser.JSPetriNetParser;
 import jspetrinet.parser.ParseException;
 import jspetrinet.parser.TokenMgrError;
-import jspetrinet.petri.Net;
-import jspetrinet.petri.Place;
-import jspetrinet.petri.Trans;
-import jspetrinet.petri.VizPrint;
+import jspetrinet.petri.*;
 
 public class JSPetriNet {
 	
@@ -86,20 +77,12 @@ public class JSPetriNet {
 		return m;
 	}
 
-//	public static GenVec genvec(Net net, Map<String,Integer> map) {
-//		GenVec gv = new GenVec(net.getNumOfGenTrans());
-//		for (Map.Entry<String,Integer> e: map.entrySet()) {
-//			gv.set(net.getGenTransSet().get(e.getKey()).getIndex(), e.getValue());
-//		}
-//		return gv;
-//	}
-
-	public static MarkingProcess marking(Net global, Mark m, int depth) {
-		MarkingProcess mp;
+	public static MarkingGraph marking(Net global, Mark m, int depth) {
+		MarkingGraph mp = new MarkingGraph();
 		if (depth == 0) {
-			mp = new MarkingProcess();
+			mp.setCreateMarking(new CreateMarkingDFS(mp));
 		} else {
-			mp = new MarkingProcessBounded(depth);
+			mp.setCreateMarking(new CreateMarkingBFS(mp, depth));
 		}
 		try {
 			System.out.print("Create marking...");
@@ -164,7 +147,7 @@ public class JSPetriNet {
 		return result + ")";
 	}
 
-	public static String markingToString(Net net, MarkingProcess mp) {
+	public static String markingToString(Net net, MarkingGraph mp) {
 		String linesep = System.getProperty("line.separator").toString();
 		String res = "";
 		int total = mp.size();
@@ -195,15 +178,4 @@ public class JSPetriNet {
 		vp.toviz(bw);
 	}
 
-	public static void writeMarkingProcess(Serializable mp) {
-		ObjectOutputStream oos;
-		try {
-			oos = new ObjectOutputStream(new FileOutputStream("test.obj"));
-			oos.writeObject(mp);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 }
