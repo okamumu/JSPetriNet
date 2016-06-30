@@ -2,7 +2,7 @@ package jspetrinet.marking;
 
 import java.util.Arrays;
 
-public final class GenVec implements Comparable {
+public final class GenVec implements Comparable<GenVec> {
 
 	private final byte[] vec;
 
@@ -57,15 +57,14 @@ public final class GenVec implements Comparable {
 	}
 
 	@Override
-	public int compareTo(Object obj) {
-		GenVec other = (GenVec) obj;
+	public int compareTo(GenVec other) {
 		if (vec.length < other.vec.length) {
 			return -1;
 		}
 		if (vec.length > other.vec.length) {
 			return 1;
 		}
-		for (int i=0; i<vec.length; i++) {
+		for (int i=vec.length-1; i>=0; i--) {
 			if (vec[i] < other.vec[i]) {
 				return -1;
 			}

@@ -61,11 +61,8 @@ public class MarkingProcess {
 		arcSet.put(init, init);
 
 		numOfGenTrans = net.getNumOfGenTrans();
-		GenVec genv = new GenVec(numOfGenTrans);
 		immGroup.clear();
-		immGroup.put(genv, new MarkGroup()); // EXP IMM group
 		genGroup.clear();
-		genGroup.put(genv, new MarkGroup()); // EXP GEN group
 
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
 		novisited.push(init);

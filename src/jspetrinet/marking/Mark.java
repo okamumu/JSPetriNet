@@ -6,31 +6,19 @@ import java.util.List;
 
 import jspetrinet.graph.Arc;
 
-public final class Mark extends jspetrinet.graph.Node {
+public final class Mark extends jspetrinet.graph.Node implements Comparable<Mark> {
 
-	private int minfiring;
 	private final byte[] vec;
 	private MarkGroup markGroup;
 
 	public Mark(int size) {
 		this.vec = new byte [size];
-		this.minfiring = 0;
 		markGroup = null;
 	}
 
 	public Mark(Mark m) {
 		this.vec = Arrays.copyOf(m.vec, m.vec.length);
-		this.minfiring = m.minfiring;
 		markGroup = null;
-	}
-
-	// getter
-	public final void setFiring(int k) {
-		this.minfiring = k;
-	}
-
-	public final int getFiring() {
-		return this.minfiring;
 	}
 
 	public final int get(int i) {
@@ -41,14 +29,6 @@ public final class Mark extends jspetrinet.graph.Node {
 		vec[i] = (byte) v;
 	}
 
-//	public final int index() {
-//		return index;
-//	}
-//
-//	public final void setIndex(int i) {
-//		index = i;
-//	}
-	
 	public final List<Mark> next() {
 		List<Mark> next = new ArrayList<Mark>();
 		for (Arc a: getOutArc()) {
@@ -62,21 +42,12 @@ public final class Mark extends jspetrinet.graph.Node {
 	}
 	
 	public final void setMarkGroup(MarkGroup mg) {
-//		if (markGroup != null) {
-//			markGroup.remove(this);
-//		}
 		mg.add(this);
 		markGroup = mg;
 	}
 	
 	@Override
 	public final int hashCode() {
-//		final int prime = 31;
-//		int result = 1;
-//		result = prime * result + Arrays.hashCode(vec);
-//		return result;
-//		final int prime = 31;
-//		int result = 1;
 		return Arrays.hashCode(vec);
 	}
 
@@ -92,5 +63,24 @@ public final class Mark extends jspetrinet.graph.Node {
 		if (!Arrays.equals(vec, other.vec))
 			return false;
 		return true;
+	}
+
+	@Override
+	public int compareTo(Mark other) {
+		if (vec.length < other.vec.length) {
+			return -1;
+		}
+		if (vec.length > other.vec.length) {
+			return 1;
+		}
+		for (int i=vec.length-1; i>=0; i--) {
+			if (vec[i] < other.vec[i]) {
+				return -1;
+			}
+			if (vec[i] > other.vec[i]) {
+				return 1;
+			}
+		}
+		return 0;
 	}
 }

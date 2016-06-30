@@ -68,7 +68,7 @@ public final class PetriAnalysis {
 
 	public final static Mark doFiring(Net env, Trans tr) throws ASTException {
 		Mark nextVec = new Mark(env.getCurrentMark());
-		nextVec.setFiring(nextVec.getFiring() + 1);
+//		nextVec.setFiring(nextVec.getFiring() + 1);
 		for (Arc arc : tr.getInArc()) {
 			Place place = (Place) arc.getSrc();
 			ArcBase arcBase = (ArcBase) arc;
