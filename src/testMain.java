@@ -14,7 +14,7 @@ import jspetrinet.sim.EventValue;
 import jspetrinet.sim.MCSimulation;
 
 public class testMain {
-	
+
 	public static void prog10(Net global) throws ASTException {
 		try {
 		global = JSPetriNet.load("", null, new FileInputStream("cloud.spn"));
@@ -37,7 +37,7 @@ public class testMain {
 //		Mark m1 = new Mark(global.markToString(vec), vec);
 
 		MarkingProcess mp = JSPetriNet.marking(global, m1, 0);
-		
+
 		String param = "Thr.rate = 100.0;"
 				+ "lambda_h = 5.0;"
 				+ "lambda_w = 8.0;"
@@ -51,15 +51,15 @@ public class testMain {
 				+ "Tcr.rate = 10.0;"
 				+ "Twcm.rate = 10.0;";
 		JSPetriNet.eval(global, param);
-		
+
 //		CooMatrixWithMarkingProcess cmat = new CooMatrixWithMarkingProcess(mp, global, true);
 //		mp.createIndex(true);
 //		for (int i=mp.groupIndex(mp.getImmGroup());
 //				i<=mp.groupIndex(mp.getImmGroup())+mp.getImmGroup().size(); i++) {
-//			System.out.println(i + ": " + mp.mark(i));						
+//			System.out.println(i + ": " + mp.mark(i));
 		}
 //		for (int i=1; i<=mp.count(); i++) {
-//			System.out.println(i + " : " + cmat.mark(i));			
+//			System.out.println(i + " : " + cmat.mark(i));
 //		}
 //		try {
 //			PrintStream out = new PrintStream("/Users/okamu/Desktop/mat.txt");
@@ -168,7 +168,7 @@ public class testMain {
 		// }
 
 		//
-		
+
 //		BddNet bglobal = (BddNet) global;
 
 //		Bdd<Boolean> bdd = new Bdd<Boolean>();
@@ -256,7 +256,7 @@ public class testMain {
 //		System.out.println("# of total states   : " + total);
 //		System.out.println("# of IMM states     : " + immtotal);
 //		System.out.println("# of EXP/GEN states : " + (total - immtotal));
-//		
+//
 ////		String param = "Thr.rate = 100.0;"
 ////				+ "lambda_h = 5.0;"
 ////				+ "lambda_w = 8.0;"
@@ -270,7 +270,7 @@ public class testMain {
 ////				+ "Tcr.rate = 10.0;"
 ////				+ "Twcm.rate = 10.0;";
 ////		JSPetriNet.eval(global, param);
-////		
+////
 ////		CooMatrixWithMarkingProcess cmat = new CooMatrixWithMarkingProcess(mp, global, true);
 ////		cmat.printGroupIndex();
 ////		try {
@@ -380,7 +380,7 @@ public class testMain {
 //		// }
 //
 //		//
-//		
+//
 ////		BddNet bglobal = (BddNet) global;
 //
 ////		Bdd<Boolean> bdd = new Bdd<Boolean>();
@@ -437,11 +437,11 @@ public class testMain {
 ////
 ////		System.out.println(bs2.countEven());
 //	}
-	
+
 	public static void prog11(Net global) throws ASTException {
 		PrintWriter bw;
 		try {
-			global = JSPetriNet.load("", null, new FileInputStream("ex1.spn"));
+			global = JSPetriNet.load("", null, new FileInputStream("ex2.spn"));
 			bw = new PrintWriter("ex1.dot");
 			JSPetriNet.writeDotfile(global, bw);
 			bw.close();
@@ -462,15 +462,15 @@ public class testMain {
 		//System.out.println(global.getReward());
 
 		//SimNet simGlobal = (SimNet)global;
-		
+
 		//initmark.put("Pnormal", 1);
-		
+
 		MCSimulation mcs = new MCSimulation(global);
 		//mcs.runSimulation(m1, 0, 30, 10, 200);
 		ArrayList<EventValue> simResult = mcs.runSimulation(m1, 0, 30, global.getStopCondition(), 10, 200);
 		System.out.println(mcs.resultReward(global, simResult, 2, 3));
 	}
-	
+
 	public static void main(String[] args) throws ASTException {
 		// prog0();
 		// prog1();

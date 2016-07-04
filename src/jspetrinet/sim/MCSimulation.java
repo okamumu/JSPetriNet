@@ -14,13 +14,13 @@ import jspetrinet.petri.Net;
 import jspetrinet.petri.Trans;
 
 public class MCSimulation {
-		
+
 	protected Net net;
 	protected Random rnd;
 	protected final Map<Mark, Mark> markSet;//結果表示用に通ったマーキングを保存
 	protected final Map<PairMark, PairMark> arcSet;
 	protected final Map<Trans, Double> remainingTime;//一般発火トランジションの残り時間
-	
+
 	public MCSimulation(Net net) throws ASTException {
 		this.net = net;
 		markSet = new HashMap<Mark, Mark>();
@@ -30,7 +30,7 @@ public class MCSimulation {
 			remainingTime.put(tr, 0.0);
 		}
 	}
-	
+
 	private void updateRemainingTime(Trans selTrans, double elapsedTime) throws ASTException{
 		for (Trans tr : net.getGenTransSet().values()) {
 			switch (PetriAnalysis.isEnable(net, tr)) {
@@ -45,7 +45,7 @@ public class MCSimulation {
 			}
 		}
 	}
-	
+
 	public ArrayList<EventValue> runSimulation(Mark initMarking, double startTime, double endTime, int limitFiring, int seed) throws ASTException {
 		ArrayList<EventValue> eventValues = new ArrayList<EventValue>();
 		rnd = new RandomGenerator(seed);
@@ -58,7 +58,7 @@ public class MCSimulation {
 			currentMarking = markSet.get(currentMarking);
 		}
 		eventValues.add(new EventValue(initMarking, currentTime));
-		while (true) {			
+		while (true) {
 			net.setCurrentMark(currentMarking);
 			if(firingcount>=limitFiring){
 				//上限推移数で終了したことを伝える
@@ -81,6 +81,7 @@ public class MCSimulation {
 				}
 			}
 			Trans selTrans = null;
+			double mindt = 0;
 			double totalWeight = 0;
 			for (Trans tr : net.getImmTransSet().values()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
@@ -94,8 +95,8 @@ public class MCSimulation {
 				default:
 				}
 			}
-			double mindt = Double.POSITIVE_INFINITY;
 			if(totalWeight==0){
+				mindt = Double.POSITIVE_INFINITY;
 				for (Trans tr : net.getGenTransSet().values()) {
 					switch (PetriAnalysis.isEnable(net, tr)) {
 					case ENABLE:
@@ -122,6 +123,7 @@ public class MCSimulation {
 				}
 			}
 			if(selTrans==null){
+				System.out.println("aaa");
 				//終了したことを記録
 				break;
 			}
@@ -129,9 +131,10 @@ public class MCSimulation {
 			updateRemainingTime(selTrans, mindt);
 			currentTime += mindt;
 			if(currentTime>endTime){
+				System.out.println("aaa");
 				break;
 			}
-			//発火処理			
+			//発火処理
 			Mark previousMarking = currentMarking;
 			currentMarking = PetriAnalysis.doFiring(net, selTrans);
 			if(!markSet.containsValue(currentMarking)){//発火先がmarkSetになければ追加
@@ -152,7 +155,7 @@ public class MCSimulation {
 		resultMarking();
 		return eventValues;
 	}
-	
+
 	public boolean canStop(ASTree stopCondition) throws ASTException{
 		if(Utility.convertObjctToDouble(stopCondition.eval(net))==1){
 			return true;
@@ -160,7 +163,7 @@ public class MCSimulation {
 			return false;
 		}
 	}
-	
+
 	public ArrayList<EventValue> runSimulation(Mark initMarking, double startTime, double endTime, ASTree stopCondition, int limitFiring, int seed) throws ASTException {
 		ArrayList<EventValue> eventValues = new ArrayList<EventValue>();
 		rnd = new RandomGenerator(seed);
@@ -173,7 +176,7 @@ public class MCSimulation {
 			currentMarking = markSet.get(currentMarking);
 		}
 		eventValues.add(new EventValue(initMarking, currentTime));
-		while (true) {			
+		while (true) {
 			net.setCurrentMark(currentMarking);
 			if(canStop(stopCondition)){
 				break;
@@ -249,7 +252,7 @@ public class MCSimulation {
 			if(currentTime>endTime){
 				break;
 			}
-			//発火処理			
+			//発火処理
 			Mark previousMarking = currentMarking;
 			currentMarking = PetriAnalysis.doFiring(net, selTrans);
 			if(!markSet.containsValue(currentMarking)){//発火先がmarkSetになければ追加
@@ -295,7 +298,7 @@ public class MCSimulation {
 		}
 		return totalReward;
 	}
-	
+
 	public void resultEvent(ArrayList<EventValue> eventValues){
 		for(int i=0;i<eventValues.size();i++){
 			System.out.print(String.format("%.2f", eventValues.get(i).getEventTime())+" : ");
@@ -305,7 +308,7 @@ public class MCSimulation {
 			System.out.println("");
 		}
 	}
-	
+
 	public void resultMarking(){
 		for(Mark mark : markSet.keySet()){
 			for(int i=0;i<net.getNumOfPlace();i++){
