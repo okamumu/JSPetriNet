@@ -24,13 +24,6 @@ public class Net extends ASTEnv {
 	protected final List<Trans> expTransList;
 	protected final List<Trans> genTransList;
 
-//	protected final Map<String,Place> placeSet;
-//	protected final Map<String,Trans> immTransSet;
-//	protected final Map<String,Trans> expTransSet;
-//	protected final Map<String,Trans> genTransSet;
-
-	protected ASTree reward;
-	
 	public Net(String label) {
 		this(null, label);
 	}
@@ -44,10 +37,6 @@ public class Net extends ASTEnv {
 		expTransList = new ArrayList<Trans>();
 		genTransList = new ArrayList<Trans>();
 
-//		placeSet = new HashMap<String,Place>();
-//		immTransSet = new HashMap<String,Trans>();
-//		expTransSet = new HashMap<String,Trans>();
-//		genTransSet = new HashMap<String,Trans>();
 		child = new HashMap<String,Net>();
 		if (outer != null) {
 			outer.setChild(label, this);
@@ -74,36 +63,6 @@ public class Net extends ASTEnv {
 		return child.get(label);
 	}
 
-//	private final List<Component> sortedComponentPlace(Map<String,Place> m) {
-//		List<Map.Entry<String,Place>> entries = new ArrayList<Map.Entry<String,Place>>(m.entrySet());
-//		Collections.sort(entries, new Comparator<Map.Entry<String,Place>>() {
-//			@Override
-//			public int compare(Entry<String,Place> entry1, Entry<String,Place> entry2) {
-//				return entry2.getKey().compareTo(entry1.getKey());
-//			}
-//		});
-//		List<Component> result = new LinkedList<Component>();
-//		for (Entry<String,Place> c : entries) {
-//			result.add(c.getValue());
-//		}
-//		return result;
-//	}
-//	
-//	private final List<Component> sortedComponentTrans(Map<String,Trans> m) {
-//		List<Map.Entry<String,Trans>> entries = new ArrayList<Map.Entry<String,Trans>>(m.entrySet());
-//		Collections.sort(entries, new Comparator<Map.Entry<String,Trans>>() {
-//			@Override
-//			public int compare(Entry<String,Trans> entry1, Entry<String,Trans> entry2) {
-//				return entry2.getKey().compareTo(entry1.getKey());
-//			}
-//		});
-//		List<Component> result = new LinkedList<Component>();
-//		for (Entry<String,Trans> c : entries) {
-//			result.add(c.getValue());
-//		}
-//		return result;
-//	}
-//
 	public final List<Component> getAllComponent() {
 		List<Component> all = new LinkedList<Component>();
 		for (Net c : child.values()) {
@@ -116,22 +75,6 @@ public class Net extends ASTEnv {
 		return all;
 	}
 
-//	public final Map<String,Place> getPlaceSet() {
-//		return placeSet;
-//	}
-//	
-//	public final Map<String,Trans> getImmTransSet() {
-//		return immTransSet;
-//	}
-//
-//	public final Map<String,Trans> getExpTransSet() {
-//		return expTransSet;
-//	}
-//
-//	public final Map<String,Trans> getGenTransSet() {
-//		return genTransSet;
-//	}
-	
 	public final List<Place> getPlaceSet() {
 		return placeList;
 	}
@@ -148,17 +91,6 @@ public class Net extends ASTEnv {
 		return genTransList;
 	}
 
-	public final double getReward() throws ASTException {
-		Object tmp = reward.eval(this);
-		if (tmp instanceof Integer) {
-			return ((Integer) tmp).doubleValue();
-		} else if (tmp instanceof Double) {
-			return ((Double) tmp).doubleValue();
-		} else {
-			throw new TypeMismatch();
-		}
-	}
-	
 	public final int getNumOfGenTrans() {
 		return genTransList.size();
 	}
@@ -167,104 +99,10 @@ public class Net extends ASTEnv {
 		return placeList.size();
 	}
 
-//	public final Place getPlace(String label) throws ASTException {
-//		this.contains(label)
-//		if (this.contains(label)) {
-//			return this.get(label)placeSet.get(label);
-//		}
-//
-//		if (outer != null) {
-//			return outer.getPlace(label);
-//		} else {
-//			throw new NotFindObjectException();
-//		}
-//	}
-	
-//	public final Trans getTrans(String label) throws ASTException {
-//		if (immTransSet.containsKey(label)) {
-//			return immTransSet.get(label);
-//		}
-//		if (expTransSet.containsKey(label)) {
-//			return expTransSet.get(label);
-//		}
-//		if (genTransSet.containsKey(label)) {
-//			return genTransSet.get(label);
-//		}
-//
-//		if (outer != null) {
-//			return outer.getTrans(label);
-//		} else {
-//			throw new NotFindObjectException();
-//		}
-//	}
-
-//	public final Place getPlace(String label, Net global) throws ASTException {
-//		String[] strarray = label.split("\\.");
-//		Net cur = global;
-//		for (int i=0; i<strarray.length-1; i++) {
-//			cur = cur.getChild(strarray[i]);
-//		}
-//		if (placeSet.containsKey(strarray[strarray.length-1])) {
-//			return placeSet.get(strarray[strarray.length-1]);			
-//		} else {
-//			throw new NotFindObjectException();
-//		}
-//	}
-
-//	public final Trans getTrans(String label, Net global) throws ASTException {
-//		String[] strarray = label.split("\\.");
-//		Net cur = global;
-//		for (int i=0; i<strarray.length-1; i++) {
-//			cur = cur.getChild(strarray[i]);
-//		}
-//		
-//		if (immTransSet.containsKey(strarray[strarray.length-1])) {
-//			return immTransSet.get(strarray[strarray.length-1]);
-//		}
-//		if (expTransSet.containsKey(strarray[strarray.length-1])) {
-//			return expTransSet.get(strarray[strarray.length-1]);
-//		}
-//		if (genTransSet.containsKey(strarray[strarray.length-1])) {
-//			return genTransSet.get(strarray[strarray.length-1]);
-//		}
-//		throw new NotFindObjectException();
-//	}
-	
-	// override
-	@Override
-	public String toString() {
-		String res = super.toString();
-		String linesep = System.getProperty("line.separator").toString();
-		res += linesep + linesep + "Net: " + label;
-		res += linesep + "#Place:" + placeList.size() + linesep;
-		for (Place p: placeList) {
-			res += " " + p.getLabel() + ";"; 
-		}
-		res += linesep + "#Imm:" + immTransList.size() + linesep;
-		for (Trans t: immTransList) {
-			res += " " + t.getLabel() + ";"; 
-		}
-		res += linesep + "#Exp:" + expTransList.size() + linesep;
-		for (Trans t: expTransList) {
-			res += " " + t.getLabel() + ";"; 
-		}
-		res += linesep + "#Gen:" + genTransList.size() + linesep;
-		for (Trans t: genTransList) {
-			res += " " + t.getLabel() + ";"; 
-		}
-		return res;
-	}
-	
-	// initialize
-//	public void init() {
-//		setIndex();
-//	}
-	
 	public void setIndex() {
 		int i = 0;
 		for (Place p : placeList) {
 			p.setIndex(i);
-//			placeIndex.put(i, p);
 			i++;
 		}
 		
@@ -275,16 +113,7 @@ public class Net extends ASTEnv {
 		}
 	}
 	
-	// methods
-	public void setReward(String reward) throws ASTException {
-		Object tmp = this.get(reward);
-		if (tmp instanceof ASTree) {
-			this.reward = (ASTree) tmp;
-		} else {
-			throw new TypeMismatch();
-		}
-	}
-	
+	// methods	
 	public Place createPlace(String label, int max) throws ASTException {
 		if (this.contains(label)) {
 			throw new AlreadyExistException(label);

@@ -71,7 +71,7 @@ public class MarkingMatrix {
 		}
 	}
 	
-	public MarkingGraph getMarkingProcess() {
+	public MarkingGraph getMarkingGraph() {
 		return mp;
 	}
 

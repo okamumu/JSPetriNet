@@ -21,6 +21,7 @@ import org.apache.commons.cli.ParseException;
 import jspetrinet.*;
 import jspetrinet.analysis.MRGPAnalysis;
 import jspetrinet.analysis.MarkingMatrix;
+import jspetrinet.ast.ASTree;
 import jspetrinet.exception.*;
 import jspetrinet.marking.*;
 import jspetrinet.petri.*;
@@ -28,14 +29,15 @@ import jspetrinet.petri.*;
 class Opts {
 	// modes
 	public static String VIEW="view";
-	public static String MARKING="marking";
+	public static String MARKING="analysis";
 	
 	// options
 	public static String INPETRI="spn";
 	public static String OUTPETRI="dot";
 	public static String OUTMAT="out";
 	public static String INITMARK="imark";
-	public static String DEPTH="depth";
+	public static String DEPTH="test";
+	public static String REWARD="reward";
 }
 
 public class CommandLineMain {
@@ -102,8 +104,10 @@ public class CommandLineMain {
 		Options options = new Options();
 		options.addOption(Opts.INPETRI, true, "input Petrinet file");
 		options.addOption(Opts.INITMARK, true, "initial marking");
-		options.addOption(Opts.DEPTH, true, "depth for DFS");
+		options.addOption(Opts.DEPTH, true, "test mode (input depth for DFS)");
 		options.addOption(Opts.OUTMAT, true, "matrix (output)");
+		options.addOption(Opts.OUTPETRI, true, "marking graph (output)");
+		options.addOption(Opts.REWARD, true, "indicate the label of reward");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
 		try {
@@ -147,11 +151,12 @@ public class CommandLineMain {
 		MarkingGraph mp = JSPetriNet.marking(net, imark, depth);
 		MarkingMatrix mat = new MarkingMatrix(mp, true);
 
-		PrintWriter pw1, pw2;
+		PrintWriter pw1, pw2, pw6;
 		if (cmd.hasOption(Opts.OUTMAT)) {
 			try {
 				pw1 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUTMAT) + ".states")));
 				pw2 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUTMAT) + ".matrix")));
+				pw6 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUTMAT) + ".init")));
 			} catch (FileNotFoundException e) {
 				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTMAT));
 				return;
@@ -162,42 +167,64 @@ public class CommandLineMain {
 		} else {
 			pw1 = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
 			pw2 = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+			pw6 = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
 		}
 		
 		MRGPAnalysis mrgp = new MRGPAnalysis(mat);
-
 		mrgp.writeMarkSet(pw1);
 		mrgp.writeMatrix(pw2);
-//		mrgp.writeVanishing(pw2);
+		mrgp.writeStateVec(pw6, imark);
 		pw1.close();
 		pw2.close();
+		pw6.close();
 		
-		PrintStream out;
-		try {
-			out = new PrintStream("/Users/okamu/Desktop/graph.dot");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
+		if (cmd.hasOption(Opts.REWARD)) {
+			PrintWriter pw5;
+			if (cmd.hasOption(Opts.OUTMAT)) {
+				try {
+					pw5 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUTMAT) + ".reward")));
+				} catch (FileNotFoundException e) {
+					System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTMAT));
+					return;
+				} catch (IOException e) {
+					System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTMAT));
+					return;
+				}			
+			} else {
+				pw5 = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+			}
+			String rewardLabel = cmd.getOptionValue(Opts.REWARD);
+			try {
+				Object obj = net.get(rewardLabel);
+				if (obj instanceof ASTree) {
+					mrgp.writeStateRewardVec(pw5, (ASTree) obj);
+				} else {
+					throw new TypeMismatch();
+				}
+			} catch (ASTException ex) {
+				System.err.println(ex.getMessage());
+				System.exit(0);
+			}
+			pw5.close();
 		}
-		out.println("digraph { layout=dot; overlap=false; splines=true;");
-		
-		List<MarkGroup> all = new LinkedList<MarkGroup>(mat.getMarkingProcess().getGenGroup().values());
-		all.addAll(mat.getMarkingProcess().getImmGroup().values());
-		all.get(0).accept(new jspetrinet.graph.VizPrint(out));
-		out.println("}");
 
-		PrintStream out2;
-		try {
-			out2 = new PrintStream("/Users/okamu/Desktop/graph2.dot");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
+		if (cmd.hasOption(Opts.OUTPETRI)) {
+			PrintWriter pw3, pw4;
+			try {
+				pw3 = new PrintWriter(new BufferedWriter(new FileWriter("group_" + cmd.getOptionValue(Opts.OUTPETRI))));
+				pw4 = new PrintWriter(new BufferedWriter(new FileWriter("mark_" + cmd.getOptionValue(Opts.OUTPETRI))));
+			} catch (FileNotFoundException e) {
+				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTPETRI));
+				return;
+			} catch (IOException e) {
+				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTPETRI));
+				return;
+			}			
+			mat.getMarkingGraph().dotMarkGroup(pw3);
+			mat.getMarkingGraph().dotMarking(pw4);
+			pw3.close();
+			pw4.close();
 		}
-		out2.println("digraph { layout=dot; overlap=false; splines=true;");
-		imark.accept(new jspetrinet.graph.VizPrint(out2));
-		out2.println("}");
 	}
 
 	public static void main(String[] args) throws ASTException {

@@ -33,7 +33,7 @@ public class JSPetriNet {
 		} catch (ParseException ex) {
 			System.out.println("parse error: " + ex.getMessage());			
 		} catch (ASTException e) {
-			System.out.println("Error: " + e.getMsg());
+			System.out.println("Error: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return net;
@@ -54,13 +54,13 @@ public class JSPetriNet {
 		} catch (ParseException ex) {
 			System.out.println("parse error: " + ex.getMessage());			
 		} catch (ASTException e) {
-			System.out.println("Error: " + e.getMsg());
+			System.out.println("Error: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
 
 	public static Mark mark(Net net, Map<String,Integer> map) {
-		Mark m = new Mark(net, net.getNumOfPlace());
+		Mark m = new Mark(net.getNumOfPlace());
 		try {
 			for (Map.Entry<String, Integer> e : map.entrySet()) {
 				Object obj = net.get(e.getKey());

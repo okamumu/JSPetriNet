@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import jspetrinet.JSPetriNet;
+import jspetrinet.ast.ASTree;
+import jspetrinet.exception.ASTException;
 import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkGroup;
@@ -34,9 +36,11 @@ public class MRGPAnalysis {
 	
 	private final Map<GroupPair,String> matrixName;
 	
+	private static String colsep = "\t";
+	
 	public MRGPAnalysis(MarkingMatrix mat) {
 		this.mat = mat;
-		mp = mat.getMarkingProcess();
+		mp = mat.getMarkingGraph();
 		net = mp.getNet();
 		matrixName = new HashMap<GroupPair,String>();
 		immGroup = mp.getImmGroup();
@@ -69,13 +73,71 @@ public class MRGPAnalysis {
 		}
 	}
 	
-	private void defineMatrix(String matrixName, MarkGroup src, MarkGroup dest) {
+	public void writeStateRewardVec(PrintWriter pw, ASTree reward) throws ASTException {
+		for (GenVec gv : mat.getSortedAllGenVec()) {
+			if (genGroup.containsKey(gv)) {
+				MarkGroup mg = genGroup.get(gv);
+				String glabel = JSPetriNet.genvecToString(net, gv);
+				pw.println("# " + mat.getGroupLabel(mg) + " " + glabel);
+				pw.println("# size " + mg.size());
+				List<List<Object>> s = mat.getMakingSet(mg);
+				for (List<Object> e: s) {
+					Mark m = (Mark) e.get(1);
+					net.setCurrentMark(m);
+					pw.println(mat.getGroupLabel(mg) + "rwd" + colsep + e.get(0) + colsep + reward.eval(net));
+				}
+			}
+		}
+	}
+
+	public void writeStateVec(PrintWriter pw, Mark imark) {
+		for (GenVec gv : mat.getSortedAllGenVec()) {
+			if (immGroup.containsKey(gv)) {
+				MarkGroup mg = immGroup.get(gv);
+				String glabel = JSPetriNet.genvecToString(net, gv);
+				pw.println("# " + mat.getGroupLabel(mg) + " " + glabel);
+				pw.println("# size " + mg.size());
+				List<List<Object>> s = mat.getMakingSet(mg);
+				for (List<Object> e: s) {
+					Mark m = (Mark) e.get(1);
+					int value;
+					if (m == imark) {
+						value = 1;
+					} else {
+						value = 0;
+					}
+					pw.println(mat.getGroupLabel(mg) + "init" + colsep + e.get(0) + colsep + value);
+				}
+			}
+			if (genGroup.containsKey(gv)) {
+				MarkGroup mg = genGroup.get(gv);
+				String glabel = JSPetriNet.genvecToString(net, gv);
+				pw.println("# " + mat.getGroupLabel(mg) + " " + glabel);
+				pw.println("# size " + mg.size());
+				List<List<Object>> s = mat.getMakingSet(mg);
+				for (List<Object> e: s) {
+					Mark m = (Mark) e.get(1);
+					int value;
+					if (m == imark) {
+						value = 1;
+					} else {
+						value = 0;
+					}
+					pw.println(mat.getGroupLabel(mg) + "init" + colsep + e.get(0) + colsep + value);
+				}
+			}
+		}
+	}
+
+	private void defineMatrix(String matrixName, MarkGroup src, MarkGroup dest, List<List<Object>> s) {
 		pw.println("# " + matrixName + " " + mat.getGroupLabel(src) + " to " + mat.getGroupLabel(dest));
-		pw.println(matrixName + " <- Matrix(0," + src.size() + "," + dest.size() + ")");
+//		pw.println(matrixName + " <- Matrix(0," + src.size() + "," + dest.size() + ")");
+		pw.println("# size" + colsep + src.size() + colsep + dest.size() + colsep + s.size());
 	}
 
 	private void putElement(String matrixName, Object i, Object j, Object v) {
-		pw.println(matrixName + "[" + i + "," + j + "] <- " + v);
+//		pw.println(matrixName + "[" + i + "," + j + "] <- " + v);
+		pw.println(matrixName + colsep + i + colsep + j + colsep + v);
 	}
 
 	private void writeImm(MarkGroup src, MarkGroup dest) {
@@ -87,7 +149,7 @@ public class MRGPAnalysis {
 			return;
 		}
 		String matname = mat.getGroupLabel(src) + mat.getGroupLabel(dest);
-		this.defineMatrix(matname, src, dest);
+		this.defineMatrix(matname, src, dest, s);
 		for (List<Object> e: s) {
 			this.putElement(matname, e.get(0), e.get(1), e.get(2));
 		}
@@ -102,7 +164,7 @@ public class MRGPAnalysis {
 		List<List<Object>> s = elem.get(null); // get EXP
 		if (s.size() != 0 || src == dest) {
 			String matname = mat.getGroupLabel(src) + mat.getGroupLabel(dest) + "E";
-			this.defineMatrix(matname, src, dest);
+			this.defineMatrix(matname, src, dest, s);
 			for (List<Object> e: s) {
 				this.putElement(matname, e.get(0), e.get(1), e.get(2));
 			}
@@ -114,7 +176,7 @@ public class MRGPAnalysis {
 				if (s.size() != 0) {
 					String matname = mat.getGroupLabel(src) + mat.getGroupLabel(dest)
 						+ "P" + entry.getKey().getIndex();
-					this.defineMatrix(matname, src, dest);
+					this.defineMatrix(matname, src, dest, s);
 					for (List<Object> e: s) {
 						this.putElement(matname, e.get(0), e.get(1), e.get(2));
 					}
@@ -145,39 +207,5 @@ public class MRGPAnalysis {
 			}
 		}
 		this.pw = null;
-	}
-	
-	public void writeVanishing(PrintWriter pw) {
-		Map<MarkGroup,String> result = new HashMap<MarkGroup,String>();
-		Map<MarkGroup,String> result2 = new HashMap<MarkGroup,String>();
-		for (Map.Entry<GroupPair, String> entry : matrixName.entrySet()) {
-			MarkGroup src = entry.getKey().getSrcMarkGroup();
-			MarkGroup dest = entry.getKey().getDestMarkGroup();
-			if (immGroup.containsValue(src) && genGroup.containsValue(dest)) {
-				if (result.containsKey(src)) {
-					result.put(src, "(" + entry.getValue() + " + " + result.get(src) + ")");
-				} else {
-					result.put(src, entry.getValue());
-				}
-			}
-		}
-
-		for (Map.Entry<GroupPair, String> entry : matrixName.entrySet()) {
-			MarkGroup src = entry.getKey().getSrcMarkGroup();
-			MarkGroup dest = entry.getKey().getDestMarkGroup();
-			if (immGroup.containsValue(src) && immGroup.containsValue(dest)) {
-				if (result.containsKey(dest)) {
-					String tmp = entry.getValue() + " %*% " + result.get(dest);
-					if (result.containsKey(src)) {
-						result.put(src, "(" + tmp + " + " + result.get(src) + ")");
-					} else {
-						result.put(src, tmp);
-					}
-				}
-			}
-		}
-		for (MarkGroup mg : immGroup.values()) {
-			pw.println(result.get(mg));
-		}
 	}
 }

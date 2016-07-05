@@ -1,9 +1,14 @@
 package jspetrinet.marking;
 
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import jspetrinet.JSPetriNet;
 import jspetrinet.exception.*;
+import jspetrinet.graph.Arc;
 import jspetrinet.petri.*;
 
 public class MarkingGraph {
@@ -31,6 +36,10 @@ public class MarkingGraph {
 	
 	public final int size() {
 		return markSet.size();
+	}
+	
+	public final List<Mark> getMarkList() {
+		return new ArrayList<Mark>(markSet.keySet());
 	}
 	
 	public final int immSize() {
@@ -72,5 +81,36 @@ public class MarkingGraph {
 		immGroup.clear();
 		genGroup.clear();		
 		return this.creteMarking.create(init, net);
+	}
+
+	public void dotMarking(PrintWriter bw) {
+		bw.println("digraph { layout=dot; overlap=false; splines=true;");
+		for (Mark m : markSet.keySet()) {
+			bw.println("\"" + m + "\" [shape = circle, label = \""
+					+ JSPetriNet.markToString(net, m) + "\"];");
+			for (Arc a : m.getOutArc()) {
+				bw.println("\"" + a.getSrc() + "\" -> \"" + a.getDest() + "\";");
+			}
+		}
+		bw.println("}");
+	}
+
+	public void dotMarkGroup(PrintWriter bw) {
+		bw.println("digraph { layout=dot; overlap=false; splines=true;");
+		for (Map.Entry<GenVec, MarkGroup> entry : this.genGroup.entrySet()) {
+			bw.println("\"" + entry.getValue() + "\" [shape = circle, label = \"GEN "
+					+ JSPetriNet.genvecToString(net, entry.getKey()) + "\"];");
+			for (Arc a : entry.getValue().getOutArc()) {
+				bw.println("\"" + a.getSrc() + "\" -> \"" + a.getDest() + "\";");
+			}
+		}
+		for (Map.Entry<GenVec, MarkGroup> entry : this.immGroup.entrySet()) {
+			bw.println("\"" + entry.getValue() + "\" [shape = circle, label = \"IMM "
+					+ JSPetriNet.genvecToString(net, entry.getKey()) + "\"];");
+			for (Arc a : entry.getValue().getOutArc()) {
+				bw.println("\"" + a.getSrc() + "\" -> \"" + a.getDest() + "\";");
+			}
+		}
+		bw.println("}");
 	}
 }
