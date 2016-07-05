@@ -1,14 +1,9 @@
 package jspetrinet.marking;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
-public final class GenVec implements Serializable {
+public final class GenVec {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -8822262392158365575L;
 	private final byte[] vec;
 
 //	public GenVec(String label, int length) {

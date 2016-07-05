@@ -1,6 +1,6 @@
 <project name="JSPetriNet" default="compile" basedir=".">
 
-	<property name="version" value="0.9.0"/>
+	<property name="version" value="0.9.1"/>
 
 	<property name="commons" value="commons-cli-1.3.1.jar"/>
 
@@ -28,6 +28,15 @@
 			<manifest>
 				<attribute name="Main-Class" value="CommandLineMain"/>
 				<attribute name="Class-Path" value="lib/${commons}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="exejar" depends="compile">
+		<jar jarfile="${ant.project.name}exe-${version}.jar" basedir="bin">
+			<zipfileset src="lib/${commons}" />
+			<manifest>
+				<attribute name="Main-Class" value="CommandLineMain"/>
 			</manifest>
 		</jar>
 	</target>

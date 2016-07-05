@@ -1,15 +1,10 @@
 package jspetrinet.marking;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MarkGroup implements Serializable {
+public class MarkGroup {
 	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3847376226974146560L;
 	private final Set<Mark> markSet;
 	private final Set<Mark> enterSet;
 	private final Set<Mark> exitSet;
@@ -36,7 +31,7 @@ public class MarkGroup implements Serializable {
 	public final boolean isTransient() {
 		return isTransient;
 	}
-
+	
 	public final void setSlow(boolean b) {
 		isSlow = b;
 	}

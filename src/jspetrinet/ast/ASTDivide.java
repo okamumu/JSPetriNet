@@ -12,6 +12,11 @@ public class ASTDivide extends ASTBinaryOperator {
 	public Object eval(ASTEnv m) throws ASTException {
 		Object lhs = this.getLeft().eval(m);
 		Object rhs = this.getRight().eval(m);
+
+		if (lhs instanceof String || rhs instanceof String) {
+			return "(" + lhs.toString() + "/" + rhs.toString() + ")";
+		}
+
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return (Integer) lhs / (Integer) rhs;
 		} else if (lhs instanceof Integer && rhs instanceof Double) {
