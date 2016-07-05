@@ -4,19 +4,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import jspetrinet.JSPetriNet;
 import jspetrinet.graph.Arc;
+import jspetrinet.petri.Net;
 
 public final class Mark extends jspetrinet.graph.Node implements Comparable<Mark> {
 
+	private final Net net;
 	private final byte[] vec;
 	private MarkGroup markGroup;
 
-	public Mark(int size) {
+	public Mark(Net net, int size) {
+		this.net = net;
 		this.vec = new byte [size];
 		markGroup = null;
 	}
 
 	public Mark(Mark m) {
+		this.net = m.net;
 		this.vec = Arrays.copyOf(m.vec, m.vec.length);
 		markGroup = null;
 	}
@@ -25,6 +30,11 @@ public final class Mark extends jspetrinet.graph.Node implements Comparable<Mark
 		return vec[i];
 	}
 	
+	@Override
+	public String toString() {
+		return JSPetriNet.markToString(net, this);
+	}
+
 	public final void set(int i, int v) {
 		vec[i] = (byte) v;
 	}

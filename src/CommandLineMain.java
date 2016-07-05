@@ -4,7 +4,9 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -166,9 +168,36 @@ public class CommandLineMain {
 
 		mrgp.writeMarkSet(pw1);
 		mrgp.writeMatrix(pw2);
-		mrgp.writeVanishing(pw2);
+//		mrgp.writeVanishing(pw2);
 		pw1.close();
 		pw2.close();
+		
+		PrintStream out;
+		try {
+			out = new PrintStream("/Users/okamu/Desktop/graph.dot");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}
+		out.println("digraph { layout=dot; overlap=false; splines=true;");
+		
+		List<MarkGroup> all = new LinkedList<MarkGroup>(mat.getMarkingProcess().getGenGroup().values());
+		all.addAll(mat.getMarkingProcess().getImmGroup().values());
+		all.get(0).accept(new jspetrinet.graph.VizPrint(out));
+		out.println("}");
+
+		PrintStream out2;
+		try {
+			out2 = new PrintStream("/Users/okamu/Desktop/graph2.dot");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}
+		out2.println("digraph { layout=dot; overlap=false; splines=true;");
+		imark.accept(new jspetrinet.graph.VizPrint(out2));
+		out2.println("}");
 	}
 
 	public static void main(String[] args) throws ASTException {

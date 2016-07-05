@@ -69,7 +69,7 @@ public class Net extends ASTEnv {
 
 	public final Net getChild(String label) throws ASTException {
 		if (!child.containsKey(label)) {
-			throw new NotFindObjectException();
+			throw new NotFindObjectException(label);
 		}
 		return child.get(label);
 	}
@@ -287,7 +287,7 @@ public class Net extends ASTEnv {
 	
 	public Place createPlace(String label, int max) throws ASTException {
 		if (this.contains(label)) {
-			throw new AlreadyExistException();
+			throw new AlreadyExistException(label);
 		}
 		Place tmp = new Place(label, max);
 		put(label, tmp);
@@ -297,7 +297,7 @@ public class Net extends ASTEnv {
 	
 	public final ExpTrans createExpTrans(String label, ASTree rate) throws ASTException {
 		if (this.contains(label)) {
-			throw new AlreadyExistException();
+			throw new AlreadyExistException(label);
 		}
 		ExpTrans tmp = new ExpTrans(label, rate);
 		put(label, tmp);
@@ -311,7 +311,7 @@ public class Net extends ASTEnv {
 
 	public final ImmTrans createImmTrans(String label, ASTree weight) throws ASTException {
 		if (this.contains(label)) {
-			throw new AlreadyExistException();
+			throw new AlreadyExistException(label);
 		}
 		ImmTrans tmp = new ImmTrans(label, weight);
 		put(label, tmp);
@@ -325,7 +325,7 @@ public class Net extends ASTEnv {
 
 	public final GenTrans createGenTrans(String label, ASTree dist, GenTransPolicy policy) throws ASTException {
 		if (this.contains(label)) {
-			throw new AlreadyExistException();
+			throw new AlreadyExistException(label);
 		}
 		GenTrans tmp = new GenTrans(label, dist, policy);
 		put(label, tmp);
@@ -338,7 +338,7 @@ public class Net extends ASTEnv {
 	public final ArcBase createNormalInArc(Place src, Trans dest, ASTree multi) throws ASTException {
 		for (Arc a : src.getOutArc()) {
 			if (a.getDest().equals(dest)) {
-				throw new AlreadyExistException();
+				throw new AlreadyExistException(label);
 			}
 		}
 		ArcBase tmp = new InArc(src, dest, multi);
@@ -348,7 +348,7 @@ public class Net extends ASTEnv {
 	public final ArcBase createNormalOutArc(Trans src, Place dest, ASTree multi) throws ASTException {
 		for (Arc a : src.getOutArc()) {
 			if (a.getDest().equals(dest)) {
-				throw new AlreadyExistException();
+				throw new AlreadyExistException(label);
 			}
 		}
 		ArcBase tmp = new OutArc(src, dest, multi);
@@ -358,7 +358,7 @@ public class Net extends ASTEnv {
 	public final ArcBase createInhibitArc(Place src, Trans dest, ASTree multi) throws ASTException {
 		for (Arc a : src.getOutArc()) {
 			if (a.getDest().equals(dest)) {
-				throw new AlreadyExistException();
+				throw new AlreadyExistException(label);
 			}
 		}
 		ArcBase tmp = new InhibitArc(src, dest, multi);

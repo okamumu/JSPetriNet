@@ -143,10 +143,10 @@ void PlaceDeclaration() throws ASTException: {
 				if (value instanceof Integer) {
 					pmax = (Integer) value;
 				} else {
-					throw new ASTException();
+					throw new ASTException("The max attribute should be an integer");
 				}
 			} else {
-				throw new UnknownOption();
+				throw new UnknownOption(label);
 			}
 		}
 	}
@@ -175,7 +175,7 @@ void ExpTransDeclaration() throws ASTException: {
 			} else if (label.equals("guard")) {
 				current.put(token.image + ".guard", value);
 			} else {
-				throw new UnknownOption();
+				throw new UnknownOption(label);
 			}
 		}
 	}
@@ -202,7 +202,7 @@ void ImmTransDeclaration() throws ASTException: {
 			} else if (label.equals("guard")) {
 				current.put(token.image + ".guard", value);
 			} else {
-				throw new UnknownOption();
+				throw new UnknownOption(label);
 			}
 		}
 	}
@@ -232,15 +232,15 @@ void GenTransDeclaration() throws ASTException: {
 					} else if (pol == 1) {
 						tr.setPolicy(GenTransPolicy.PRS);
 					} else {
-						throw new UnknownOption();
+						throw new UnknownOption("Unknown policy");
 					}
 				} else {
-					throw new UnknownOption();
+					throw new UnknownOption("Unknown policy");
 				}
 			} else if (label.equals("guard")) {
 				tr.setGuard(value);
 			} else {
-				throw new UnknownOption();
+				throw new UnknownOption(label);
 			}
 		}
 	}
@@ -264,15 +264,15 @@ void ArcDeclaration() throws ASTException: {
 				Place p = (Place) current.get(dest.image);
 				a = current.createNormalOutArc(tr, p, new ASTValue(1));
 			} catch (NotFindObjectException e2) {
-				System.out.println("Did not find " + src.image + " -> " + dest.image);
-				throw new NotFindObjectException();
+				System.err.println("Did not find " + src.image + " -> " + dest.image);
+				throw new NotFindObjectException("Did not find " + src.image + " -> " + dest.image);
 			} catch (AlreadyExistException e3) {
-				System.out.println("Already exist " + src.image + " -> " + dest.image);
-				throw new NotFindObjectException();
+				System.err.println("Already exist " + src.image + " -> " + dest.image);
+				throw new NotFindObjectException("Already exist " + src.image + " -> " + dest.image);
 			}
 		} catch (AlreadyExistException e4) {
-				System.out.println("Already exist " + src.image + " -> " + dest.image);
-				throw new NotFindObjectException();
+				System.err.println("Already exist " + src.image + " -> " + dest.image);
+				throw new NotFindObjectException("Already exist " + src.image + " -> " + dest.image);
 		}
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
@@ -283,7 +283,7 @@ void ArcDeclaration() throws ASTException: {
 			} else if (label.equals("firing")) {
 				a.setFiring(value);
 			} else {
-				throw new UnknownOption();
+				throw new UnknownOption(label);
 			}
 		}
 	}
@@ -309,7 +309,7 @@ void IArcDeclaration() throws ASTException: {
 			} else if (label.equals("firing")) {
 				a.setFiring(value);
 			} else {
-				throw new UnknownOption();
+				throw new UnknownOption(label);
 			}
 		}
 	}
@@ -335,7 +335,7 @@ void OArcDeclaration() throws ASTException: {
 			} else if (label.equals("firing")) {
 				a.setFiring(value);
 			} else {
-				throw new UnknownOption();
+				throw new UnknownOption(label);
 			}
 		}
 	}
@@ -359,7 +359,7 @@ void HArcDeclaration() throws ASTException: {
 			if (label.equals("multi")) {
 				a.setMulti(value);
 			} else {
-				throw new UnknownOption();
+				throw new UnknownOption(label);
 			}
 		}
 	}

@@ -33,7 +33,7 @@ public class JSPetriNet {
 		} catch (ParseException ex) {
 			System.out.println("parse error: " + ex.getMessage());			
 		} catch (ASTException e) {
-			System.out.println("Error");
+			System.out.println("Error: " + e.getMsg());
 			e.printStackTrace();
 		}
 		return net;
@@ -54,13 +54,13 @@ public class JSPetriNet {
 		} catch (ParseException ex) {
 			System.out.println("parse error: " + ex.getMessage());			
 		} catch (ASTException e) {
-			System.out.println("Error");
+			System.out.println("Error: " + e.getMsg());
 			e.printStackTrace();
 		}
 	}
 
 	public static Mark mark(Net net, Map<String,Integer> map) {
-		Mark m = new Mark(net.getNumOfPlace());
+		Mark m = new Mark(net, net.getNumOfPlace());
 		try {
 			for (Map.Entry<String, Integer> e : map.entrySet()) {
 				Object obj = net.get(e.getKey());
@@ -68,7 +68,7 @@ public class JSPetriNet {
 					Place p = (Place) obj;
 					m.set(p.getIndex(), e.getValue());
 				} else {
-					throw new ASTException();
+					throw new ASTException(e.getKey() + " is not a place.");
 				}
 			}
 		} catch (ASTException e1) {

@@ -124,60 +124,6 @@ public class MRGPAnalysis {
 		}
 	}
 
-	private void writeImm(Collection<MarkGroup> srcMarkGroupSet, Collection<MarkGroup> destMarkGroupSet) {
-		for (MarkGroup src: srcMarkGroupSet) {
-			for (MarkGroup dest: destMarkGroupSet) {
-				if (dest.size() == 0) {
-					continue;
-				}
-				List< List<Object> > s = mat.getMatrixI(net, src, dest);
-				if (s.size() == 0) {
-					continue;
-				}
-				String matname = mat.getGroupLabel(src) + mat.getGroupLabel(dest);
-				this.defineMatrix(matname, src, dest);
-				for (List<Object> e: s) {
-					this.putElement(matname, e.get(0), e.get(1), e.get(2));
-				}
-				matrixName.put(new GroupPair(src, dest), matname);
-			}
-		}
-	}
-	
-	private void writeGen(Collection<MarkGroup> srcMarkGroupSet, Collection<MarkGroup> destMarkGroupSet) {
-		for (MarkGroup src: srcMarkGroupSet) {
-			for (MarkGroup dest: destMarkGroupSet) {
-				if (dest.size() == 0) {
-					continue;
-				}
-				Map<Trans,List<List<Object>>> elem = mat.getMatrixG(net, src, dest);
-				List<List<Object>> s = elem.get(null); // get EXP
-				if (s.size() != 0 || src == dest) {
-					String matname = mat.getGroupLabel(src) + mat.getGroupLabel(dest) + "E";
-					this.defineMatrix(matname, src, dest);
-					for (List<Object> e: s) {
-						this.putElement(matname, e.get(0), e.get(1), e.get(2));
-					}
-					matrixName.put(new GroupPair(src, dest), matname);
-				}
-				for (Map.Entry<Trans, List<List<Object>>> entry: elem.entrySet()) {
-					if (entry.getKey() != null) {
-						s = entry.getValue();
-						if (s.size() != 0) {
-							String matname = mat.getGroupLabel(src) + mat.getGroupLabel(dest)
-								+ "P" + entry.getKey().getIndex();
-							this.defineMatrix(matname, src, dest);
-							for (List<Object> e: s) {
-								this.putElement(matname, e.get(0), e.get(1), e.get(2));
-							}
-							matrixName.put(new GroupPair(src, dest, entry.getKey()), matname);
-						}
-					}
-				}
-			}
-		}
-	}
-
 	public void writeMatrix(PrintWriter pw) {
 		this.pw = pw;
 		for (GenVec srcgv : mat.getSortedAllGenVec()) {
@@ -202,11 +148,36 @@ public class MRGPAnalysis {
 	}
 	
 	public void writeVanishing(PrintWriter pw) {
+		Map<MarkGroup,String> result = new HashMap<MarkGroup,String>();
+		Map<MarkGroup,String> result2 = new HashMap<MarkGroup,String>();
 		for (Map.Entry<GroupPair, String> entry : matrixName.entrySet()) {
-			if (entry.getKey().getSrcMarkGroup() == entry.getKey().getDestMarkGroup()
-					&& immGroup.containsValue(entry.getKey().getSrcMarkGroup())) {
-				pw.println(entry.getValue() + "r <- solve(diag(1,dim(" + entry.getValue() + ")) - " + entry.getValue() + ")");
+			MarkGroup src = entry.getKey().getSrcMarkGroup();
+			MarkGroup dest = entry.getKey().getDestMarkGroup();
+			if (immGroup.containsValue(src) && genGroup.containsValue(dest)) {
+				if (result.containsKey(src)) {
+					result.put(src, "(" + entry.getValue() + " + " + result.get(src) + ")");
+				} else {
+					result.put(src, entry.getValue());
+				}
 			}
+		}
+
+		for (Map.Entry<GroupPair, String> entry : matrixName.entrySet()) {
+			MarkGroup src = entry.getKey().getSrcMarkGroup();
+			MarkGroup dest = entry.getKey().getDestMarkGroup();
+			if (immGroup.containsValue(src) && immGroup.containsValue(dest)) {
+				if (result.containsKey(dest)) {
+					String tmp = entry.getValue() + " %*% " + result.get(dest);
+					if (result.containsKey(src)) {
+						result.put(src, "(" + tmp + " + " + result.get(src) + ")");
+					} else {
+						result.put(src, tmp);
+					}
+				}
+			}
+		}
+		for (MarkGroup mg : immGroup.values()) {
+			pw.println(result.get(mg));
 		}
 	}
 }

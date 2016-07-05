@@ -44,6 +44,31 @@ public class MarkingMatrix {
 		Collections.sort(sortedAllGenVec);
 
 		this.createIndex(oneBased);
+
+		for (MarkGroup src : immGroup.values()) {
+			for (MarkGroup dest : immGroup.values()) {
+				this.makeArcI(src, dest);
+			}
+		}
+		for (MarkGroup src : immGroup.values()) {
+			for (MarkGroup dest : genGroup.values()) {
+				this.makeArcI(src, dest);
+			}
+		}
+		for (MarkGroup src : genGroup.values()) {
+			for (MarkGroup dest : immGroup.values()) {
+				this.makeArcE(src, dest);
+				this.makeArcG(src, dest);
+			}
+		}
+		for (MarkGroup src : genGroup.values()) {
+			for (MarkGroup dest : genGroup.values()) {
+				if (src != dest) {
+					this.makeArcE(src, dest);
+				}
+				this.makeArcG(src, dest);
+			}
+		}
 	}
 	
 	public MarkingGraph getMarkingProcess() {
@@ -86,7 +111,78 @@ public class MarkingMatrix {
 	public String getGroupLabel(MarkGroup mg) {
 		return revMarkGroupIndex.get(mg);
 	}
-	
+
+	public void makeArcI(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+		for (Mark src: srcMarkGroup.getMarkSet()) {
+			for (Arc arc: src.getOutArc()) {
+				Mark dest = (Mark) arc.getDest();
+				if (destMarkGroup.getMarkSet().contains(dest)) {
+					new MarkingArc(srcMarkGroup, destMarkGroup, null);
+					return;
+				}
+			}
+		}
+	}
+
+	public void makeArcE(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+		for (Mark src: srcMarkGroup.getMarkSet()) {
+			for (Arc arc: src.getOutArc()) {
+				Mark dest = (Mark) arc.getDest();
+				if (destMarkGroup.getMarkSet().contains(dest)) {
+					Trans tr = ((MarkingArc) arc).getTrans();
+					if (tr instanceof ExpTrans) {
+						new MarkingArc(srcMarkGroup, destMarkGroup, null);
+						return;
+					}
+				}
+			}
+		}
+	}
+
+	public void makeArcG(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+		Set<Trans> mm = new HashSet<Trans>();
+		for (Mark src: srcMarkGroup.getMarkSet()) {
+			for (Arc arc: src.getOutArc()) {
+				Mark dest = (Mark) arc.getDest();
+				if (destMarkGroup.getMarkSet().contains(dest)) {
+					Trans tr = ((MarkingArc) arc).getTrans();
+					if (!mm.contains(tr)) {
+						if (tr instanceof GenTrans) {
+							new MarkingArc(srcMarkGroup, destMarkGroup, tr);
+							mm.add(tr);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public List<List<Object>> getMatrixI(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+		List< List<Object>> result = new ArrayList< List<Object> >();
+		for (Mark src: srcMarkGroup.getMarkSet()) {
+			net.setCurrentMark(src);
+			for (Arc arc: src.getOutArc()) {
+				List<Object> elem = new ArrayList<Object>();
+				Mark dest = (Mark) arc.getDest();
+				if (destMarkGroup.getMarkSet().contains(dest)) {
+					MarkingArc markingArc = (MarkingArc) arc;
+					elem.add(revMarkIndex.get(src));
+					elem.add(revMarkIndex.get(dest));
+					if (markingArc.getTrans() instanceof ImmTrans) {
+						ImmTrans tr = (ImmTrans) markingArc.getTrans();
+						try {
+							elem.add(tr.getWeight().eval(net));
+						} catch (ASTException e) {
+							System.err.println("Fail to get weight: " + tr.getLabel());
+						}
+						result.add(elem);
+					}
+				}
+			}
+		}
+		return result;
+	}
+
 	public Map<Trans,List<List<Object>>> getMatrixG(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
 		Map<Trans,List<List<Object>>> result = new HashMap<Trans,List<List<Object>>>();
 		List<List<Object>> resultE = new ArrayList<List<Object>>();
@@ -121,32 +217,6 @@ public class MarkingMatrix {
 							result.put(tr, new ArrayList<List<Object>>());
 						}
 						result.get(tr).add(elem);
-					}
-				}
-			}
-		}
-		return result;
-	}
-
-	public List<List<Object>> getMatrixI(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
-		List< List<Object>> result = new ArrayList< List<Object> >();
-		for (Mark src: srcMarkGroup.getMarkSet()) {
-			net.setCurrentMark(src);
-			for (Arc arc: src.getOutArc()) {
-				List<Object> elem = new ArrayList<Object>();
-				Mark dest = (Mark) arc.getDest();
-				if (destMarkGroup.getMarkSet().contains(dest)) {
-					MarkingArc markingArc = (MarkingArc) arc;
-					elem.add(revMarkIndex.get(src));
-					elem.add(revMarkIndex.get(dest));
-					if (markingArc.getTrans() instanceof ImmTrans) {
-						ImmTrans tr = (ImmTrans) markingArc.getTrans();
-						try {
-							elem.add(tr.getWeight().eval(net));
-						} catch (ASTException e) {
-							System.err.println("Fail to get weight: " + tr.getLabel());
-						}
-						result.add(elem);
 					}
 				}
 			}

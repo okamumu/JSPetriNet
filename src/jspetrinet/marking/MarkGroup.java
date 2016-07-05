@@ -1,21 +1,21 @@
 package jspetrinet.marking;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-public class MarkGroup {
-	
+public class MarkGroup extends jspetrinet.graph.Node {
+
+	private final String label;
 	private final Set<Mark> markSet;
 	
-	public MarkGroup() {
+	public MarkGroup(String label) {
+		this.label = label;
 		markSet = new HashSet<Mark>();
 	}
 	
 	@Override
 	public String toString() {
-		return "#" + markSet.size();
+		return label;
 	}
 
 	public final void add(Mark m) {

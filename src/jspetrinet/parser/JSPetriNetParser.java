@@ -309,10 +309,10 @@ for (PairValue pval : optlist.getList()) {
                                 if (value instanceof Integer) {
                                         pmax = (Integer) value;
                                 } else {
-                                        {if (true) throw new ASTException();}
+                                        {if (true) throw new ASTException("The max attribute should be an integer");}
                                 }
                         } else {
-                                {if (true) throw new UnknownOption();}
+                                {if (true) throw new UnknownOption(label);}
                         }
                 }
       jj_consume_token(CLOSE);
@@ -347,7 +347,7 @@ for (PairValue pval : optlist.getList()) {
                         } else if (label.equals("guard")) {
                                 current.put(token.image + ".guard", value);
                         } else {
-                                {if (true) throw new UnknownOption();}
+                                {if (true) throw new UnknownOption(label);}
                         }
                 }
       jj_consume_token(CLOSE);
@@ -381,7 +381,7 @@ for (PairValue pval : optlist.getList()) {
                         } else if (label.equals("guard")) {
                                 current.put(token.image + ".guard", value);
                         } else {
-                                {if (true) throw new UnknownOption();}
+                                {if (true) throw new UnknownOption(label);}
                         }
                 }
       jj_consume_token(CLOSE);
@@ -418,15 +418,15 @@ for (PairValue pval : optlist.getList()) {
                                         } else if (pol == 1) {
                                                 tr.setPolicy(GenTransPolicy.PRS);
                                         } else {
-                                                {if (true) throw new UnknownOption();}
+                                                {if (true) throw new UnknownOption("Unknown policy");}
                                         }
                                 } else {
-                                        {if (true) throw new UnknownOption();}
+                                        {if (true) throw new UnknownOption("Unknown policy");}
                                 }
                         } else if (label.equals("guard")) {
                                 tr.setGuard(value);
                         } else {
-                                {if (true) throw new UnknownOption();}
+                                {if (true) throw new UnknownOption(label);}
                         }
                 }
       jj_consume_token(CLOSE);
@@ -457,15 +457,15 @@ try {
                                 Place p = (Place) current.get(dest.image);
                                 a = current.createNormalOutArc(tr, p, new ASTValue(1));
                         } catch (NotFindObjectException e2) {
-                                System.out.println("Did not find " + src.image + " -> " + dest.image);
-                                {if (true) throw new NotFindObjectException();}
+                                System.err.println("Did not find " + src.image + " -> " + dest.image);
+                                {if (true) throw new NotFindObjectException("Did not find " + src.image + " -> " + dest.image);}
                         } catch (AlreadyExistException e3) {
-                                System.out.println("Already exist " + src.image + " -> " + dest.image);
-                                {if (true) throw new NotFindObjectException();}
+                                System.err.println("Already exist " + src.image + " -> " + dest.image);
+                                {if (true) throw new NotFindObjectException("Already exist " + src.image + " -> " + dest.image);}
                         }
                 } catch (AlreadyExistException e4) {
-                                System.out.println("Already exist " + src.image + " -> " + dest.image);
-                                {if (true) throw new NotFindObjectException();}
+                                System.err.println("Already exist " + src.image + " -> " + dest.image);
+                                {if (true) throw new NotFindObjectException("Already exist " + src.image + " -> " + dest.image);}
                 }
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
@@ -479,7 +479,7 @@ for (PairValue pval : optlist.getList()) {
                         } else if (label.equals("firing")) {
                                 a.setFiring(value);
                         } else {
-                                {if (true) throw new UnknownOption();}
+                                {if (true) throw new UnknownOption(label);}
                         }
                 }
       jj_consume_token(CLOSE);
@@ -515,7 +515,7 @@ for (PairValue pval : optlist.getList()) {
                         } else if (label.equals("firing")) {
                                 a.setFiring(value);
                         } else {
-                                {if (true) throw new UnknownOption();}
+                                {if (true) throw new UnknownOption(label);}
                         }
                 }
       jj_consume_token(CLOSE);
@@ -551,7 +551,7 @@ for (PairValue pval : optlist.getList()) {
                         } else if (label.equals("firing")) {
                                 a.setFiring(value);
                         } else {
-                                {if (true) throw new UnknownOption();}
+                                {if (true) throw new UnknownOption(label);}
                         }
                 }
       jj_consume_token(CLOSE);
@@ -585,7 +585,7 @@ for (PairValue pval : optlist.getList()) {
                         if (label.equals("multi")) {
                                 a.setMulti(value);
                         } else {
-                                {if (true) throw new UnknownOption();}
+                                {if (true) throw new UnknownOption(label);}
                         }
                 }
       jj_consume_token(CLOSE);

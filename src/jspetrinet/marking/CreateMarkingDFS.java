@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import jspetrinet.JSPetriNet;
 import jspetrinet.exception.ASTException;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.Trans;
@@ -68,13 +69,13 @@ public class CreateMarkingDFS implements CreateMarking {
 			}
 			if (hasImmTrans == true) {
 				if (!markGraph.getImmGroup().containsKey(genv)) {
-					markGraph.getImmGroup().put(genv, new MarkGroup());
+					markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
 				}
 				m.setMarkGroup(markGraph.getImmGroup().get(genv));
 				continue;
 			} else {
 				if (!markGraph.getGenGroup().containsKey(genv)) {
-					markGraph.getGenGroup().put(genv, new MarkGroup());
+					markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
 				}
 				m.setMarkGroup(markGraph.getGenGroup().get(genv));
 			}

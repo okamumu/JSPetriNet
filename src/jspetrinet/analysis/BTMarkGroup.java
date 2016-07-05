@@ -12,7 +12,7 @@ public class BTMarkGroup extends MarkGroup {
 	private Boolean isSlow;
 	
 	public BTMarkGroup() {
-		super();
+		super("");
 		enterSet = new HashSet<Mark>();
 		exitSet = new HashSet<Mark>();
 		isTransient = false;

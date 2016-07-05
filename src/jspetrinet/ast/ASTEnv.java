@@ -37,7 +37,7 @@ public class ASTEnv {
 	
 	public Object get(String label) throws ASTException {
 		if (!hash.containsKey(label)) {
-			throw new NotFindObjectException();
+			throw new NotFindObjectException(label);
 		}
 		return hash.get(label);
 	}

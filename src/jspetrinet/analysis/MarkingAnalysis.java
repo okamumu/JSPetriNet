@@ -36,7 +36,7 @@ public final class MarkingAnalysis {
 		Set<Mark> remain = new HashSet<Mark>(allState);
 		Set<MarkGroup> mgg = new HashSet<MarkGroup>();		
 
-		MarkGroup slowSet = new MarkGroup();
+		MarkGroup slowSet = new MarkGroup("");
 		for (Mark m : allState) {
 			if (hasFastTrans(m, slowTransSet) == false) {
 				slowSet.add(m);
@@ -71,7 +71,7 @@ public final class MarkingAnalysis {
 			Set<Mark> visited, Set<Mark> determined,
 			Set<Mark> allState, Set<Trans> slowTransSet, MarkGroup slowSet) {
 		
-		MarkGroup mg = new MarkGroup();
+		MarkGroup mg = new MarkGroup("");
 		Stack<Mark> novisited = new Stack<Mark>();
 		novisited.push(start);
 		while (!novisited.empty()) {

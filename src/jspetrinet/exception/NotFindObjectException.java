@@ -2,6 +2,10 @@ package jspetrinet.exception;
 
 public class NotFindObjectException extends ASTException {
 
+	public NotFindObjectException(String msg) {
+		super(msg);
+	}
+
 	/**
 	 * 
 	 */
