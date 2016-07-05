@@ -18,13 +18,14 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import jspetrinet.*;
+import jspetrinet.JSPetriNet;
 import jspetrinet.analysis.MRGPAnalysis;
 import jspetrinet.analysis.MarkingMatrix;
 import jspetrinet.ast.ASTree;
 import jspetrinet.exception.*;
 import jspetrinet.marking.*;
-import jspetrinet.petri.*;
+import jspetrinet.parser.TokenMgrError;
+import jspetrinet.petri.Net;
 
 class Opts {
 	// modes
@@ -42,7 +43,7 @@ class Opts {
 
 public class CommandLineMain {
 	
-	static Map<String,Integer> parseMark(String str) {
+	static private Map<String,Integer> parseMark(String str) {
 		Map<String,Integer> result = new HashMap<String,Integer>();
 		String[] ary = str.split(",", 0);
 		Pattern p = Pattern.compile("(\\w+):([0-9]+)");
@@ -57,6 +58,20 @@ public class CommandLineMain {
 		return result;
 	}
 	
+	static private List<ASTree> parseReward(Net net, String str) throws ASTException {
+		List<ASTree> result = new ArrayList<ASTree>();
+		String[] ary = str.split(",", 0);
+		for (String s : ary) {
+			Object obj = net.get(s);
+			if (obj instanceof ASTree) {
+				result.add((ASTree) obj);
+			} else {
+				throw new TypeMismatch();
+			}
+		}
+		return result;
+	}
+
 	public static void cmdView(String[] args) {
 		Options options = new Options();
 		options.addOption(Opts.INPETRI, true, "input Petrinet file");
@@ -71,17 +86,29 @@ public class CommandLineMain {
 		}
 
 		Net net;
+		InputStream in;
 		if (cmd.hasOption(Opts.INPETRI)) {
-			InputStream in;
 			try {
 				in = new FileInputStream(cmd.getOptionValue(Opts.INPETRI));
 			} catch (FileNotFoundException e) {
 				System.err.println("Did not find file: " + cmd.getOptionValue(Opts.INPETRI));
 				return;
 			}
-			net = JSPetriNet.load("", null, in);
 		} else {
-			net = JSPetriNet.load("", null, System.in);
+			in = System.in;
+		}
+
+		try {
+			net = JSPetriNet.load(new Net(null, ""), in);
+		} catch (TokenMgrError ex) {
+			System.out.println("token error: " + ex.getMessage());
+			return;
+		} catch (jspetrinet.parser.ParseException ex) {
+			System.out.println("parse error: " + ex.getMessage());
+			return;
+		} catch (ASTException e) {
+			System.out.println("Error: " + e.getMessage());
+			return;
 		}
 		net.setIndex();
 
@@ -96,18 +123,18 @@ public class CommandLineMain {
 		} else {
 			bw = new PrintWriter(System.out);
 		}
-		JSPetriNet.writeDotfile(net, bw);
+		JSPetriNet.writeDotfile(bw, net);
 		bw.close();
 	}
 		
-	public static void cmdMarking(String[] args) {
+	public static void cmdAnalysis(String[] args) {
 		Options options = new Options();
-		options.addOption(Opts.INPETRI, true, "input Petrinet file");
+		options.addOption(Opts.INPETRI, true, "input PetriNet file");
 		options.addOption(Opts.INITMARK, true, "initial marking");
 		options.addOption(Opts.DEPTH, true, "test mode (input depth for DFS)");
 		options.addOption(Opts.OUTMAT, true, "matrix (output)");
 		options.addOption(Opts.OUTPETRI, true, "marking graph (output)");
-		options.addOption(Opts.REWARD, true, "indicate the label of reward");
+		options.addOption(Opts.REWARD, true, "the label of reward");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
 		try {
@@ -118,17 +145,28 @@ public class CommandLineMain {
 		}
 
 		Net net;
+		InputStream in;
 		if (cmd.hasOption(Opts.INPETRI)) {
-			InputStream in;
 			try {
 				in = new FileInputStream(cmd.getOptionValue(Opts.INPETRI));
 			} catch (FileNotFoundException e) {
 				System.err.println("Did not find file: " + cmd.getOptionValue(Opts.INPETRI));
 				return;
 			}
-			net = JSPetriNet.load("", null, in);
 		} else {
-			net = JSPetriNet.load("", null, System.in);
+			in = System.in;
+		}
+		try {
+			net = JSPetriNet.load(new Net(null, ""), in);
+		} catch (TokenMgrError ex) {
+			System.out.println("token error: " + ex.getMessage());
+			return;
+		} catch (jspetrinet.parser.ParseException ex) {
+			System.out.println("parse error: " + ex.getMessage());
+			return;
+		} catch (ASTException e) {
+			System.out.println("Error: " + e.getMessage());
+			return;
 		}
 		net.setIndex();
 
@@ -141,14 +179,29 @@ public class CommandLineMain {
 
 		Mark imark;
 		if (cmd.hasOption(Opts.INITMARK)) {
-			imark = JSPetriNet.mark(net, parseMark(cmd.getOptionValue(Opts.INITMARK)));
+			try {
+				imark = JSPetriNet.mark(net, parseMark(cmd.getOptionValue(Opts.INITMARK)));
+			} catch (ASTException e) {
+				System.err.println(e.getMessage());
+				return;
+			}
 			System.out.println("Initial marking: " + JSPetriNet.markToString(net, imark));
 		} else {
 			System.err.println("Marking process requires an initial marking (-" + Opts.INITMARK + ").");
 			return;
 		}
 		
-		MarkingGraph mp = JSPetriNet.marking(net, imark, depth);
+		PrintWriter pw0;
+		pw0 = new PrintWriter(System.out);
+		MarkingGraph mp;
+		try {
+			mp = JSPetriNet.marking(pw0, net, imark, depth);
+		} catch (ASTException e1) {
+			System.err.println(e1.getMessage());
+			return;
+		}
+		pw0.close();
+
 		MarkingMatrix mat = new MarkingMatrix(mp, true);
 
 		PrintWriter pw1, pw2, pw6;
@@ -191,19 +244,14 @@ public class CommandLineMain {
 					return;
 				}			
 			} else {
-				pw5 = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+				pw5 = new PrintWriter(System.out);
 			}
 			String rewardLabel = cmd.getOptionValue(Opts.REWARD);
 			try {
-				Object obj = net.get(rewardLabel);
-				if (obj instanceof ASTree) {
-					mrgp.writeStateRewardVec(pw5, (ASTree) obj);
-				} else {
-					throw new TypeMismatch();
-				}
+				mrgp.writeStateRewardVec(pw5, parseReward(net, rewardLabel));
 			} catch (ASTException ex) {
 				System.err.println(ex.getMessage());
-				System.exit(0);
+				return;
 			}
 			pw5.close();
 		}
@@ -227,7 +275,7 @@ public class CommandLineMain {
 		}
 	}
 
-	public static void main(String[] args) throws ASTException {
+	public static void main(String[] args) {
 		if (args.length < 1) {
 			System.err.print("Require mode: " + Opts.VIEW + ", " + Opts.MARKING);
 			System.err.println();
@@ -243,7 +291,7 @@ public class CommandLineMain {
 		if (mode.equals(Opts.VIEW)) {
 			cmdView(newargs);
 		} else if (mode.equals(Opts.MARKING)) {
-			cmdMarking(newargs);
+			cmdAnalysis(newargs);
 		}
 	}
 

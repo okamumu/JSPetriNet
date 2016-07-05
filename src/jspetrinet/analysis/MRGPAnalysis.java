@@ -73,7 +73,7 @@ public class MRGPAnalysis {
 		}
 	}
 	
-	public void writeStateRewardVec(PrintWriter pw, ASTree reward) throws ASTException {
+	public void writeStateRewardVec(PrintWriter pw, List<ASTree> reward) throws ASTException {
 		for (GenVec gv : mat.getSortedAllGenVec()) {
 			if (genGroup.containsKey(gv)) {
 				MarkGroup mg = genGroup.get(gv);
@@ -84,7 +84,11 @@ public class MRGPAnalysis {
 				for (List<Object> e: s) {
 					Mark m = (Mark) e.get(1);
 					net.setCurrentMark(m);
-					pw.println(mat.getGroupLabel(mg) + "rwd" + colsep + e.get(0) + colsep + reward.eval(net));
+					pw.print(mat.getGroupLabel(mg) + "rwd" + colsep + e.get(0));
+					for (ASTree a : reward) {
+						pw.print(colsep + a.eval(net));
+					}
+					pw.println();
 				}
 			}
 		}

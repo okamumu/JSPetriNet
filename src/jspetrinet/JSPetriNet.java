@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -22,80 +23,125 @@ import jspetrinet.petri.*;
 
 public class JSPetriNet {
 	
-	public static Net load(String label, Net parent, InputStream in) {
-		Net net = new Net(parent, label);
-		try {
-			JSPetriNetParser parser = new JSPetriNetParser(in);
-			parser.setNet(net);
-			parser.makeNet();
-		} catch (TokenMgrError ex) {
-			System.out.println("token error: " + ex.getMessage());
-		} catch (ParseException ex) {
-			System.out.println("parse error: " + ex.getMessage());			
-		} catch (ASTException e) {
-			System.out.println("Error: " + e.getMessage());
-			e.printStackTrace();
-		}
+//	public static Net load(String label, Net parent, InputStream in) {
+//		Net net = new Net(parent, label);
+//		try {
+//			JSPetriNetParser parser = new JSPetriNetParser(in);
+//			parser.setNet(net);
+//			parser.makeNet();
+//		} catch (TokenMgrError ex) {
+//			System.out.println("token error: " + ex.getMessage());
+//		} catch (ParseException ex) {
+//			System.out.println("parse error: " + ex.getMessage());			
+//		} catch (ASTException e) {
+//			System.out.println("Error: " + e.getMessage());
+//			e.printStackTrace();
+//		}
+//		return net;
+//	}
+
+//	public static void eval(Net global, String text) {
+//		try {
+//			InputStream in = new ByteArrayInputStream(text.getBytes("utf-8"));
+//			JSPetriNetParser parser = new JSPetriNetParser(in);
+//			parser.setNet(global);
+//			parser.makeNet();
+//
+//		} catch (UnsupportedEncodingException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (TokenMgrError ex) {
+//			System.out.println("token error: " + ex.getMessage());
+//		} catch (ParseException ex) {
+//			System.out.println("parse error: " + ex.getMessage());			
+//		} catch (ASTException e) {
+//			System.out.println("Error: " + e.getMessage());
+//			e.printStackTrace();
+//		}
+//	}
+
+//	public static Mark mark(Net net, Map<String,Integer> map) {
+//		Mark m = new Mark(net.getNumOfPlace());
+//		try {
+//			for (Map.Entry<String, Integer> e : map.entrySet()) {
+//				Object obj = net.get(e.getKey());
+//				if (obj instanceof Place) {
+//					Place p = (Place) obj;
+//					m.set(p.getIndex(), e.getValue());
+//				} else {
+//					throw new ASTException(e.getKey() + " is not a place.");
+//				}
+//			}
+//		} catch (ASTException e1) {
+//			e1.printStackTrace();
+//		}
+//		return m;
+//	}
+
+//	public static MarkingGraph marking(Net global, Mark m, int depth) {
+//		MarkingGraph mp = new MarkingGraph();
+//		if (depth == 0) {
+//			mp.setCreateMarking(new CreateMarkingDFS(mp));
+//		} else {
+//			mp.setCreateMarking(new CreateMarkingBFS(mp, depth));
+//		}
+//		try {
+//			System.out.print("Create marking...");
+//			long start = System.nanoTime();
+//			mp.create(m, global);
+//			System.out.println("done");
+//			System.out.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
+////			mp.createIndex(true);
+//			System.out.println(markingToString(global, mp));
+//		} catch (ASTException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return mp;
+//	}
+
+	public static Net load(Net net, InputStream in) throws ParseException, ASTException {
+		JSPetriNetParser parser = new JSPetriNetParser(in);
+		parser.setNet(net);
+		parser.makeNet();
 		return net;
 	}
 
-	public static void eval(Net global, String text) {
-		try {
-			InputStream in = new ByteArrayInputStream(text.getBytes("utf-8"));
-			JSPetriNetParser parser = new JSPetriNetParser(in);
-			parser.setNet(global);
-			parser.makeNet();
-
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TokenMgrError ex) {
-			System.out.println("token error: " + ex.getMessage());
-		} catch (ParseException ex) {
-			System.out.println("parse error: " + ex.getMessage());			
-		} catch (ASTException e) {
-			System.out.println("Error: " + e.getMessage());
-			e.printStackTrace();
-		}
+	public static Net eval(Net net, String text) throws ParseException, ASTException, UnsupportedEncodingException {
+		InputStream in = new ByteArrayInputStream(text.getBytes("utf-8"));
+		JSPetriNetParser parser = new JSPetriNetParser(in);
+		parser.setNet(net);
+		parser.makeNet();
+		return net;
 	}
 
-	public static Mark mark(Net net, Map<String,Integer> map) {
+	public static Mark mark(Net net, Map<String,Integer> map) throws ASTException {
 		Mark m = new Mark(net.getNumOfPlace());
-		try {
-			for (Map.Entry<String, Integer> e : map.entrySet()) {
-				Object obj = net.get(e.getKey());
-				if (obj instanceof Place) {
-					Place p = (Place) obj;
-					m.set(p.getIndex(), e.getValue());
-				} else {
-					throw new ASTException(e.getKey() + " is not a place.");
-				}
+		for (Map.Entry<String, Integer> e : map.entrySet()) {
+			Object obj = net.get(e.getKey());
+			if (obj instanceof Place) {
+				Place p = (Place) obj;
+				m.set(p.getIndex(), e.getValue());
+			} else {
+				throw new ASTException(e.getKey() + " is not a place.");
 			}
-		} catch (ASTException e1) {
-			e1.printStackTrace();
 		}
 		return m;
 	}
 
-	public static MarkingGraph marking(Net global, Mark m, int depth) {
+	public static MarkingGraph marking(PrintWriter pw, Net net, Mark m, int depth) throws ASTException {
 		MarkingGraph mp = new MarkingGraph();
 		if (depth == 0) {
 			mp.setCreateMarking(new CreateMarkingDFS(mp));
 		} else {
 			mp.setCreateMarking(new CreateMarkingBFS(mp, depth));
 		}
-		try {
-			System.out.print("Create marking...");
-			long start = System.nanoTime();
-			mp.create(m, global);
-			System.out.println("done");
-			System.out.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
-//			mp.createIndex(true);
-			System.out.println(markingToString(global, mp));
-		} catch (ASTException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		pw.print("Create marking...");
+		long start = System.nanoTime();
+		mp.create(m, net);
+		pw.println("done");
+		pw.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
+		pw.println(markingToString(net, mp));
 		return mp;
 	}
 
@@ -173,7 +219,7 @@ public class JSPetriNet {
 		return res;
 	}
 	
-	public static void writeDotfile(Net net, PrintWriter bw) {
+	public static void writeDotfile(PrintWriter bw, Net net) {
 		VizPrint vp = new VizPrint(net);
 		vp.toviz(bw);
 	}
