@@ -7,6 +7,7 @@ package jspetrinet.parser;
 import jspetrinet.ast.*;
 import jspetrinet.exception.*;
 import jspetrinet.petri.*;
+import jspetrinet.sim.*;
 public class JSPetriNetParser {
 	private Net current;
 	private Net global;
@@ -36,6 +37,8 @@ TOKEN: {
 	| <EXPTRANS: "exp">
 	| <IMMTRANS: "imm">
 	| <GENTRANS: "gen">
+	| <GENCONSTTRANS: "gen.const">
+	| <GENUNIFTRANS: "gen.unif">
 	| <ARC: "arc">
 	| <IARC: "iarc">
 	| <OARC: "oarc">
@@ -102,6 +105,8 @@ void Declaration() throws ASTException: {} {
 	| ExpTransDeclaration()
 	| ImmTransDeclaration()
 	| GenTransDeclaration()
+	| GenConstTransDeclaration()
+	| GenUnifTransDeclaration()
 	| ArcDeclaration()
 	| IArcDeclaration()
 	| OArcDeclaration()
@@ -223,6 +228,84 @@ void GenTransDeclaration() throws ASTException: {
 			GenTrans tr = (GenTrans) current.getTrans(token.image);
 			if (label.equals("dist")) {
 				tr.setDist(value);
+			} else if (label.equals("policy")) {
+				Object v = value.eval(current);
+				if (v instanceof Integer) {
+					int pol = ((Integer) v).intValue();
+					if (pol == 0) {
+						tr.setPolicy(GenTransPolicy.PRD);
+					} else if (pol == 1) {
+						tr.setPolicy(GenTransPolicy.PRS);
+					} else {
+						throw new UnknownOption();
+					}
+				} else {
+					throw new UnknownOption();
+				}
+			} else if (label.equals("guard")) {
+				tr.setGuard(value);
+			} else {
+				throw new UnknownOption();
+			}
+		}
+	}
+	")")?
+}
+
+void GenConstTransDeclaration() throws ASTException: {
+	Token token;
+	PairValueList optlist;
+} {
+	<GENCONSTTRANS> token = <IDENTIFIER> {
+		current.createSimGenConstTrans(token.image,
+		new ASTValue(token.image), SimGenConstTrans.DefaultPolicy);
+	} ("(" optlist = OptionList() {
+		for (PairValue pval : optlist.getList()) {
+			String label = pval.getLabel();
+			ASTree value = pval.getValue();
+			SimGenConstTrans tr = (SimGenConstTrans) current.getTrans(token.image);
+			if (label.equals("value")) {
+				tr.setConst(value);
+			} else if (label.equals("policy")) {
+				Object v = value.eval(current);
+				if (v instanceof Integer) {
+					int pol = ((Integer) v).intValue();
+					if (pol == 0) {
+						tr.setPolicy(GenTransPolicy.PRD);
+					} else if (pol == 1) {
+						tr.setPolicy(GenTransPolicy.PRS);
+					} else {
+						throw new UnknownOption();
+					}
+				} else {
+					throw new UnknownOption();
+				}
+			} else if (label.equals("guard")) {
+				tr.setGuard(value);
+			} else {
+				throw new UnknownOption();
+			}
+		}
+	}
+	")")?
+}
+
+void GenUnifTransDeclaration() throws ASTException: {
+	Token token;
+	PairValueList optlist;
+} {
+	<GENUNIFTRANS> token = <IDENTIFIER> {
+		current.createSimGenUnifTrans(token.image,
+		new ASTValue(token.image), new ASTValue(token.image), SimGenUnifTrans.DefaultPolicy);
+	} ("(" optlist = OptionList() {
+		for (PairValue pval : optlist.getList()) {
+			String label = pval.getLabel();
+			ASTree value = pval.getValue();
+			SimGenUnifTrans tr = (SimGenUnifTrans) current.getTrans(token.image);
+			if (label.equals("lower")) {
+				tr.setLower(value);
+			} else if (label.equals("upper")) {
+				tr.setUpper(value);
 			} else if (label.equals("policy")) {
 				Object v = value.eval(current);
 				if (v instanceof Integer) {

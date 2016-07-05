@@ -2,7 +2,8 @@ package jspetrinet.petri;
 
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.ASTree;
-import jspetrinet.exception.*;
+import jspetrinet.exception.ASTException;
+import jspetrinet.exception.TypeMismatch;
 import jspetrinet.graph.LabeledNode;
 
 abstract public class Trans extends LabeledNode {

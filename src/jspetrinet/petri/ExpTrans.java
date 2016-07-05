@@ -2,7 +2,7 @@ package jspetrinet.petri;
 
 import jspetrinet.ast.ASTree;
 
-public final class ExpTrans extends Trans {
+public class ExpTrans extends Trans {
 	
 	/**
 	 * 

@@ -4,6 +4,7 @@ package jspetrinet.parser;
 import jspetrinet.ast.*;
 import jspetrinet.exception.*;
 import jspetrinet.petri.*;
+import jspetrinet.sim.*;
 public class JSPetriNetParser implements JSPetriNetParserConstants {
         private Net current;
         private Net global;
@@ -21,6 +22,8 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
       case EXPTRANS:
       case IMMTRANS:
       case GENTRANS:
+      case GENCONSTTRANS:
+      case GENUNIFTRANS:
       case ARC:
       case IARC:
       case OARC:
@@ -53,6 +56,8 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
       case EXPTRANS:
       case IMMTRANS:
       case GENTRANS:
+      case GENCONSTTRANS:
+      case GENUNIFTRANS:
       case ARC:
       case IARC:
       case OARC:
@@ -113,6 +118,8 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
     case EXPTRANS:
     case IMMTRANS:
     case GENTRANS:
+    case GENCONSTTRANS:
+    case GENUNIFTRANS:
     case ARC:
     case IARC:
     case OARC:
@@ -155,6 +162,8 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
     case EXPTRANS:
     case IMMTRANS:
     case GENTRANS:
+    case GENCONSTTRANS:
+    case GENUNIFTRANS:
     case ARC:
     case IARC:
     case OARC:
@@ -242,6 +251,14 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
       }
     case GENTRANS:{
       GenTransDeclaration();
+      break;
+      }
+    case GENCONSTTRANS:{
+      GenConstTransDeclaration();
+      break;
+      }
+    case GENUNIFTRANS:{
+      GenUnifTransDeclaration();
       break;
       }
     case ARC:{
@@ -438,6 +455,98 @@ for (PairValue pval : optlist.getList()) {
     }
   }
 
+  final public void GenConstTransDeclaration() throws ParseException, ASTException {Token token;
+        PairValueList optlist;
+    jj_consume_token(GENCONSTTRANS);
+    token = jj_consume_token(IDENTIFIER);
+current.createSimGenConstTrans(token.image,
+                new ASTValue(token.image), SimGenConstTrans.DefaultPolicy);
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case OPEN:{
+      jj_consume_token(OPEN);
+      optlist = OptionList();
+for (PairValue pval : optlist.getList()) {
+                        String label = pval.getLabel();
+                        ASTree value = pval.getValue();
+                        SimGenConstTrans tr = (SimGenConstTrans) current.getTrans(token.image);
+                        if (label.equals("value")) {
+                                tr.setConst(value);
+                        } else if (label.equals("policy")) {
+                                Object v = value.eval(current);
+                                if (v instanceof Integer) {
+                                        int pol = ((Integer) v).intValue();
+                                        if (pol == 0) {
+                                                tr.setPolicy(GenTransPolicy.PRD);
+                                        } else if (pol == 1) {
+                                                tr.setPolicy(GenTransPolicy.PRS);
+                                        } else {
+                                                {if (true) throw new UnknownOption();}
+                                        }
+                                } else {
+                                        {if (true) throw new UnknownOption();}
+                                }
+                        } else if (label.equals("guard")) {
+                                tr.setGuard(value);
+                        } else {
+                                {if (true) throw new UnknownOption();}
+                        }
+                }
+      jj_consume_token(CLOSE);
+      break;
+      }
+    default:
+      jj_la1[15] = jj_gen;
+      ;
+    }
+  }
+
+  final public void GenUnifTransDeclaration() throws ParseException, ASTException {Token token;
+        PairValueList optlist;
+    jj_consume_token(GENUNIFTRANS);
+    token = jj_consume_token(IDENTIFIER);
+current.createSimGenUnifTrans(token.image,
+                new ASTValue(token.image), new ASTValue(token.image), SimGenUnifTrans.DefaultPolicy);
+    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+    case OPEN:{
+      jj_consume_token(OPEN);
+      optlist = OptionList();
+for (PairValue pval : optlist.getList()) {
+                        String label = pval.getLabel();
+                        ASTree value = pval.getValue();
+                        SimGenUnifTrans tr = (SimGenUnifTrans) current.getTrans(token.image);
+                        if (label.equals("lower")) {
+                                tr.setLower(value);
+                        } else if (label.equals("upper")) {
+                                tr.setUpper(value);
+                        } else if (label.equals("policy")) {
+                                Object v = value.eval(current);
+                                if (v instanceof Integer) {
+                                        int pol = ((Integer) v).intValue();
+                                        if (pol == 0) {
+                                                tr.setPolicy(GenTransPolicy.PRD);
+                                        } else if (pol == 1) {
+                                                tr.setPolicy(GenTransPolicy.PRS);
+                                        } else {
+                                                {if (true) throw new UnknownOption();}
+                                        }
+                                } else {
+                                        {if (true) throw new UnknownOption();}
+                                }
+                        } else if (label.equals("guard")) {
+                                tr.setGuard(value);
+                        } else {
+                                {if (true) throw new UnknownOption();}
+                        }
+                }
+      jj_consume_token(CLOSE);
+      break;
+      }
+    default:
+      jj_la1[16] = jj_gen;
+      ;
+    }
+  }
+
   final public void ArcDeclaration() throws ParseException, ASTException {Token src;
         Token dest;
         PairValueList optlist;
@@ -486,7 +595,7 @@ for (PairValue pval : optlist.getList()) {
       break;
       }
     default:
-      jj_la1[15] = jj_gen;
+      jj_la1[17] = jj_gen;
       ;
     }
   }
@@ -522,7 +631,7 @@ for (PairValue pval : optlist.getList()) {
       break;
       }
     default:
-      jj_la1[16] = jj_gen;
+      jj_la1[18] = jj_gen;
       ;
     }
   }
@@ -558,7 +667,7 @@ for (PairValue pval : optlist.getList()) {
       break;
       }
     default:
-      jj_la1[17] = jj_gen;
+      jj_la1[19] = jj_gen;
       ;
     }
   }
@@ -592,7 +701,7 @@ for (PairValue pval : optlist.getList()) {
       break;
       }
     default:
-      jj_la1[18] = jj_gen;
+      jj_la1[20] = jj_gen;
       ;
     }
   }
@@ -605,15 +714,15 @@ optlist = new PairValueList();
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case 45:{
+      case 47:{
         ;
         break;
         }
       default:
-        jj_la1[19] = jj_gen;
+        jj_la1[21] = jj_gen;
         break label_2;
       }
-      jj_consume_token(45);
+      jj_consume_token(47);
       val = OptionValue();
 optlist.add(val);
     }
@@ -624,7 +733,7 @@ optlist.add(val);
   final public PairValue OptionValue() throws ParseException, ASTException {Token token;
         ASTree val;
     token = jj_consume_token(IDENTIFIER);
-    jj_consume_token(46);
+    jj_consume_token(48);
     val = Expression();
 {if ("" != null) return new PairValue(token.image, val);}
     throw new Error("Missing return statement in function");
@@ -642,7 +751,7 @@ optlist.add(val);
       break;
       }
     default:
-      jj_la1[20] = jj_gen;
+      jj_la1[22] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -669,7 +778,7 @@ optlist.add(val);
         break;
         }
       default:
-        jj_la1[21] = jj_gen;
+        jj_la1[23] = jj_gen;
         break label_3;
       }
       val = Expression();
@@ -688,7 +797,7 @@ System.out.println(val.eval(current));
         break;
         }
       default:
-        jj_la1[22] = jj_gen;
+        jj_la1[24] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -717,7 +826,7 @@ System.out.println(val.eval(current));
         break;
         }
       default:
-        jj_la1[23] = jj_gen;
+        jj_la1[25] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -731,20 +840,20 @@ System.out.println(val.eval(current));
     token = jj_consume_token(IDENTIFIER);
 
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case 47:{
-      jj_consume_token(47);
+    case 49:{
+      jj_consume_token(49);
       val = Expression();
 
       break;
       }
-    case 46:{
-      jj_consume_token(46);
+    case 48:{
+      jj_consume_token(48);
       val = Expression();
 
       break;
       }
     default:
-      jj_la1[24] = jj_gen;
+      jj_la1[26] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -764,7 +873,7 @@ current.put(token.image, val);
         break;
         }
       default:
-        jj_la1[25] = jj_gen;
+        jj_la1[27] = jj_gen;
         break label_4;
       }
       jj_consume_token(OR);
@@ -786,7 +895,7 @@ val1 = new ASTOr(val1, val2);
         break;
         }
       default:
-        jj_la1[26] = jj_gen;
+        jj_la1[28] = jj_gen;
         break label_5;
       }
       jj_consume_token(AND);
@@ -809,7 +918,7 @@ val1 = new ASTAnd(val1, val2);
         break;
         }
       default:
-        jj_la1[27] = jj_gen;
+        jj_la1[29] = jj_gen;
         break label_6;
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -826,7 +935,7 @@ val1 = new ASTNeq(val1, val2);
         break;
         }
       default:
-        jj_la1[28] = jj_gen;
+        jj_la1[30] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -849,7 +958,7 @@ val1 = new ASTNeq(val1, val2);
         break;
         }
       default:
-        jj_la1[29] = jj_gen;
+        jj_la1[31] = jj_gen;
         break label_7;
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -878,7 +987,7 @@ val1 = new ASTLte(val1, val2);
         break;
         }
       default:
-        jj_la1[30] = jj_gen;
+        jj_la1[32] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -899,7 +1008,7 @@ val1 = new ASTLte(val1, val2);
         break;
         }
       default:
-        jj_la1[31] = jj_gen;
+        jj_la1[33] = jj_gen;
         break label_8;
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -916,7 +1025,7 @@ val1 = new ASTMinus(val1, val2);
         break;
         }
       default:
-        jj_la1[32] = jj_gen;
+        jj_la1[34] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -938,7 +1047,7 @@ val1 = new ASTMinus(val1, val2);
         break;
         }
       default:
-        jj_la1[33] = jj_gen;
+        jj_la1[35] = jj_gen;
         break label_9;
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -961,7 +1070,7 @@ val1 = new ASTMod(val1, val2);
         break;
         }
       default:
-        jj_la1[34] = jj_gen;
+        jj_la1[36] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1003,7 +1112,7 @@ val1 = new ASTMod(val1, val2);
       break;
       }
     default:
-      jj_la1[35] = jj_gen;
+      jj_la1[37] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1049,9 +1158,9 @@ val1 = new ASTMod(val1, val2);
       jj_consume_token(IFELSE);
       jj_consume_token(OPEN);
       val1 = Expression();
-      jj_consume_token(45);
+      jj_consume_token(47);
       val2 = Expression();
-      jj_consume_token(45);
+      jj_consume_token(47);
       val3 = Expression();
       jj_consume_token(CLOSE);
 {if ("" != null) return new ASTIfThenElse(val1, val2, val3);}
@@ -1065,7 +1174,7 @@ val1 = new ASTMod(val1, val2);
       break;
       }
     default:
-      jj_la1[36] = jj_gen;
+      jj_la1[38] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1080,24 +1189,6 @@ val1 = new ASTMod(val1, val2);
     finally { jj_save(0, xla); }
   }
 
-  private boolean jj_3R_12()
- {
-    if (jj_scan_token(46)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_11()
- {
-    if (jj_scan_token(47)) return true;
-    return false;
-  }
-
-  private boolean jj_3_1()
- {
-    if (jj_3R_10()) return true;
-    return false;
-  }
-
   private boolean jj_3R_10()
  {
     if (jj_scan_token(IDENTIFIER)) return true;
@@ -1107,6 +1198,24 @@ val1 = new ASTMod(val1, val2);
     jj_scanpos = xsp;
     if (jj_3R_12()) return true;
     }
+    return false;
+  }
+
+  private boolean jj_3R_12()
+ {
+    if (jj_scan_token(48)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_11()
+ {
+    if (jj_scan_token(49)) return true;
+    return false;
+  }
+
+  private boolean jj_3_1()
+ {
+    if (jj_3R_10()) return true;
     return false;
   }
 
@@ -1121,7 +1230,7 @@ val1 = new ASTMod(val1, val2);
   private Token jj_scanpos, jj_lastpos;
   private int jj_la;
   private int jj_gen;
-  final private int[] jj_la1 = new int[37];
+  final private int[] jj_la1 = new int[39];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -1129,10 +1238,10 @@ val1 = new ASTMod(val1, val2);
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x83f57fc0,0x83e57fc0,0x100000,0x0,0x83e57fc0,0x83e57fc0,0x100000,0x0,0x0,0x13fc0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x83e04000,0x1,0x83e04000,0x0,0x20000000,0x40000000,0x0,0x0,0x0,0x0,0x3000000,0x3000000,0x1c000000,0x1c000000,0x83e04000,0xe04000,};
+      jj_la1_0 = new int[] {0xfd5ffc0,0xf95ffc0,0x400000,0x0,0xf95ffc0,0xf95ffc0,0x400000,0x0,0x0,0x4ffc0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0xf810000,0x1,0xf810000,0x0,0x80000000,0x0,0x0,0x0,0x0,0x0,0xc000000,0xc000000,0x70000000,0x70000000,0xf810000,0x3810000,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x1bc0,0x3c0,0x0,0x1800,0x3c0,0x3c0,0x0,0x1800,0x1800,0x0,0x800,0x200,0x200,0x200,0x200,0x200,0x200,0x200,0x200,0x2000,0x1000,0x3c0,0x1800,0x3c0,0xc000,0x0,0x0,0x3,0x3,0x3c,0x3c,0x0,0x0,0x0,0x0,0x3c0,0x3c0,};
+      jj_la1_1 = new int[] {0x6f02,0xf02,0x0,0x6000,0xf02,0xf02,0x0,0x6000,0x6000,0x0,0x2000,0x800,0x800,0x800,0x800,0x800,0x800,0x800,0x800,0x800,0x800,0x8000,0x4000,0xf02,0x6000,0xf02,0x30000,0x0,0x1,0xc,0xc,0xf0,0xf0,0x0,0x0,0x0,0x0,0xf02,0xf00,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[1];
   private boolean jj_rescan = false;
@@ -1149,7 +1258,7 @@ val1 = new ASTMod(val1, val2);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 37; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 39; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1164,7 +1273,7 @@ val1 = new ASTMod(val1, val2);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 37; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 39; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1175,7 +1284,7 @@ val1 = new ASTMod(val1, val2);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 37; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 39; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1186,7 +1295,7 @@ val1 = new ASTMod(val1, val2);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 37; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 39; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1196,7 +1305,7 @@ val1 = new ASTMod(val1, val2);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 37; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 39; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1206,7 +1315,7 @@ val1 = new ASTMod(val1, val2);
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 37; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 39; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -1319,12 +1428,12 @@ val1 = new ASTMod(val1, val2);
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[48];
+    boolean[] la1tokens = new boolean[50];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 37; i++) {
+    for (int i = 0; i < 39; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -1336,7 +1445,7 @@ val1 = new ASTMod(val1, val2);
         }
       }
     }
-    for (int i = 0; i < 48; i++) {
+    for (int i = 0; i < 50; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import jspetrinet.exception.*;
-import jspetrinet.petri.*;
+import jspetrinet.exception.ASTException;
+import jspetrinet.petri.Net;
+import jspetrinet.petri.Trans;
 
 public class MarkingProcess {
 
@@ -58,7 +59,7 @@ public class MarkingProcess {
 		this.net = net;
 		markSet.clear();
 		arcSet.clear();
-		arcSet.put(init, init);
+		arcSet.put(init, init);//初期マーキングを到達済みとして記憶
 
 		numOfGenTrans = net.getNumOfGenTrans();
 		immGroup.clear();
@@ -70,7 +71,7 @@ public class MarkingProcess {
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
 		novisited.push(init);
 		create(novisited, net);
-		return init;
+		return init;//初期マーキングをそのまま返しているが意味はあるのか。引数はMarkだが、代入はしなくていいのか
 	}
 	
 	protected void create(LinkedList<Mark> novisited, Net net) throws ASTException {
@@ -146,11 +147,11 @@ public class MarkingProcess {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					Mark dest = PetriAnalysis.doFiring(net, tr);
-					if (arcSet.containsKey(dest)) {
+					if (arcSet.containsKey(dest)) {//発火先がすでに到達済み
 						dest = arcSet.get(dest);
 					} else {
-						novisited.push(dest);
-						arcSet.put(dest, dest);
+						novisited.push(dest);//到達していないマーキングを挿入(リストの先頭に)
+						arcSet.put(dest, dest);//到達済みマーキングとして記録
 					}
 					new MarkingArc(m, dest, tr);
 					break;

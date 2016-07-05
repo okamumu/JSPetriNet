@@ -12,9 +12,15 @@ import java.util.Map.Entry;
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.ASTValue;
 import jspetrinet.ast.ASTree;
-import jspetrinet.exception.*;
+import jspetrinet.exception.ASTException;
+import jspetrinet.exception.AlreadyExistException;
+import jspetrinet.exception.NotFindObjectException;
+import jspetrinet.exception.TypeMismatch;
 import jspetrinet.graph.Arc;
 import jspetrinet.graph.Component;
+import jspetrinet.sim.SimExpTrans;
+import jspetrinet.sim.SimGenConstTrans;
+import jspetrinet.sim.SimGenUnifTrans;
 
 public class Net extends ASTEnv {
 	
@@ -32,6 +38,7 @@ public class Net extends ASTEnv {
 	protected final Map<String,Trans> genTransSet;
 
 	protected ASTree reward;
+	protected ASTree stopCondition;
 	
 	public Net(String label) {
 		this(null, label);
@@ -139,10 +146,22 @@ public class Net extends ASTEnv {
 		}
 	}
 	
+	public final ASTree getStopCondition() throws ASTException {
+		return stopCondition;
+	}
+	
 	public final int getNumOfGenTrans() {
 		return genTransSet.size();
 	}
 
+	public final int getNumOfImmTrans() {
+		return immTransSet.size();
+	}
+	
+	public final int getNumOfExpTrans() {
+		return expTransSet.size();
+	}
+	
 	public final int getNumOfPlace() {
 		return placeSet.size();
 	}
@@ -246,7 +265,7 @@ public class Net extends ASTEnv {
 //			placeIndex.put(i, p);
 			i++;
 		}
-		
+
 		int j = 0;
 		for (Trans tr : genTransSet.values()) {
 			tr.setIndex(j);
@@ -259,6 +278,15 @@ public class Net extends ASTEnv {
 		Object tmp = this.get(reward);
 		if (tmp instanceof ASTree) {
 			this.reward = (ASTree) tmp;
+		} else {
+			throw new TypeMismatch();
+		}
+	}
+	
+	public void setStopCondition(String stopCondition) throws ASTException {
+		Object tmp = this.get(stopCondition);
+		if (tmp instanceof ASTree) {
+			this.stopCondition = (ASTree) tmp;
 		} else {
 			throw new TypeMismatch();
 		}
@@ -278,7 +306,7 @@ public class Net extends ASTEnv {
 		if (expTransSet.containsKey(label) || immTransSet.containsKey(label) || genTransSet.containsKey(label)) {
 			throw new AlreadyExistException();
 		}
-		ExpTrans tmp = new ExpTrans(label, rate);
+		ExpTrans tmp = new SimExpTrans(label, rate);
 		expTransSet.put(tmp.getLabel(), tmp);
 		put(label, tmp);
 		return tmp;
@@ -307,6 +335,26 @@ public class Net extends ASTEnv {
 			throw new AlreadyExistException();
 		}
 		GenTrans tmp = new GenTrans(label, dist, policy);
+		genTransSet.put(tmp.getLabel(),  tmp);
+		put(label, tmp);
+		return tmp;
+	}
+	
+	public final GenTrans createSimGenConstTrans(String label, ASTree constant, GenTransPolicy policy) throws ASTException {
+		if (expTransSet.containsKey(label) || immTransSet.containsKey(label) || genTransSet.containsKey(label)) {
+			throw new AlreadyExistException();
+		}
+		GenTrans tmp = new SimGenConstTrans(label, constant, policy);
+		genTransSet.put(tmp.getLabel(),  tmp);
+		put(label, tmp);
+		return tmp;
+	}
+	
+	public final GenTrans createSimGenUnifTrans(String label, ASTree lower, ASTree upper, GenTransPolicy policy) throws ASTException {
+		if (expTransSet.containsKey(label) || immTransSet.containsKey(label) || genTransSet.containsKey(label)) {
+			throw new AlreadyExistException();
+		}
+		GenTrans tmp = new SimGenUnifTrans(label, lower, upper, policy);
 		genTransSet.put(tmp.getLabel(),  tmp);
 		put(label, tmp);
 		return tmp;
