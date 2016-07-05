@@ -19,75 +19,79 @@ public interface JSPetriNetParserConstants {
   /** RegularExpression Id. */
   int GENTRANS = 9;
   /** RegularExpression Id. */
-  int ARC = 10;
+  int GENCONSTTRANS = 10;
   /** RegularExpression Id. */
-  int IARC = 11;
+  int GENUNIFTRANS = 11;
   /** RegularExpression Id. */
-  int OARC = 12;
+  int ARC = 12;
   /** RegularExpression Id. */
-  int HARC = 13;
+  int IARC = 13;
   /** RegularExpression Id. */
-  int IFELSE = 14;
+  int OARC = 14;
   /** RegularExpression Id. */
-  int TO = 15;
+  int HARC = 15;
   /** RegularExpression Id. */
-  int NET = 16;
+  int IFELSE = 16;
   /** RegularExpression Id. */
-  int MARK = 17;
+  int TO = 17;
   /** RegularExpression Id. */
-  int BEGIN = 18;
+  int NET = 18;
   /** RegularExpression Id. */
-  int END = 19;
+  int MARK = 19;
   /** RegularExpression Id. */
-  int COMMENT = 20;
+  int BEGIN = 20;
   /** RegularExpression Id. */
-  int REAL = 21;
+  int END = 21;
   /** RegularExpression Id. */
-  int INTEGER = 22;
+  int COMMENT = 22;
   /** RegularExpression Id. */
-  int STRING = 23;
+  int REAL = 23;
   /** RegularExpression Id. */
-  int PLUS = 24;
+  int INTEGER = 24;
   /** RegularExpression Id. */
-  int MINUS = 25;
+  int STRING = 25;
   /** RegularExpression Id. */
-  int MULTIPLY = 26;
+  int PLUS = 26;
   /** RegularExpression Id. */
-  int DIVIDE = 27;
+  int MINUS = 27;
   /** RegularExpression Id. */
-  int MOD = 28;
+  int MULTIPLY = 28;
   /** RegularExpression Id. */
-  int OR = 29;
+  int DIVIDE = 29;
   /** RegularExpression Id. */
-  int AND = 30;
+  int MOD = 30;
   /** RegularExpression Id. */
-  int NOT = 31;
+  int OR = 31;
   /** RegularExpression Id. */
-  int EQ = 32;
+  int AND = 32;
   /** RegularExpression Id. */
-  int NEQ = 33;
+  int NOT = 33;
   /** RegularExpression Id. */
-  int GT = 34;
+  int EQ = 34;
   /** RegularExpression Id. */
-  int LT = 35;
+  int NEQ = 35;
   /** RegularExpression Id. */
-  int GTE = 36;
+  int GT = 36;
   /** RegularExpression Id. */
-  int LTE = 37;
+  int LT = 37;
   /** RegularExpression Id. */
-  int IDENTIFIER = 38;
+  int GTE = 38;
   /** RegularExpression Id. */
-  int GLOBAL_NTOKEN = 39;
+  int LTE = 39;
   /** RegularExpression Id. */
-  int NTOKEN = 40;
+  int IDENTIFIER = 40;
   /** RegularExpression Id. */
-  int OPEN = 41;
+  int GLOBAL_NTOKEN = 41;
   /** RegularExpression Id. */
-  int CLOSE = 42;
+  int NTOKEN = 42;
   /** RegularExpression Id. */
-  int NL = 43;
+  int OPEN = 43;
   /** RegularExpression Id. */
-  int SEND = 44;
+  int CLOSE = 44;
+  /** RegularExpression Id. */
+  int NL = 45;
+  /** RegularExpression Id. */
+  int SEND = 46;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -106,6 +110,8 @@ public interface JSPetriNetParserConstants {
     "\"exp\"",
     "\"imm\"",
     "\"gen\"",
+    "\"gen.const\"",
+    "\"gen.unif\"",
     "\"arc\"",
     "\"iarc\"",
     "\"oarc\"",
