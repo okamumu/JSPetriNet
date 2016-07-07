@@ -4,6 +4,15 @@ import jspetrinet.exception.ASTException;
 import jspetrinet.exception.TypeMismatch;
 
 public class Utility {
+
+	public static boolean convertObjctToBoolean(Object obj) throws ASTException{
+		if (obj instanceof Boolean) {
+			return (Boolean) obj;
+		} else {
+			throw new TypeMismatch();
+		}
+	}
+
 	public static double convertObjctToDouble(Object obj) throws ASTException{
 		double doubleType;
 		if(obj instanceof Integer){

@@ -26,19 +26,27 @@ import jspetrinet.exception.*;
 import jspetrinet.marking.*;
 import jspetrinet.parser.TokenMgrError;
 import jspetrinet.petri.Net;
+import jspetrinet.sim.EventValue;
+import jspetrinet.sim.MCSimulation;
+import jspetrinet.sim.Random;
+import jspetrinet.sim.RandomGenerator;
 
 class Opts {
 	// modes
 	public static String VIEW="view";
-	public static String MARKING="analysis";
-	
+	public static String MARKING="mark";
+	public static String SIMULATION="sim";
+
 	// options
 	public static String INPETRI="spn";
 	public static String OUTPETRI="dot";
 	public static String OUTMAT="out";
 	public static String INITMARK="imark";
-	public static String DEPTH="test";
+	public static String DEPTH="limit";
 	public static String REWARD="reward";
+
+	public static String SEED="seed";
+	public static String SIMTIME="time";
 }
 
 public class CommandLineMain {
@@ -71,6 +79,60 @@ public class CommandLineMain {
 		}
 		return result;
 	}
+	
+	private static Net loadNet(CommandLine cmd) {
+		Net net = new Net(null, "");
+		InputStream in = null;
+		if (cmd.hasOption(Opts.INPETRI)) {
+			try {
+				in = new FileInputStream(cmd.getOptionValue(Opts.INPETRI));
+			} catch (FileNotFoundException e) {
+				System.err.println("Did not find file: " + cmd.getOptionValue(Opts.INPETRI));
+				System.exit(1);
+			}
+		} else {
+			in = System.in;
+		}
+		try {
+			net = JSPetriNet.load(net, in);
+		} catch (TokenMgrError ex) {
+			System.out.println("token error: " + ex.getMessage());
+			System.exit(1);
+		} catch (jspetrinet.parser.ParseException ex) {
+			System.out.println("parse error: " + ex.getMessage());
+			System.exit(1);
+		} catch (ASTException e) {
+			System.out.println("Error: " + e.getMessage());
+			System.exit(1);
+		}
+		net.setIndex();
+		return net;
+	}
+	
+	private static Mark getInitialMark(CommandLine cmd, Net net) {
+		Mark imark = null;
+		if (cmd.hasOption(Opts.INITMARK)) {
+			try {
+				imark = JSPetriNet.mark(net, parseMark(cmd.getOptionValue(Opts.INITMARK)));
+			} catch (ASTException e) {
+				System.err.println(e.getMessage());
+				System.exit(1);
+			}
+			System.out.println("Initial marking: " + JSPetriNet.markToString(net, imark));
+		} else {
+			System.err.println("Marking process requires an initial marking (-" + Opts.INITMARK + ").");
+			System.exit(1);
+		}
+		return imark;
+	}
+	
+	private static int getLimit(CommandLine cmd, int defaultValue) {
+		if (cmd.hasOption(Opts.DEPTH)) {
+			return Integer.parseInt(cmd.getOptionValue(Opts.DEPTH));
+		} else {
+			return defaultValue;
+		}
+	}
 
 	public static void cmdView(String[] args) {
 		Options options = new Options();
@@ -85,32 +147,7 @@ public class CommandLineMain {
 			return;
 		}
 
-		Net net;
-		InputStream in;
-		if (cmd.hasOption(Opts.INPETRI)) {
-			try {
-				in = new FileInputStream(cmd.getOptionValue(Opts.INPETRI));
-			} catch (FileNotFoundException e) {
-				System.err.println("Did not find file: " + cmd.getOptionValue(Opts.INPETRI));
-				return;
-			}
-		} else {
-			in = System.in;
-		}
-
-		try {
-			net = JSPetriNet.load(new Net(null, ""), in);
-		} catch (TokenMgrError ex) {
-			System.out.println("token error: " + ex.getMessage());
-			return;
-		} catch (jspetrinet.parser.ParseException ex) {
-			System.out.println("parse error: " + ex.getMessage());
-			return;
-		} catch (ASTException e) {
-			System.out.println("Error: " + e.getMessage());
-			return;
-		}
-		net.setIndex();
+		Net net = loadNet(cmd);
 
 		PrintWriter bw;
 		if (cmd.hasOption(Opts.OUTPETRI)) {
@@ -144,52 +181,9 @@ public class CommandLineMain {
 			return;
 		}
 
-		Net net;
-		InputStream in;
-		if (cmd.hasOption(Opts.INPETRI)) {
-			try {
-				in = new FileInputStream(cmd.getOptionValue(Opts.INPETRI));
-			} catch (FileNotFoundException e) {
-				System.err.println("Did not find file: " + cmd.getOptionValue(Opts.INPETRI));
-				return;
-			}
-		} else {
-			in = System.in;
-		}
-		try {
-			net = JSPetriNet.load(new Net(null, ""), in);
-		} catch (TokenMgrError ex) {
-			System.out.println("token error: " + ex.getMessage());
-			return;
-		} catch (jspetrinet.parser.ParseException ex) {
-			System.out.println("parse error: " + ex.getMessage());
-			return;
-		} catch (ASTException e) {
-			System.out.println("Error: " + e.getMessage());
-			return;
-		}
-		net.setIndex();
-
-		int depth;
-		if (cmd.hasOption(Opts.DEPTH)) {
-			depth = Integer.parseInt(cmd.getOptionValue(Opts.DEPTH));
-		} else {
-			depth = 0;
-		}
-
-		Mark imark;
-		if (cmd.hasOption(Opts.INITMARK)) {
-			try {
-				imark = JSPetriNet.mark(net, parseMark(cmd.getOptionValue(Opts.INITMARK)));
-			} catch (ASTException e) {
-				System.err.println(e.getMessage());
-				return;
-			}
-			System.out.println("Initial marking: " + JSPetriNet.markToString(net, imark));
-		} else {
-			System.err.println("Marking process requires an initial marking (-" + Opts.INITMARK + ").");
-			return;
-		}
+		Net net = loadNet(cmd);
+		Mark imark = getInitialMark(cmd, net);
+		int depth = getLimit(cmd, 0);
 		
 		PrintWriter pw0;
 		pw0 = new PrintWriter(System.out);
@@ -275,9 +269,55 @@ public class CommandLineMain {
 		}
 	}
 
+	public static void cmdSimulation(String[] args) {
+		Options options = new Options();
+		options.addOption(Opts.INPETRI, true, "input PetriNet file");
+		options.addOption(Opts.INITMARK, true, "initial marking");
+		options.addOption(Opts.DEPTH, true, "limit");
+		options.addOption(Opts.SEED, true, "seed");
+		CommandLineParser parser = new DefaultParser();
+		CommandLine cmd;
+		try {
+			cmd = parser.parse(options, args);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return;
+		}
+
+		Net net = loadNet(cmd);
+		
+		MCSimulation mc = new MCSimulation(net);
+		Mark imark = getInitialMark(cmd, net);
+		int limits = getLimit(cmd, 1000);
+		
+		double endTime;
+		if (cmd.hasOption(Opts.SIMTIME)) {
+			endTime = Double.valueOf(cmd.getOptionValue(Opts.SIMTIME));
+		} else {
+			System.err.println("Time (-time) should be set for the simulation.");
+			return;
+		}
+
+		int seed;
+		if (cmd.hasOption(Opts.SEED)) {
+			seed = Integer.valueOf(cmd.getOptionValue(Opts.SEED));
+		} else {
+			seed = (int) System.currentTimeMillis();
+		}
+
+		Random rnd = new RandomGenerator(seed);
+		try {
+			List<EventValue> result = mc.runSimulation(imark, 0.0, endTime, limits, rnd);
+			mc.resultEvent(new PrintWriter(System.out), result);
+		} catch (ASTException e) {
+			System.err.println("Failed: " + e.getMessage());
+			return;
+		}
+	}
+
 	public static void main(String[] args) {
 		if (args.length < 1) {
-			System.err.print("Require mode: " + Opts.VIEW + ", " + Opts.MARKING);
+			System.err.print("Require mode: " + Opts.VIEW + ", " + Opts.MARKING + ", " + Opts.SIMULATION);
 			System.err.println();
 			return;
 		}
@@ -292,6 +332,8 @@ public class CommandLineMain {
 			cmdView(newargs);
 		} else if (mode.equals(Opts.MARKING)) {
 			cmdAnalysis(newargs);
+		} else if (mode.equals(Opts.SIMULATION)) {
+			cmdSimulation(newargs);
 		}
 	}
 

@@ -4,7 +4,8 @@ package jspetrinet.parser;
 import jspetrinet.ast.*;
 import jspetrinet.exception.*;
 import jspetrinet.petri.*;
-import jspetrinet.sim.*;
+import jspetrinet.dist.*;
+
 public class JSPetriNetParser implements JSPetriNetParserConstants {
         private Net current;
         private Net global;
@@ -415,7 +416,7 @@ for (PairValue pval : optlist.getList()) {
     jj_consume_token(GENTRANS);
     token = jj_consume_token(IDENTIFIER);
 current.createGenTrans(token.image,
-                new ASTValue(token.image + ".dist"), GenTrans.DefaultPolicy);
+                new ASTVariable(token.image + ".dist"), GenTrans.DefaultPolicy);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
       jj_consume_token(OPEN);
@@ -425,7 +426,7 @@ for (PairValue pval : optlist.getList()) {
                         ASTree value = pval.getValue();
                         GenTrans tr = (GenTrans) current.get(token.image);
                         if (label.equals("dist")) {
-                                tr.setDist(value);
+                                current.put(token.image + ".dist", value);
                         } else if (label.equals("policy")) {
                                 Object v = value.eval(current);
                                 if (v instanceof Integer) {
@@ -459,8 +460,8 @@ for (PairValue pval : optlist.getList()) {
         PairValueList optlist;
     jj_consume_token(GENCONSTTRANS);
     token = jj_consume_token(IDENTIFIER);
-current.createSimGenConstTrans(token.image,
-                new ASTValue(token.image), SimGenConstTrans.DefaultPolicy);
+current.createGenTrans(token.image, new ASTVariable(token.image + ".dist"), GenTrans.DefaultPolicy);
+                current.put(token.image + ".dist", new ConstDist(new ASTValue("value")));
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
       jj_consume_token(OPEN);
@@ -468,9 +469,10 @@ current.createSimGenConstTrans(token.image,
 for (PairValue pval : optlist.getList()) {
                         String label = pval.getLabel();
                         ASTree value = pval.getValue();
-                        SimGenConstTrans tr = (SimGenConstTrans) current.getTrans(token.image);
+                        GenTrans tr = (GenTrans) current.get(token.image);
+                        ConstDist dist = (ConstDist) current.get(token.image + ".dist");
                         if (label.equals("value")) {
-                                tr.setConst(value);
+                                dist.setConstValue(value);
                         } else if (label.equals("policy")) {
                                 Object v = value.eval(current);
                                 if (v instanceof Integer) {
@@ -480,15 +482,15 @@ for (PairValue pval : optlist.getList()) {
                                         } else if (pol == 1) {
                                                 tr.setPolicy(GenTransPolicy.PRS);
                                         } else {
-                                                {if (true) throw new UnknownOption();}
+                                                {if (true) throw new UnknownOption(label);}
                                         }
                                 } else {
-                                        {if (true) throw new UnknownOption();}
+                                        {if (true) throw new UnknownOption(label);}
                                 }
                         } else if (label.equals("guard")) {
                                 tr.setGuard(value);
                         } else {
-                                {if (true) throw new UnknownOption();}
+                                {if (true) throw new UnknownOption(label);}
                         }
                 }
       jj_consume_token(CLOSE);
@@ -504,8 +506,8 @@ for (PairValue pval : optlist.getList()) {
         PairValueList optlist;
     jj_consume_token(GENUNIFTRANS);
     token = jj_consume_token(IDENTIFIER);
-current.createSimGenUnifTrans(token.image,
-                new ASTValue(token.image), new ASTValue(token.image), SimGenUnifTrans.DefaultPolicy);
+current.createGenTrans(token.image, new ASTVariable(token.image + ".dist"), GenTrans.DefaultPolicy);
+                current.put(token.image + ".dist", new UnifDist(new ASTValue("lower"), new ASTValue("upper")));
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
       jj_consume_token(OPEN);
@@ -513,11 +515,12 @@ current.createSimGenUnifTrans(token.image,
 for (PairValue pval : optlist.getList()) {
                         String label = pval.getLabel();
                         ASTree value = pval.getValue();
-                        SimGenUnifTrans tr = (SimGenUnifTrans) current.getTrans(token.image);
+                        GenTrans tr = (GenTrans) current.get(token.image);
+                        UnifDist dist = (UnifDist) current.get(token.image + ".dist");
                         if (label.equals("lower")) {
-                                tr.setLower(value);
+                                dist.setLower(value);
                         } else if (label.equals("upper")) {
-                                tr.setUpper(value);
+                                dist.setUpper(value);
                         } else if (label.equals("policy")) {
                                 Object v = value.eval(current);
                                 if (v instanceof Integer) {
@@ -527,15 +530,15 @@ for (PairValue pval : optlist.getList()) {
                                         } else if (pol == 1) {
                                                 tr.setPolicy(GenTransPolicy.PRS);
                                         } else {
-                                                {if (true) throw new UnknownOption();}
+                                                {if (true) throw new UnknownOption(label);}
                                         }
                                 } else {
-                                        {if (true) throw new UnknownOption();}
+                                        {if (true) throw new UnknownOption(label);}
                                 }
                         } else if (label.equals("guard")) {
                                 tr.setGuard(value);
                         } else {
-                                {if (true) throw new UnknownOption();}
+                                {if (true) throw new UnknownOption(label);}
                         }
                 }
       jj_consume_token(CLOSE);
@@ -1189,18 +1192,6 @@ val1 = new ASTMod(val1, val2);
     finally { jj_save(0, xla); }
   }
 
-  private boolean jj_3R_10()
- {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_11()) {
-    jj_scanpos = xsp;
-    if (jj_3R_12()) return true;
-    }
-    return false;
-  }
-
   private boolean jj_3R_12()
  {
     if (jj_scan_token(48)) return true;
@@ -1216,6 +1207,18 @@ val1 = new ASTMod(val1, val2);
   private boolean jj_3_1()
  {
     if (jj_3R_10()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_10()
+ {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_11()) {
+    jj_scanpos = xsp;
+    if (jj_3R_12()) return true;
+    }
     return false;
   }
 

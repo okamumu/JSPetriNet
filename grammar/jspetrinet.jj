@@ -3,11 +3,13 @@ options{
 }
 
 PARSER_BEGIN (JSPetriNetParser)
+
 package jspetrinet.parser;
 import jspetrinet.ast.*;
 import jspetrinet.exception.*;
 import jspetrinet.petri.*;
-import jspetrinet.sim.*;
+import jspetrinet.dist.*;
+
 public class JSPetriNetParser {
 	private Net current;
 	private Net global;
@@ -17,6 +19,7 @@ public class JSPetriNetParser {
 		this.current = global;
 	}
 }
+
 PARSER_END (JSPetriNetParser)
  
 SKIP: {
@@ -220,14 +223,14 @@ void GenTransDeclaration() throws ASTException: {
 } {
 	<GENTRANS> token = <IDENTIFIER> {
 		current.createGenTrans(token.image,
-		new ASTValue(token.image + ".dist"), GenTrans.DefaultPolicy);
+		new ASTVariable(token.image + ".dist"), GenTrans.DefaultPolicy);
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
 			ASTree value = pval.getValue();
 			GenTrans tr = (GenTrans) current.get(token.image);
 			if (label.equals("dist")) {
-				tr.setDist(value);
+				current.put(token.image + ".dist", value);
 			} else if (label.equals("policy")) {
 				Object v = value.eval(current);
 				if (v instanceof Integer) {
@@ -257,15 +260,16 @@ void GenConstTransDeclaration() throws ASTException: {
 	PairValueList optlist;
 } {
 	<GENCONSTTRANS> token = <IDENTIFIER> {
-		current.createSimGenConstTrans(token.image,
-		new ASTValue(token.image), SimGenConstTrans.DefaultPolicy);
+		current.createGenTrans(token.image, new ASTVariable(token.image + ".dist"), GenTrans.DefaultPolicy);
+		current.put(token.image + ".dist", new ConstDist(new ASTValue("value")));
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
 			ASTree value = pval.getValue();
-			SimGenConstTrans tr = (SimGenConstTrans) current.getTrans(token.image);
+			GenTrans tr = (GenTrans) current.get(token.image);
+			ConstDist dist = (ConstDist) current.get(token.image + ".dist");
 			if (label.equals("value")) {
-				tr.setConst(value);
+				dist.setConstValue(value);
 			} else if (label.equals("policy")) {
 				Object v = value.eval(current);
 				if (v instanceof Integer) {
@@ -275,15 +279,15 @@ void GenConstTransDeclaration() throws ASTException: {
 					} else if (pol == 1) {
 						tr.setPolicy(GenTransPolicy.PRS);
 					} else {
-						throw new UnknownOption();
+						throw new UnknownOption(label);
 					}
 				} else {
-					throw new UnknownOption();
+					throw new UnknownOption(label);
 				}
 			} else if (label.equals("guard")) {
 				tr.setGuard(value);
 			} else {
-				throw new UnknownOption();
+				throw new UnknownOption(label);
 			}
 		}
 	}
@@ -295,17 +299,18 @@ void GenUnifTransDeclaration() throws ASTException: {
 	PairValueList optlist;
 } {
 	<GENUNIFTRANS> token = <IDENTIFIER> {
-		current.createSimGenUnifTrans(token.image,
-		new ASTValue(token.image), new ASTValue(token.image), SimGenUnifTrans.DefaultPolicy);
+		current.createGenTrans(token.image, new ASTVariable(token.image + ".dist"), GenTrans.DefaultPolicy);
+		current.put(token.image + ".dist", new UnifDist(new ASTValue("lower"), new ASTValue("upper")));
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
 			ASTree value = pval.getValue();
-			SimGenUnifTrans tr = (SimGenUnifTrans) current.getTrans(token.image);
+			GenTrans tr = (GenTrans) current.get(token.image);
+			UnifDist dist = (UnifDist) current.get(token.image + ".dist");
 			if (label.equals("lower")) {
-				tr.setLower(value);
+				dist.setLower(value);
 			} else if (label.equals("upper")) {
-				tr.setUpper(value);
+				dist.setUpper(value);
 			} else if (label.equals("policy")) {
 				Object v = value.eval(current);
 				if (v instanceof Integer) {
@@ -315,15 +320,15 @@ void GenUnifTransDeclaration() throws ASTException: {
 					} else if (pol == 1) {
 						tr.setPolicy(GenTransPolicy.PRS);
 					} else {
-						throw new UnknownOption();
+						throw new UnknownOption(label);
 					}
 				} else {
-					throw new UnknownOption();
+					throw new UnknownOption(label);
 				}
 			} else if (label.equals("guard")) {
 				tr.setGuard(value);
 			} else {
-				throw new UnknownOption();
+				throw new UnknownOption(label);
 			}
 		}
 	}

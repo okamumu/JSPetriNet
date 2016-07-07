@@ -1,7 +1,6 @@
 package jspetrinet.analysis;
 
 import java.io.PrintWriter;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +30,6 @@ public class MRGPAnalysis {
 //	MarkGroup expGroup;
 //	private List<MarkGroup> genGroup;
 
-	private String expMatNameI;
-	private String expMatNameG;
-	
 	private final Map<GroupPair,String> matrixName;
 	
 	private static String colsep = "\t";

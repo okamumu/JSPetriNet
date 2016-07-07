@@ -4,7 +4,7 @@ package jspetrinet.parser;
 import jspetrinet.ast.*;
 import jspetrinet.exception.*;
 import jspetrinet.petri.*;
-import jspetrinet.sim.*;
+import jspetrinet.dist.*;
 
 /** Token Manager. */
 @SuppressWarnings("unused")public class JSPetriNetParserTokenManager implements JSPetriNetParserConstants {

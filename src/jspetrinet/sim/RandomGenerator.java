@@ -1,13 +1,12 @@
 package jspetrinet.sim;
 
-import jspetrinet.exception.ASTException;
 import rnd.Sfmt;
 
 public class RandomGenerator implements Random{
 
 	Sfmt rnd;
 	
-	public RandomGenerator(int seed) throws ASTException {
+	public RandomGenerator(int seed) {
 		rnd = new Sfmt(seed);
 	}
 	
@@ -17,17 +16,12 @@ public class RandomGenerator implements Random{
 	}
 
 	@Override
-	public double nextExp() {
-		return rnd.NextExp();
-	}
-
-	@Override
 	public double nextUnif(double low, double high) {
-		return nextUnif01()%(high - low + 1) + low;
+		return (high - low) * rnd.NextUnif() + low;
 	}
 
 	@Override
 	public double nextExp(double rate) {
-		return nextExp()/rate;
+		return rnd.NextExp()/rate;
 	}
 }

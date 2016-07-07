@@ -12,9 +12,6 @@ import jspetrinet.ast.ASTree;
 import jspetrinet.exception.*;
 import jspetrinet.graph.Arc;
 import jspetrinet.graph.Component;
-import jspetrinet.sim.SimExpTrans;
-import jspetrinet.sim.SimGenConstTrans;
-import jspetrinet.sim.SimGenUnifTrans;
 
 public class Net extends ASTEnv {
 	
@@ -99,11 +96,11 @@ public class Net extends ASTEnv {
 	}
 
 	public final int getNumOfImmTrans() {
-		return immTransSet.size();
+		return immTransList.size();
 	}
 	
 	public final int getNumOfExpTrans() {
-		return expTransSet.size();
+		return expTransList.size();
 	}
 	
 	public final int getNumOfPlace() {
@@ -139,12 +136,7 @@ public class Net extends ASTEnv {
 		if (this.contains(label)) {
 			throw new AlreadyExistException(label);
 		}
-<<<<<<< HEAD
 		ExpTrans tmp = new ExpTrans(label, rate);
-=======
-		ExpTrans tmp = new SimExpTrans(label, rate);
-		expTransSet.put(tmp.getLabel(), tmp);
->>>>>>> develop
 		put(label, tmp);
 		expTransList.add(tmp);
 		return tmp;
@@ -178,26 +170,6 @@ public class Net extends ASTEnv {
 		return tmp;
 	}
 	
-	public final GenTrans createSimGenConstTrans(String label, ASTree constant, GenTransPolicy policy) throws ASTException {
-		if (expTransSet.containsKey(label) || immTransSet.containsKey(label) || genTransSet.containsKey(label)) {
-			throw new AlreadyExistException();
-		}
-		GenTrans tmp = new SimGenConstTrans(label, constant, policy);
-		genTransSet.put(tmp.getLabel(),  tmp);
-		put(label, tmp);
-		return tmp;
-	}
-	
-	public final GenTrans createSimGenUnifTrans(String label, ASTree lower, ASTree upper, GenTransPolicy policy) throws ASTException {
-		if (expTransSet.containsKey(label) || immTransSet.containsKey(label) || genTransSet.containsKey(label)) {
-			throw new AlreadyExistException();
-		}
-		GenTrans tmp = new SimGenUnifTrans(label, lower, upper, policy);
-		genTransSet.put(tmp.getLabel(),  tmp);
-		put(label, tmp);
-		return tmp;
-	}
-
 	//// arc
 	
 	public final ArcBase createNormalInArc(Place src, Trans dest, ASTree multi) throws ASTException {
@@ -229,5 +201,4 @@ public class Net extends ASTEnv {
 		ArcBase tmp = new InhibitArc(src, dest, multi);
 		return tmp;
 	}
-	
 }
