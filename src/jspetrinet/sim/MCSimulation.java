@@ -38,21 +38,30 @@ public class MCSimulation {
 	}
 	
 	private double nextTime(Net net, ExpTrans tr, Random rnd) throws ASTException {
-		double rate = Utility.convertObjctToDouble(tr.getRate());
-		return rnd.nextExp(rate);
+		try {
+			double rate = Utility.convertObjctToDouble(tr.getRate().eval(net));
+			return rnd.nextExp(rate);
+		} catch (TypeMismatch e) {
+			System.err.println("Did not get a rate of ExpTrans " + tr.getLabel() + " " + tr.getRate().eval(net));
+			throw e;
+		}
 	}
 
 	private double nextTime(Net net, GenTrans tr, Random rnd) throws ASTException {
-		if (tr.getDist() instanceof ConstDist) {
-			ConstDist dist = (ConstDist) tr.getDist();
+		ASTree v = tr.getDist();
+		if (v instanceof ASTVariable) {
+			v = ((ASTVariable) v).getObject(net);
+		}
+		if (v instanceof ConstDist) {
+			ConstDist dist = (ConstDist) v;
 			return Utility.convertObjctToDouble(dist.getConstValue().eval(net));
-		} else if (tr.getDist() instanceof UnifDist) {
-			UnifDist dist = (UnifDist) tr.getDist();
+		} else if (v instanceof UnifDist) {
+			UnifDist dist = (UnifDist) v;
 			double lower = Utility.convertObjctToDouble(dist.getLower().eval(net));
 			double upper = Utility.convertObjctToDouble(dist.getUpper().eval(net));
 			return rnd.nextUnif(lower, upper);
-		} else if (tr.getDist() instanceof ExpDist) {
-			ExpDist dist = (ExpDist) tr.getDist();
+		} else if (v instanceof ExpDist) {
+			ExpDist dist = (ExpDist) v;
 			double rate = Utility.convertObjctToDouble(dist.getRate());
 			return rnd.nextExp(rate);
 		} else {
@@ -75,8 +84,8 @@ public class MCSimulation {
 		}
 	}
 
-	public ArrayList<EventValue> runSimulation(Mark initMarking, double startTime, double endTime, int limitFiring, Random rnd) throws ASTException {
-		ArrayList<EventValue> eventValues = new ArrayList<EventValue>();
+	public List<EventValue> runSimulation(Mark initMarking, double startTime, double endTime, int limitFiring, Random rnd) throws ASTException {
+		List<EventValue> eventValues = new ArrayList<EventValue>();
 		int firingcount = 0;
 		double currentTime = startTime;
 		Mark currentMarking = initMarking;
@@ -182,8 +191,8 @@ public class MCSimulation {
 		return eventValues;
 	}
 
-	public ArrayList<EventValue> runSimulation(Mark initMarking, double startTime, double endTime, ASTree stopCondition, int limitFiring, Random rnd) throws ASTException {
-		ArrayList<EventValue> eventValues = new ArrayList<EventValue>();
+	public List<EventValue> runSimulation(Mark initMarking, double startTime, double endTime, ASTree stopCondition, int limitFiring, Random rnd) throws ASTException {
+		List<EventValue> eventValues = new ArrayList<EventValue>();
 		int firingcount = 0;
 		double currentTime = startTime;
 		Mark currentMarking = initMarking;
@@ -293,7 +302,7 @@ public class MCSimulation {
 		return Utility.convertObjctToDouble(reward.eval(net));
 	}
 
-	public double resultReward(Net net, ArrayList<EventValue> simResult, ASTree reward, double startTime, double endTime) throws ASTException {
+	public double resultReward(Net net, List<EventValue> simResult, ASTree reward, double startTime, double endTime) throws ASTException {
 		double totalReward = 0;
 		for(int i=0;i<simResult.size();i++){
 			net.setCurrentMark(simResult.get(i).getEventMarking());

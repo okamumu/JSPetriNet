@@ -74,7 +74,7 @@ public class MRGPAnalysis {
 			if (genGroup.containsKey(gv)) {
 				MarkGroup mg = genGroup.get(gv);
 				String glabel = JSPetriNet.genvecToString(net, gv);
-				pw.println("# " + mat.getGroupLabel(mg) + " " + glabel);
+				pw.println("# " + mat.getGroupLabel(mg) + "rwd" + " " + glabel);
 				pw.println("# size " + mg.size());
 				List<List<Object>> s = mat.getMakingSet(mg);
 				for (List<Object> e: s) {
@@ -95,7 +95,7 @@ public class MRGPAnalysis {
 			if (immGroup.containsKey(gv)) {
 				MarkGroup mg = immGroup.get(gv);
 				String glabel = JSPetriNet.genvecToString(net, gv);
-				pw.println("# " + mat.getGroupLabel(mg) + " " + glabel);
+				pw.println("# " + mat.getGroupLabel(mg) + "init" + " " + glabel);
 				pw.println("# size " + mg.size());
 				List<List<Object>> s = mat.getMakingSet(mg);
 				for (List<Object> e: s) {
@@ -112,7 +112,7 @@ public class MRGPAnalysis {
 			if (genGroup.containsKey(gv)) {
 				MarkGroup mg = genGroup.get(gv);
 				String glabel = JSPetriNet.genvecToString(net, gv);
-				pw.println("# " + mat.getGroupLabel(mg) + " " + glabel);
+				pw.println("# " + mat.getGroupLabel(mg) + "init" + " " + glabel);
 				pw.println("# size " + mg.size());
 				List<List<Object>> s = mat.getMakingSet(mg);
 				for (List<Object> e: s) {

@@ -4,9 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -194,9 +192,10 @@ public class CommandLineMain {
 			System.err.println(e1.getMessage());
 			return;
 		}
-		pw0.close();
+		pw0.flush();
 
 		MarkingMatrix mat = new MarkingMatrix(mp, true);
+		MRGPAnalysis mrgp = new MRGPAnalysis(mat);
 
 		PrintWriter pw1, pw2, pw6;
 		if (cmd.hasOption(Opts.OUTMAT)) {
@@ -211,21 +210,27 @@ public class CommandLineMain {
 				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTMAT));
 				return;
 			}			
+			mrgp.writeMarkSet(pw1);
+			mrgp.writeMatrix(pw2);
+			mrgp.writeStateVec(pw6, imark);
+			pw1.close();
+			pw2.close();
+			pw6.close();
 		} else {
-			pw1 = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
-			pw2 = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
-			pw6 = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+			pw1 = new PrintWriter(System.out);
+			pw2 = new PrintWriter(System.out);
+			pw6 = new PrintWriter(System.out);
+			mrgp.writeMarkSet(pw1);
+			mrgp.writeMatrix(pw2);
+			mrgp.writeStateVec(pw6, imark);
+			pw1.flush();
+			pw2.flush();
+			pw6.flush();
 		}
 		
-		MRGPAnalysis mrgp = new MRGPAnalysis(mat);
-		mrgp.writeMarkSet(pw1);
-		mrgp.writeMatrix(pw2);
-		mrgp.writeStateVec(pw6, imark);
-		pw1.close();
-		pw2.close();
-		pw6.close();
-		
 		if (cmd.hasOption(Opts.REWARD)) {
+			String rewardLabel = cmd.getOptionValue(Opts.REWARD);
+
 			PrintWriter pw5;
 			if (cmd.hasOption(Opts.OUTMAT)) {
 				try {
@@ -237,17 +242,23 @@ public class CommandLineMain {
 					System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTMAT));
 					return;
 				}			
+				try {
+					mrgp.writeStateRewardVec(pw5, parseReward(net, rewardLabel));
+				} catch (ASTException ex) {
+					System.err.println(ex.getMessage());
+					return;
+				}
+				pw5.close();
 			} else {
 				pw5 = new PrintWriter(System.out);
+				try {
+					mrgp.writeStateRewardVec(pw5, parseReward(net, rewardLabel));
+				} catch (ASTException ex) {
+					System.err.println(ex.getMessage());
+					return;
+				}
+				pw5.flush();
 			}
-			String rewardLabel = cmd.getOptionValue(Opts.REWARD);
-			try {
-				mrgp.writeStateRewardVec(pw5, parseReward(net, rewardLabel));
-			} catch (ASTException ex) {
-				System.err.println(ex.getMessage());
-				return;
-			}
-			pw5.close();
 		}
 
 		if (cmd.hasOption(Opts.OUTPETRI)) {
@@ -275,6 +286,7 @@ public class CommandLineMain {
 		options.addOption(Opts.INITMARK, true, "initial marking");
 		options.addOption(Opts.DEPTH, true, "limit");
 		options.addOption(Opts.SEED, true, "seed");
+		options.addOption(Opts.SIMTIME, true, "time");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
 		try {
@@ -308,9 +320,12 @@ public class CommandLineMain {
 		Random rnd = new RandomGenerator(seed);
 		try {
 			List<EventValue> result = mc.runSimulation(imark, 0.0, endTime, limits, rnd);
-			mc.resultEvent(new PrintWriter(System.out), result);
+			PrintWriter pw = new PrintWriter(System.out);
+			mc.resultEvent(pw, result);
+			pw.close();
 		} catch (ASTException e) {
 			System.err.println("Failed: " + e.getMessage());
+			e.printStackTrace();
 			return;
 		}
 	}
@@ -334,6 +349,10 @@ public class CommandLineMain {
 			cmdAnalysis(newargs);
 		} else if (mode.equals(Opts.SIMULATION)) {
 			cmdSimulation(newargs);
+		} else {
+			System.err.print("Require mode: " + Opts.VIEW + ", " + Opts.MARKING + ", " + Opts.SIMULATION);
+			System.err.println();
+			return;
 		}
 	}
 

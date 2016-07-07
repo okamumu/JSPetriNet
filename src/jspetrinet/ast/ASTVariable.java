@@ -29,4 +29,14 @@ public class ASTVariable extends ASTree {
 		}
 	}
 
+	public ASTree getObject(ASTEnv env) throws ASTException {
+		Object v = env.get(label);
+		if (v instanceof ASTVariable) {
+			return ((ASTVariable) v).getObject(env);
+		} else if (v instanceof ASTree) {
+			return (ASTree) v;
+		} else {
+			throw new ASTException("Did not find the containt of variable " + label);
+		}
+	}
 }

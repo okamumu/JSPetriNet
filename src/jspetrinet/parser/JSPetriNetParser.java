@@ -385,7 +385,6 @@ for (PairValue pval : optlist.getList()) {
 tr = current.createImmTrans(token.image,
                         new ASTVariable(token.image + ".weight"));
                 tr.setGuard(new ASTVariable(token.image + ".guard"));
-                current.put(token.image + ".weight", new ASTValue(token.image + ".weight"));
                 current.put(token.image + ".guard", new ASTValue(true));
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
@@ -559,25 +558,23 @@ for (PairValue pval : optlist.getList()) {
 
     jj_consume_token(TO);
     dest = jj_consume_token(IDENTIFIER);
-try {
-                        Place p = (Place) current.get(src.image);
-                        Trans tr = (Trans) current.get(dest.image);
-                        a = current.createNormalInArc(p, tr, new ASTValue(1));
-                } catch (NotFindObjectException e1) {
-                        try {
-                                Trans tr = (Trans) current.get(src.image);
-                                Place p = (Place) current.get(dest.image);
-                                a = current.createNormalOutArc(tr, p, new ASTValue(1));
-                        } catch (NotFindObjectException e2) {
-                                System.err.println("Did not find " + src.image + " -> " + dest.image);
-                                {if (true) throw new NotFindObjectException("Did not find " + src.image + " -> " + dest.image);}
-                        } catch (AlreadyExistException e3) {
-                                System.err.println("Already exist " + src.image + " -> " + dest.image);
-                                {if (true) throw new NotFindObjectException("Already exist " + src.image + " -> " + dest.image);}
+Object s, d;
+                try {
+                        s = current.get(src.image);
+                        d = current.get(dest.image);
+                } catch (NotFindObjectException e) {
+                        {if (true) throw new NotFindObjectException("Did not find " + src.image + " -> " + dest.image);}
+                }
+                try {
+                        if (s instanceof Place && d instanceof Trans) {
+                                a = current.createNormalInArc((Place) s, (Trans) d, new ASTValue(1));
+                        } else if (s instanceof Trans && d instanceof Place) {
+                                a = current.createNormalOutArc((Trans) s, (Place) d, new ASTValue(1));
+                        } else {
+                                {if (true) throw new ASTException("Error: An arc should be Place to Trans or Trans to Place " + src.image + " -> " + dest.image);}
                         }
-                } catch (AlreadyExistException e4) {
-                                System.err.println("Already exist " + src.image + " -> " + dest.image);
-                                {if (true) throw new NotFindObjectException("Already exist " + src.image + " -> " + dest.image);}
+                } catch (AlreadyExistException e3) {
+                        {if (true) throw new AlreadyExistException("Already exist the arc " + src.image + " -> " + dest.image);}
                 }
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
