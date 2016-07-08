@@ -39,10 +39,11 @@ class Opts {
 
 	// options
 	public static String INPETRI="spn";
-	public static String OUTPETRI="graph";
-	public static String OUTMAT="out";
+	public static String GROUPGRAPH="ggraph";
+	public static String MARKGRAPH="mgraph";
+	public static String OUT="out";
 	public static String INITMARK="imark";
-	public static String DEPTH="limit";
+	public static String FIRINGLIMIT="limit";
 	public static String REWARD="reward";
 
 	public static String SEED="seed";
@@ -127,8 +128,8 @@ public class CommandLineMain {
 	}
 	
 	private static int getLimit(CommandLine cmd, int defaultValue) {
-		if (cmd.hasOption(Opts.DEPTH)) {
-			return Integer.parseInt(cmd.getOptionValue(Opts.DEPTH));
+		if (cmd.hasOption(Opts.FIRINGLIMIT)) {
+			return Integer.parseInt(cmd.getOptionValue(Opts.FIRINGLIMIT));
 		} else {
 			return defaultValue;
 		}
@@ -137,7 +138,7 @@ public class CommandLineMain {
 	public static void cmdView(String[] args) {
 		Options options = new Options();
 		options.addOption(Opts.INPETRI, true, "input Petrinet file");
-		options.addOption(Opts.OUTPETRI, true, "output file");
+		options.addOption(Opts.OUT, true, "output file");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
 		try {
@@ -150,11 +151,11 @@ public class CommandLineMain {
 		Net net = loadNet(cmd);
 
 		PrintWriter bw;
-		if (cmd.hasOption(Opts.OUTPETRI)) {
+		if (cmd.hasOption(Opts.OUT)) {
 			try {
-				bw = new PrintWriter(cmd.getOptionValue(Opts.OUTPETRI));
+				bw = new PrintWriter(cmd.getOptionValue(Opts.OUT));
 			} catch (FileNotFoundException e) {
-				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTPETRI));
+				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
 				return;
 			}
 		} else {
@@ -168,10 +169,11 @@ public class CommandLineMain {
 		Options options = new Options();
 		options.addOption(Opts.INPETRI, true, "input PetriNet file");
 		options.addOption(Opts.INITMARK, true, "initial marking");
-		options.addOption(Opts.DEPTH, true, "test mode (input depth for DFS)");
-		options.addOption(Opts.OUTMAT, true, "matrix (output)");
-		options.addOption(Opts.OUTPETRI, true, "marking graph (output)");
-		options.addOption(Opts.REWARD, true, "the label of reward");
+		options.addOption(Opts.FIRINGLIMIT, true, "test mode (input depth for DFS)");
+		options.addOption(Opts.OUT, true, "matrix (output)");
+		options.addOption(Opts.GROUPGRAPH, true, "marking group graph (output)");
+		options.addOption(Opts.MARKGRAPH, true, "marking graph (output)");
+		options.addOption(Opts.REWARD, true, "reward");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
 		try {
@@ -200,16 +202,16 @@ public class CommandLineMain {
 		MRGPAnalysis mrgp = new MRGPAnalysis(mat);
 
 		PrintWriter pw1, pw2, pw6;
-		if (cmd.hasOption(Opts.OUTMAT)) {
+		if (cmd.hasOption(Opts.OUT)) {
 			try {
-				pw1 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUTMAT) + ".states")));
-				pw2 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUTMAT) + ".matrix")));
-				pw6 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUTMAT) + ".init")));
+				pw1 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".states")));
+				pw2 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".matrix")));
+				pw6 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".init")));
 			} catch (FileNotFoundException e) {
-				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTMAT));
+				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
 				return;
 			} catch (IOException e) {
-				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTMAT));
+				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
 				return;
 			}			
 			mrgp.writeMarkSet(pw1);
@@ -234,14 +236,14 @@ public class CommandLineMain {
 			String rewardLabel = cmd.getOptionValue(Opts.REWARD);
 
 			PrintWriter pw5;
-			if (cmd.hasOption(Opts.OUTMAT)) {
+			if (cmd.hasOption(Opts.OUT)) {
 				try {
-					pw5 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUTMAT) + ".reward")));
+					pw5 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".reward")));
 				} catch (FileNotFoundException e) {
-					System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTMAT));
+					System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
 					return;
 				} catch (IOException e) {
-					System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTMAT));
+					System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
 					return;
 				}			
 				try {
@@ -263,22 +265,34 @@ public class CommandLineMain {
 			}
 		}
 
-		if (cmd.hasOption(Opts.OUTPETRI)) {
-			PrintWriter pw3, pw4;
+		if (cmd.hasOption(Opts.GROUPGRAPH)) {
+			PrintWriter pw;
 			try {
-				pw3 = new PrintWriter(new BufferedWriter(new FileWriter("group_" + cmd.getOptionValue(Opts.OUTPETRI))));
-				pw4 = new PrintWriter(new BufferedWriter(new FileWriter("mark_" + cmd.getOptionValue(Opts.OUTPETRI))));
+				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.GROUPGRAPH))));
 			} catch (FileNotFoundException e) {
-				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTPETRI));
+				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.GROUPGRAPH));
 				return;
 			} catch (IOException e) {
-				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUTPETRI));
+				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.GROUPGRAPH));
 				return;
 			}			
-			mat.getMarkingGraph().dotMarkGroup(pw3);
-			mat.getMarkingGraph().dotMarking(pw4);
-			pw3.close();
-			pw4.close();
+			mat.getMarkingGraph().dotMarkGroup(pw);
+			pw.close();
+		}
+
+		if (cmd.hasOption(Opts.MARKGRAPH)) {
+			PrintWriter pw;
+			try {
+				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.MARKGRAPH))));
+			} catch (FileNotFoundException e) {
+				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.MARKGRAPH));
+				return;
+			} catch (IOException e) {
+				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.MARKGRAPH));
+				return;
+			}			
+			mat.getMarkingGraph().dotMarking(pw);
+			pw.close();
 		}
 	}
 
@@ -286,7 +300,7 @@ public class CommandLineMain {
 		Options options = new Options();
 		options.addOption(Opts.INPETRI, true, "input PetriNet file");
 		options.addOption(Opts.INITMARK, true, "initial marking");
-		options.addOption(Opts.DEPTH, true, "limit");
+		options.addOption(Opts.FIRINGLIMIT, true, "limit");
 		options.addOption(Opts.SEED, true, "seed");
 		options.addOption(Opts.SIMTIME, true, "time");
 		CommandLineParser parser = new DefaultParser();
