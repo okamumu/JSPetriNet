@@ -66,24 +66,27 @@ public final class PetriAnalysis {
 		}
 	}
 
-	public final static Mark doFiring(Net env, Trans tr) throws ASTException {
-		Mark nextVec = new Mark(env.getCurrentMark());
-//		nextVec.setFiring(nextVec.getFiring() + 1);
+	public final static Mark doFiring(Net net, Trans tr) throws ASTException {
+		Mark nextMark = new Mark(net.getCurrentMark());
 		for (Arc arc : tr.getInArc()) {
 			Place place = (Place) arc.getSrc();
 			ArcBase arcBase = (ArcBase) arc;
-			if (nextVec.get(place.getIndex()) <= place.getMax()) {
-				nextVec.set(place.getIndex(), nextVec.get(place.getIndex()) - arcBase.firing(env));
-			}
+//			if (nextMark.get(place.getIndex()) <= place.getMax()) {
+//				nextMark.set(place.getIndex(), nextMark.get(place.getIndex()) - arcBase.firing(net));
+//			}
+			nextMark.set(place.getIndex(), nextMark.get(place.getIndex()) - arcBase.firing(net));
 		}
 		for (Arc arc : tr.getOutArc()) {
 			Place place = (Place) arc.getDest();
 			ArcBase arcBase = (ArcBase) arc;
-			nextVec.set(place.getIndex(), nextVec.get(place.getIndex()) + arcBase.firing(env));
-			if (nextVec.get(place.getIndex()) > place.getMax()) {
-				nextVec.set(place.getIndex(), place.getMax() + 1);
+			nextMark.set(place.getIndex(), nextMark.get(place.getIndex()) + arcBase.firing(net));
+//			if (nextMark.get(place.getIndex()) > place.getMax()) {
+//				nextMark.set(place.getIndex(), place.getMax() + 1);
+//			}
+			if (place.getMax() > 0 && nextMark.get(place.getIndex()) > place.getMax()) {
+				nextMark.set(place.getIndex(), place.getMax());
 			}
 		}
-		return nextVec;
+		return nextMark;
 	}
 }

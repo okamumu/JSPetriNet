@@ -36,7 +36,7 @@ public class MCSimulation {
 			remainingTime.put(tr, 0.0);
 		}
 	}
-	
+
 	private double nextTime(Net net, ExpTrans tr, Random rnd) throws ASTException {
 		try {
 			double rate = Utility.convertObjctToDouble(tr.getRate().eval(net));
@@ -48,24 +48,11 @@ public class MCSimulation {
 	}
 
 	private double nextTime(Net net, GenTrans tr, Random rnd) throws ASTException {
-		ASTree v = tr.getDist();
-		if (v instanceof ASTVariable) {
-			v = ((ASTVariable) v).getObject(net);
-		}
-		if (v instanceof ConstDist) {
-			ConstDist dist = (ConstDist) v;
-			return Utility.convertObjctToDouble(dist.getConstValue().eval(net));
-		} else if (v instanceof UnifDist) {
-			UnifDist dist = (UnifDist) v;
-			double lower = Utility.convertObjctToDouble(dist.getLower().eval(net));
-			double upper = Utility.convertObjctToDouble(dist.getUpper().eval(net));
-			return rnd.nextUnif(lower, upper);
-		} else if (v instanceof ExpDist) {
-			ExpDist dist = (ExpDist) v;
-			double rate = Utility.convertObjctToDouble(dist.getRate());
-			return rnd.nextExp(rate);
+		Object v = tr.getDist().eval(net);
+		if (v instanceof Dist) {
+			return ((Dist) v).next(net, rnd);
 		} else {
-			throw new TypeMismatch();
+			throw new ASTException("Gen " + tr.getLabel() + " is not a type of Dist.");
 		}
 	}
 

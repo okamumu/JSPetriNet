@@ -1,12 +1,14 @@
 package jspetrinet.dist;
 
-import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.ASTree;
 import jspetrinet.exception.ASTException;
+import jspetrinet.sim.Random;
+import jspetrinet.sim.Utility;
 
 public class ExpDist extends Dist {
 	
 	private ASTree rate;
+	private Object rateObj;
 
 	public ExpDist(ASTree rate) {
 		this.rate = rate;
@@ -21,8 +23,17 @@ public class ExpDist extends Dist {
 	}
 
 	@Override
-	public Object eval(ASTEnv env) throws ASTException {
-		Object obj = rate.eval(env);
-		return "ExpDist(" + obj + ")";
+	public void updateObj() throws ASTException {
+		rateObj = rate.eval(this.getEnv());
+	}
+
+	@Override
+	public String toString() {
+		return "ExpDist(" + rateObj + ")";
+	}
+
+	@Override
+	public double nextImpl(Random rnd) throws ASTException {
+		return rnd.nextExp(Utility.convertObjctToDouble(rateObj));
 	}
 }

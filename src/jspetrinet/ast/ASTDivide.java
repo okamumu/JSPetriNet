@@ -18,7 +18,7 @@ public class ASTDivide extends ASTBinaryOperator {
 		}
 
 		if (lhs instanceof Integer && rhs instanceof Integer) {
-			return (Integer) lhs / (Integer) rhs;
+			return ((Integer) lhs).doubleValue() / (Integer) rhs;
 		} else if (lhs instanceof Integer && rhs instanceof Double) {
 			return (Integer) lhs / (Double) rhs;
 		} else if (lhs instanceof Double && rhs instanceof Integer) {

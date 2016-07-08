@@ -4,7 +4,7 @@ import jspetrinet.graph.LabeledNode;
 
 public class Place extends LabeledNode {
 	
-	static public final int DefaultMax = 10;
+	static public final int DefaultMax = 0;
 	
 	private int index;
 	private final int max;

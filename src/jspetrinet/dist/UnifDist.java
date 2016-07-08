@@ -1,13 +1,16 @@
 package jspetrinet.dist;
 
-import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.ASTree;
 import jspetrinet.exception.ASTException;
+import jspetrinet.sim.Random;
+import jspetrinet.sim.Utility;
 
 public class UnifDist extends Dist {
 	
 	private ASTree lower;
 	private ASTree upper;
+	private Object lowerObj;
+	private Object upperObj;
 
 	public UnifDist(ASTree lower, ASTree upper) {
 		this.lower = lower;
@@ -31,9 +34,19 @@ public class UnifDist extends Dist {
 	}
 
 	@Override
-	public Object eval(ASTEnv env) throws ASTException {
-		Object l = lower.eval(env);
-		Object u = upper.eval(env);
-		return "UnifDist(" + l + "," + u + ")";
+	public void updateObj() throws ASTException {
+		lowerObj = lower.eval(this.getEnv());
+		upperObj = upper.eval(this.getEnv());
+	}
+
+	@Override
+	public String toString() {
+		return "UnifDist(" + lowerObj + "," + upperObj + ")";
+	}
+
+	@Override
+	public double nextImpl(Random rnd) throws ASTException {
+		return rnd.nextUnif(Utility.convertObjctToDouble(lowerObj),
+				Utility.convertObjctToDouble(upperObj));
 	}
 }

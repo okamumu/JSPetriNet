@@ -1,12 +1,14 @@
 package jspetrinet.dist;
 
-import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.ASTree;
 import jspetrinet.exception.ASTException;
+import jspetrinet.sim.Random;
+import jspetrinet.sim.Utility;
 
 public class ConstDist extends Dist {
 	
 	ASTree constValue;
+	Object constValueObj;
 
 	public ConstDist(ASTree constValue) {
 		this.constValue = constValue;
@@ -21,8 +23,17 @@ public class ConstDist extends Dist {
 	}
 
 	@Override
-	public Object eval(ASTEnv env) throws ASTException {
-		Object result = constValue.eval(env);
-		return "ConstDist(" + result + ")";
+	public String toString() {
+		return "ConstDist(" + constValueObj + ")";
+	}
+
+	@Override
+	public void updateObj() throws ASTException {
+		constValueObj = constValue.eval(this.getEnv());
+	}
+
+	@Override
+	public double nextImpl(Random rnd) throws ASTException {
+		return Utility.convertObjctToDouble(constValueObj);
 	}
 }

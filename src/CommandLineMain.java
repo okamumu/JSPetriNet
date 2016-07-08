@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +29,7 @@ import jspetrinet.sim.EventValue;
 import jspetrinet.sim.MCSimulation;
 import jspetrinet.sim.Random;
 import jspetrinet.sim.RandomGenerator;
+import jspetrinet.sim.Utility;
 
 class Opts {
 	// modes
@@ -37,7 +39,7 @@ class Opts {
 
 	// options
 	public static String INPETRI="spn";
-	public static String OUTPETRI="dot";
+	public static String OUTPETRI="graph";
 	public static String OUTMAT="out";
 	public static String INITMARK="imark";
 	public static String DEPTH="limit";
@@ -304,7 +306,30 @@ public class CommandLineMain {
 		
 		double endTime;
 		if (cmd.hasOption(Opts.SIMTIME)) {
-			endTime = Double.valueOf(cmd.getOptionValue(Opts.SIMTIME));
+			String label = "simtime" + System.currentTimeMillis();
+			try {
+				JSPetriNet.eval(net, label + " = " + cmd.getOptionValue(Opts.SIMTIME) + ";");
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			} catch (jspetrinet.parser.ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			} catch (ASTException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			}
+			try {
+				endTime = Utility.convertObjctToDouble(((ASTree) net.get(label)).eval(net));
+			} catch (ASTException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			}
+//			endTime = Double.valueOf(cmd.getOptionValue(Opts.SIMTIME));
 		} else {
 			System.err.println("Time (-time) should be set for the simulation.");
 			return;
