@@ -19,6 +19,7 @@ import org.apache.commons.cli.ParseException;
 
 import jspetrinet.JSPetriNet;
 import jspetrinet.analysis.MRGPAnalysis;
+import jspetrinet.analysis.MarkingAnalysis;
 import jspetrinet.analysis.MarkingMatrix;
 import jspetrinet.ast.ASTree;
 import jspetrinet.exception.*;
@@ -200,7 +201,7 @@ public class CommandLineMain {
 
 		MarkingMatrix mat = new MarkingMatrix(mp, true);
 		MRGPAnalysis mrgp = new MRGPAnalysis(mat);
-
+		
 		PrintWriter pw1, pw2, pw6;
 		if (cmd.hasOption(Opts.OUT)) {
 			try {
@@ -294,6 +295,8 @@ public class CommandLineMain {
 			mat.getMarkingGraph().dotMarking(pw);
 			pw.close();
 		}
+
+		MarkingAnalysis markAnalysis = new MarkingAnalysis(mp);
 	}
 
 	public static void cmdSimulation(String[] args) {
