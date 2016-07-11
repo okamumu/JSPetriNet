@@ -36,7 +36,7 @@ public class BTMarkGroup extends MarkGroup {
 	}
 
 	public void clear() {
-		super.clear();
+//		super.clear();
 		enterSet.clear();
 		exitSet.clear();
 		isTransient = false;
