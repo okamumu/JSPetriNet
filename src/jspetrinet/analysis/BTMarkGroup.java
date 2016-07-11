@@ -31,6 +31,21 @@ public class BTMarkGroup extends MarkGroup {
 		return isSlow;
 	}
 
+	public void clear() {
+//		super.clear();
+//		enterSet.clear();
+//		exitSet.clear();
+		isTransient = false;
+	}
+	
+//	public final Set<Mark> getEnterMarkSet() {
+//		return enterSet;
+//	}
+//
+//	public final Set<Mark> getExitMarkSet() {
+//		return exitSet;
+//	}
+
 //	public final void addExit(Mark m) {
 //		exitSet.add(m);
 //	}
