@@ -22,6 +22,7 @@ public class CreateMarkingDFS implements CreateMarking {
 	public Mark create(Mark init, Net net) throws ASTException {
 		arcSet = new HashMap<Mark,Mark>();
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
+		arcSet.put(init, init);
 		novisited.push(init);
 		createMarking(novisited, net);
 		return init;

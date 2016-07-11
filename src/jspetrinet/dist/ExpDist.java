@@ -1,5 +1,6 @@
 package jspetrinet.dist;
 
+import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.ASTree;
 import jspetrinet.exception.ASTException;
 import jspetrinet.sim.Random;
@@ -23,8 +24,8 @@ public class ExpDist extends Dist {
 	}
 
 	@Override
-	public void updateObj() throws ASTException {
-		rateObj = rate.eval(this.getEnv());
+	public void updateObj(ASTEnv env) throws ASTException {
+		rateObj = rate.eval(env);
 	}
 
 	@Override

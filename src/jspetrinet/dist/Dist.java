@@ -7,18 +7,9 @@ import jspetrinet.sim.Random;
 
 abstract public class Dist extends ASTree {
 	
-	private ASTEnv env;
-	
-	protected final ASTEnv getEnv() {
-		return env;
-	}
-
 	@Override
 	public final Object eval(ASTEnv env) throws ASTException {
-		if (this.env != env) {
-			this.env = env;
-			updateObj();
-		}
+		updateObj(env);
 		return this;
 	}
 
@@ -27,7 +18,7 @@ abstract public class Dist extends ASTree {
 		return nextImpl(rnd);
 	}
 
-	abstract public void updateObj() throws ASTException;
+	abstract public void updateObj(ASTEnv env) throws ASTException;
 	abstract public double nextImpl(Random rnd) throws ASTException;
 
 }

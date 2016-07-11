@@ -4,17 +4,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import jspetrinet.JSPetriNet;
 import jspetrinet.graph.Arc;
-import jspetrinet.petri.Net;
 
 public final class Mark extends jspetrinet.graph.Node implements Comparable<Mark> {
 
-	private final byte[] vec;
+	private final int[] vec;
 	private MarkGroup markGroup;
 
 	public Mark(int size) {
-		this.vec = new byte [size];
+		this.vec = new int [size];
 		markGroup = null;
 	}
 

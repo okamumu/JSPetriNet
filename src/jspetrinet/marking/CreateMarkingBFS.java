@@ -29,6 +29,7 @@ public class CreateMarkingBFS implements CreateMarking {
 		markDepth = new HashMap<Mark,Integer>();
 
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
+		arcSet.put(init, init);
 		novisited.offer(init);
 		markDepth.put(init, depth+1);
 		createMarking(novisited, net);

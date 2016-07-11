@@ -1,5 +1,6 @@
 package jspetrinet.dist;
 
+import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.ASTree;
 import jspetrinet.exception.ASTException;
 import jspetrinet.sim.Random;
@@ -34,9 +35,9 @@ public class UnifDist extends Dist {
 	}
 
 	@Override
-	public void updateObj() throws ASTException {
-		lowerObj = lower.eval(this.getEnv());
-		upperObj = upper.eval(this.getEnv());
+	public void updateObj(ASTEnv env) throws ASTException {
+		lowerObj = lower.eval(env);
+		upperObj = upper.eval(env);
 	}
 
 	@Override
