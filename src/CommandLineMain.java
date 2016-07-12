@@ -19,6 +19,7 @@ import org.apache.commons.cli.ParseException;
 
 import jspetrinet.JSPetriNet;
 import jspetrinet.analysis.MRGPAnalysis;
+import jspetrinet.analysis.MarkClassAnalysis;
 import jspetrinet.analysis.MarkingAnalysis;
 import jspetrinet.analysis.MarkingMatrix;
 import jspetrinet.ast.ASTree;
@@ -46,6 +47,7 @@ class Opts {
 	public static String INITMARK="imark";
 	public static String FIRINGLIMIT="limit";
 	public static String REWARD="reward";
+	public static String SCC="scc";
 
 	public static String SEED="seed";
 	public static String SIMTIME="time";
@@ -175,6 +177,7 @@ public class CommandLineMain {
 		options.addOption(Opts.GROUPGRAPH, true, "marking group graph (output)");
 		options.addOption(Opts.MARKGRAPH, true, "marking graph (output)");
 		options.addOption(Opts.REWARD, true, "reward");
+		options.addOption(Opts.SCC, true, "scc");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
 		try {
@@ -295,8 +298,26 @@ public class CommandLineMain {
 			mat.getMarkingGraph().dotMarking(pw);
 			pw.close();
 		}
+		
+		if (cmd.hasOption(Opts.SCC)) {
+			PrintWriter pw;
+			try {
+				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.SCC))));
+			} catch (FileNotFoundException e) {
+				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.SCC));
+				return;
+			} catch (IOException e) {
+				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.SCC));
+				return;
+			}			
+			MarkClassAnalysis mca = new MarkClassAnalysis(net);
+			mca.scc(imark, null);
+			mca.connectGroup();
+			mca.dotMarkGroup(pw);
+			pw.close();
+		}
 
-		MarkingAnalysis markAnalysis = new MarkingAnalysis(mp);
+//		MarkingAnalysis markAnalysis = new MarkingAnalysis(mp);
 	}
 
 	public static void cmdSimulation(String[] args) {

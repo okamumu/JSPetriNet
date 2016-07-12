@@ -86,7 +86,7 @@ public class MarkingGraph {
 	public void dotMarking(PrintWriter bw) {
 		bw.println("digraph { layout=dot; overlap=false; splines=true;");
 		for (Mark m : markSet.keySet()) {
-			bw.println("\"" + m + "\" [shape = circle, label = \""
+			bw.println("\"" + m + "\" [label = \""
 					+ JSPetriNet.markToString(net, m) + "\"];");
 			for (Arc a : m.getOutArc()) {
 				bw.println("\"" + a.getSrc() + "\" -> \"" + a.getDest() + "\";");
@@ -98,14 +98,14 @@ public class MarkingGraph {
 	public void dotMarkGroup(PrintWriter bw) {
 		bw.println("digraph { layout=dot; overlap=false; splines=true;");
 		for (Map.Entry<GenVec, MarkGroup> entry : this.genGroup.entrySet()) {
-			bw.println("\"" + entry.getValue() + "\" [shape = circle, label = \"GEN "
+			bw.println("\"" + entry.getValue() + "\" [label = \"GEN "
 					+ JSPetriNet.genvecToString(net, entry.getKey()) + "\"];");
 			for (Arc a : entry.getValue().getOutArc()) {
 				bw.println("\"" + a.getSrc() + "\" -> \"" + a.getDest() + "\";");
 			}
 		}
 		for (Map.Entry<GenVec, MarkGroup> entry : this.immGroup.entrySet()) {
-			bw.println("\"" + entry.getValue() + "\" [shape = circle, label = \"IMM "
+			bw.println("\"" + entry.getValue() + "\" [label = \"IMM "
 					+ JSPetriNet.genvecToString(net, entry.getKey()) + "\"];");
 			for (Arc a : entry.getValue().getOutArc()) {
 				bw.println("\"" + a.getSrc() + "\" -> \"" + a.getDest() + "\";");

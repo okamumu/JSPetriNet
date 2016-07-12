@@ -33,7 +33,7 @@ public final class MarkingAnalysis {
 		enterSet = new HashMap<MarkGroup, Map<MarkGroup,Set<Mark>>>();
 		exitSet = new HashMap<MarkGroup, Map<MarkGroup,Set<Mark>>>();
 		this.createEnterExit();
-		this.setEnterExit();
+//		this.setEnterExit();
 	}
 
 	private void createEnterExit() {
@@ -62,35 +62,35 @@ public final class MarkingAnalysis {
 		}
 	}
 	
-	private void setEnterExit() {
-		for (MarkGroup mg : immGroup.values()) {
-			for (Mark m : mg.getMarkSet()) {
-				for (Arc a: m.getOutArc()) {
-					Mark next = (Mark) a.getDest();
-					MarkGroup nextMg = next.getMarkGroup();
-					if (mg != nextMg) {
-						this.exitSet.get(mg).get(nextMg).add(next);
-						this.enterSet.get(nextMg).get(mg).add(m);
-					}
-				}
-				
-			}
-		}
-		for (MarkGroup mg : genGroup.values()) {
-			for (Mark m : mg.getMarkSet()) {
-				for (Arc a: m.getOutArc()) {
-					Mark next = (Mark) a.getDest();
-					MarkGroup nextMg = next.getMarkGroup();
-					if (mg != nextMg) {
-						this.exitSet.get(mg).get(nextMg).add(next);
-						this.enterSet.get(nextMg).get(mg).add(m);
-					}
-				}
-				
-			}
-		}
-	}
-	
+//	private void setEnterExit() {
+//		for (MarkGroup mg : immGroup.values()) {
+//			for (Mark m : mg.getMarkSet()) {
+//				for (Arc a: m.getOutArc()) {
+//					Mark next = (Mark) a.getDest();
+//					MarkGroup nextMg = next.getMarkGroup();
+//					if (mg != nextMg) {
+//						this.exitSet.get(mg).get(nextMg).add(next);
+//						this.enterSet.get(nextMg).get(mg).add(m);
+//					}
+//				}
+//				
+//			}
+//		}
+//		for (MarkGroup mg : genGroup.values()) {
+//			for (Mark m : mg.getMarkSet()) {
+//				for (Arc a: m.getOutArc()) {
+//					Mark next = (Mark) a.getDest();
+//					MarkGroup nextMg = next.getMarkGroup();
+//					if (mg != nextMg) {
+//						this.exitSet.get(mg).get(nextMg).add(next);
+//						this.enterSet.get(nextMg).get(mg).add(m);
+//					}
+//				}
+//				
+//			}
+//		}
+//	}
+//	
 	public void doVanishing(MarkGroup mg) {
 		HashMap<Mark,Map<Mark,Object>> cash = new HashMap<Mark,Map<Mark,Object>>();
 		LinkedList<Mark> tovisit = new LinkedList<Mark>();

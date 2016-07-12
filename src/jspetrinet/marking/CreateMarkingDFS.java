@@ -72,13 +72,15 @@ public class CreateMarkingDFS implements CreateMarking {
 				if (!markGraph.getImmGroup().containsKey(genv)) {
 					markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
 				}
-				m.setMarkGroup(markGraph.getImmGroup().get(genv));
+				markGraph.getImmGroup().get(genv).add(m);
+//				m.setMarkGroup(markGraph.getImmGroup().get(genv));
 				continue;
 			} else {
 				if (!markGraph.getGenGroup().containsKey(genv)) {
 					markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
 				}
-				m.setMarkGroup(markGraph.getGenGroup().get(genv));
+				markGraph.getGenGroup().get(genv).add(m);
+//				m.setMarkGroup(markGraph.getGenGroup().get(genv));
 			}
 			
 			for (Trans tr : net.getGenTransSet()) {
