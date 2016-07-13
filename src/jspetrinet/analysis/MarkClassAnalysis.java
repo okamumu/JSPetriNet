@@ -1,6 +1,7 @@
 package jspetrinet.analysis;
 
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +14,7 @@ import jspetrinet.graph.Arc;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkGroup;
 import jspetrinet.marking.MarkingArc;
+import jspetrinet.marking.MarkingGraph;
 import jspetrinet.petri.Net;
 
 public class MarkClassAnalysis {
@@ -21,17 +23,18 @@ public class MarkClassAnalysis {
 	private final Set<MarkGroup> allMarkGroup;
 	private final Set<MarkGroup> dagMarkGroup;
 	private final Map<Mark,MarkGroup> markToGroup;
-	private final Set<Mark> dagtran;
-
-	public MarkClassAnalysis(Net net) {
-		this.net = net;
+	
+	public MarkClassAnalysis(MarkingGraph mp, Collection<Mark> allmark) {
+		this.net = mp.getNet();
 		allMarkGroup = new HashSet<MarkGroup>();
 		markToGroup = new HashMap<Mark,MarkGroup>();
 		dagMarkGroup = new HashSet<MarkGroup>();
-		dagtran = new HashSet<Mark>();
+//		dagtran = new HashSet<Mark>();
+		scc(allmark);
+		connectGroup2(allmark);
 	}
-	
-	public void scc(Mark start, Set<Mark> allmark) {
+
+	private void scc(Collection<Mark> allmark) {
 		// SCC: Decomposition of Strongly Connected Components by Kosaraju
 		// init
 		LinkedList<Mark> sorted = new LinkedList<Mark>();
@@ -40,110 +43,106 @@ public class MarkClassAnalysis {
 		Set<Mark> visited = new HashSet<Mark>();
 		
 		// DFS 1 pass
-		novisited.push(start);
-		while (!novisited.isEmpty()) {
-			Mark m = novisited.pop();
-			if (m == null) {
-				sorted.push(comp.pop());
+		for (Mark s : allmark) {
+			if (visited.contains(s)) {
 				continue;
 			}
-			if (visited.contains(m)) {
-				continue;
-			}
-			visited.add(m);
+			novisited.push(s);
+			while (!novisited.isEmpty()) {
+				Mark m = novisited.pop();
+				if (m == null) {
+					sorted.push(comp.pop());
+					continue;
+				}
+				if (visited.contains(m)) {
+					continue;
+				}
+				visited.add(m);
 
-			novisited.push(null);
-			comp.push(m);
-			for (Arc a : m.getOutArc()) {
-				Mark next = (Mark) a.getDest();
-				novisited.push(next);
+				novisited.push(null);
+				comp.push(m);
+				for (Arc a : m.getOutArc()) {
+					Mark next = (Mark) a.getDest();
+					if (allmark.contains(next)) {
+						novisited.push(next);
+					}
+				}
 			}
 		}
 
 		// DFS 2 pass (reverse)
 		novisited.clear();
 		visited.clear();
-		for (Mark m : sorted) {
-			if (!visited.contains(m)) {
-				MarkGroup mg = new MarkGroup(JSPetriNet.markToString(net, m));
-				novisited.push(m);
-				while (!novisited.isEmpty()) {
-					Mark m2 = novisited.pop();
-					if (visited.contains(m2)) {
-						continue;
-					}
-					visited.add(m2);
-					mg.add(m2);
-					markToGroup.put(m2, mg);
+		for (Mark s : sorted) {
+			if (visited.contains(s)) {
+				continue;
+			}
+			MarkGroup mg = new MarkGroup(JSPetriNet.markToString(net, s));
+			novisited.push(s);
+			while (!novisited.isEmpty()) {
+				Mark m = novisited.pop();
+				if (visited.contains(m)) {
+					continue;
+				}
+				visited.add(m);
+				mg.add(m);
+				markToGroup.put(m, mg);
 
-					for (Arc a : m2.getInArc()) {
-						Mark next = (Mark) a.getSrc();
+				for (Arc a : m.getInArc()) {
+					Mark next = (Mark) a.getSrc();
+					if (allmark.contains(next)) {
 						novisited.push(next);
 					}
 				}
-				if (mg.getMarkSet().size() != 1) {
-					allMarkGroup.add(mg);
-				} else {
-					dagtran.add(mg.getMarkSet().iterator().next());
-					allMarkGroup.add(mg);
-					dagMarkGroup.add(mg);
-				}
+			}
+			if (mg.getMarkSet().size() != 1) {
+				allMarkGroup.add(mg);
+			} else {
+//				dagtran.add(mg.getMarkSet().iterator().next());
+				allMarkGroup.add(mg);
+				dagMarkGroup.add(mg);
 			}
 		}
+	}
 
-//		// DFS 3 pass
-//		novisited.clear();
-//		visited.clear();
-//		Collections.reverse(sorted);
-//		for (Mark m : sorted) {
-//			if (!visited.contains(m) && dagtran.contains(m)) {
-//				MarkGroup mg = new MarkGroup(JSPetriNet.markToString(net, m));
-//				novisited.push(m);
-//				while (!novisited.isEmpty()) {
-//					Mark m2 = novisited.pop();
-//					if (visited.contains(m2) || !dagtran.contains(m2)) {
-//						continue;
-//					}
-//					visited.add(m2);
-//					mg.add(m2);
-//					markToGroup.put(m2, mg);
-//
-//					for (Arc a : m2.getOutArc()) {
-//						Mark next = (Mark) a.getDest();
-//	//					if (!reserved.contains(next)) {
-//							novisited.push(next);
-////							reserved.add(next);
-////						}
-//					}
-//				}
-//				allMarkGroup.add(mg);
-//				dagMarkGroup.add(mg);
-//			}
-//		}
-	}
-	
-	private void connectGroup(MarkGroup src, MarkGroup dest) {
-		for (Mark msrc : src.getMarkSet()) {
-			for (Arc a : msrc.getOutArc()) {
-				Mark next = (Mark) a.getDest();
-				if (dest.getMarkSet().contains(next)) {
-					new MarkingArc(src, dest, null);
-					return;
+	private void connectGroup2(Collection<Mark> allmark) {
+		Set<Mark> visited = new HashSet<Mark>();
+		LinkedList<Mark> novisited = new LinkedList<Mark>();
+		Set<GroupPair> connected = new HashSet<GroupPair>();
+		for (MarkGroup mg : allMarkGroup) {
+			for (Mark s : mg.getMarkSet()) {
+				if (visited.contains(s)) {
+					continue;
+				}
+				novisited.push(s);
+				while (!novisited.isEmpty()) {
+					Mark m = novisited.pop();
+					if (visited.contains(m)) {
+						continue;
+					}
+					visited.add(m);
+					
+					MarkGroup src = markToGroup.get(m);
+					for (Arc a : m.getOutArc()) {
+						Mark next = (Mark) a.getDest();
+						if (!allmark.contains(next)) {
+							continue;
+						}
+						MarkGroup dest = markToGroup.get(next);
+						if (src != dest) {
+							GroupPair gp = new GroupPair(src, dest);
+							if (!connected.contains(gp)) {
+								new MarkingArc(src, dest, null);
+								connected.add(gp);
+							}
+						}
+						novisited.push(next);
+					}
 				}
 			}
 		}
 	}
-	
-	public void connectGroup() {
-		for (MarkGroup src : allMarkGroup) {
-			for (MarkGroup dest : allMarkGroup) {
-				if (src != dest) {
-					connectGroup(src, dest);
-				}
-			}
-		}
-	}
-	
+
 	public void dotMarkGroup(PrintWriter bw) {
 		bw.println("digraph { layout=dot; overlap=false; splines=true;");
 		for (MarkGroup entry : allMarkGroup) {

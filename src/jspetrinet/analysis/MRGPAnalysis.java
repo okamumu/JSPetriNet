@@ -26,10 +26,6 @@ public class MRGPAnalysis {
 	MarkGroup expGroup;
 	private Map<GenVec,MarkGroup> genGroup;
 	
-//	private List<MarkGroup> immGroup;
-//	MarkGroup expGroup;
-//	private List<MarkGroup> genGroup;
-
 	private final Map<GroupPair,String> matrixName;
 	
 	private static String colsep = "\t";

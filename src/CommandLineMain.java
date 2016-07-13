@@ -310,10 +310,8 @@ public class CommandLineMain {
 				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.SCC));
 				return;
 			}			
-			MarkClassAnalysis mca = new MarkClassAnalysis(net);
-			mca.scc(imark, null);
-			mca.connectGroup();
-			mca.dotMarkGroup(pw);
+			MarkClassAnalysis mca = new MarkClassAnalysis(mp, mp.getExpGroup().getMarkSet());
+//			mca.dotMarkGroup(pw);
 			pw.close();
 		}
 
