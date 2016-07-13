@@ -309,9 +309,10 @@ public class CommandLineMain {
 			} catch (IOException e) {
 				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.SCC));
 				return;
-			}			
-			MarkClassAnalysis mca = new MarkClassAnalysis(mp, mp.getExpGroup().getMarkSet());
-//			mca.dotMarkGroup(pw);
+			}
+			Collection<Mark> am = mp.getImmGroup().get(mp.getImmGroup().keySet().iterator().next()).getMarkSet();
+			MarkClassAnalysis mca = new MarkClassAnalysis(mp, am);
+			mca.dotMarkGroup(pw);
 			pw.close();
 		}
 
