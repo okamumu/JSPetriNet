@@ -21,9 +21,9 @@ public class JSPetriNetParser {
 }
 
 PARSER_END (JSPetriNetParser)
- 
+
 SKIP: {
-	" " | "\t" 
+	" " | "\t"
 	| "/*" : WithinComment
 }
 
@@ -159,7 +159,7 @@ void PlaceDeclaration() throws ASTException: {
 		}
 	}
 	")")? {
-		p = current.createPlace(token.image, pmax);	
+		p = current.createPlace(token.image, pmax);
 	}
 }
 
@@ -199,7 +199,8 @@ void ImmTransDeclaration() throws ASTException: {
 		tr = current.createImmTrans(token.image,
 			new ASTVariable(token.image + ".weight"));
 		tr.setGuard(new ASTVariable(token.image + ".guard"));
-		current.put(token.image + ".guard", new ASTValue(true));		
+    tr.setPriority(0);
+		current.put(token.image + ".guard", new ASTValue(true));
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
@@ -208,7 +209,14 @@ void ImmTransDeclaration() throws ASTException: {
 				current.put(token.image + ".weight", value);
 			} else if (label.equals("guard")) {
 				current.put(token.image + ".guard", value);
-			} else {
+			} else if (label.equals("priority")) {
+        Object obj = value.eval(current);
+        if (obj instanceof Integer) {
+          tr.setPriority((Integer) obj);
+        } else {
+          throw new ASTException("The priority attribute should be an integer");
+        }
+      } else {
 				throw new UnknownOption(label);
 			}
 		}
@@ -463,7 +471,7 @@ PairValueList OptionList() throws ASTException: {
 	} )* {
 		return optlist;
 	}
-} 
+}
 
 PairValue OptionValue() throws ASTException: {
 	Token token;
@@ -581,10 +589,10 @@ ASTree CompareExpression() throws ASTException: {
 			val1 = new ASTGte(val1, val2);
 		}
 		| <LT> val2 = TermExpression() {
-			val1 = new ASTLt(val1, val2);		
+			val1 = new ASTLt(val1, val2);
 		}
 		| <LTE> val2 = TermExpression() {
-			val1 = new ASTLte(val1, val2);		
+			val1 = new ASTLte(val1, val2);
 		}
 	)* {
 		return val1;

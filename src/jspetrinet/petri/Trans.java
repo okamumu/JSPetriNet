@@ -9,12 +9,14 @@ import jspetrinet.graph.LabeledNode;
 abstract public class Trans extends LabeledNode {
 
 	private int index;
+	private int priority;
 	private ASTree guard;
 
 	public Trans(String label) {
 		super(label);
 		guard = null;
 		index = 0;
+		priority = 0;
 	}
 
 	public final int getIndex() {
@@ -24,7 +26,15 @@ abstract public class Trans extends LabeledNode {
 	public final void setIndex(int index) {
 		this.index = index;
 	}
+
+	public final int getPriority() {
+		return priority;
+	}
 	
+	public final void setPriority(int priority) {
+		this.priority = priority;
+	}
+
 	public final void setGuard(ASTree guard) {
 		this.guard = guard;
 	}

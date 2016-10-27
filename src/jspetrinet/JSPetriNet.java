@@ -48,9 +48,11 @@ public class JSPetriNet {
 	public static MarkingGraph marking(PrintWriter pw, Net net, Mark m, int depth) throws ASTException {
 		MarkingGraph mp = new MarkingGraph();
 		if (depth == 0) {
-			mp.setCreateMarking(new CreateMarkingDFS(mp));
+//			mp.setCreateMarking(new CreateMarkingDFS(mp));
+			mp.setCreateMarking(new CreateMarkingDFSwithPriority(mp));
 		} else {
-			mp.setCreateMarking(new CreateMarkingBFS(mp, depth));
+//			mp.setCreateMarking(new CreateMarkingBFS(mp, depth));
+			mp.setCreateMarking(new CreateMarkingBFSwithPriority(mp, depth));
 		}
 		pw.print("Create marking...");
 		long start = System.nanoTime();

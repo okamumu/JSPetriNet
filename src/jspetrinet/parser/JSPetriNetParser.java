@@ -385,6 +385,7 @@ for (PairValue pval : optlist.getList()) {
 tr = current.createImmTrans(token.image,
                         new ASTVariable(token.image + ".weight"));
                 tr.setGuard(new ASTVariable(token.image + ".guard"));
+    tr.setPriority(0);
                 current.put(token.image + ".guard", new ASTValue(true));
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
@@ -397,7 +398,14 @@ for (PairValue pval : optlist.getList()) {
                                 current.put(token.image + ".weight", value);
                         } else if (label.equals("guard")) {
                                 current.put(token.image + ".guard", value);
-                        } else {
+                        } else if (label.equals("priority")) {
+        Object obj = value.eval(current);
+        if (obj instanceof Integer) {
+          tr.setPriority((Integer) obj);
+        } else {
+          {if (true) throw new ASTException("The priority attribute should be an integer");}
+        }
+      } else {
                                 {if (true) throw new UnknownOption(label);}
                         }
                 }
@@ -1189,6 +1197,18 @@ val1 = new ASTMod(val1, val2);
     finally { jj_save(0, xla); }
   }
 
+  private boolean jj_3R_10()
+ {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_11()) {
+    jj_scanpos = xsp;
+    if (jj_3R_12()) return true;
+    }
+    return false;
+  }
+
   private boolean jj_3R_12()
  {
     if (jj_scan_token(48)) return true;
@@ -1204,18 +1224,6 @@ val1 = new ASTMod(val1, val2);
   private boolean jj_3_1()
  {
     if (jj_3R_10()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_10()
- {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_11()) {
-    jj_scanpos = xsp;
-    if (jj_3R_12()) return true;
-    }
     return false;
   }
 
