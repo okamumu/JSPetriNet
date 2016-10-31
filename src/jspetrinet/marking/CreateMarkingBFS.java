@@ -1,22 +1,27 @@
 package jspetrinet.marking;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import jspetrinet.JSPetriNet;
 import jspetrinet.exception.ASTException;
 import jspetrinet.petri.Net;
+import jspetrinet.petri.PriorityComparator;
 import jspetrinet.petri.Trans;
 
 public class CreateMarkingBFS implements CreateMarking {
 
 	private final MarkingGraph markGraph;
-	private Map<Mark,Mark> arcSet;
+	private Map<Mark,Mark> createdMarks;
 	private Map<Mark,Integer> markDepth;
 	private int depth;
 	private final int maxdepth;
 
+	private List<Trans> sortedImmTrans;
+	
 	public CreateMarkingBFS(MarkingGraph markGraph, int maxdepth) {
 		this.markGraph = markGraph;
 		this.maxdepth = maxdepth;
@@ -25,11 +30,14 @@ public class CreateMarkingBFS implements CreateMarking {
 	@Override
 	public Mark create(Mark init, Net net) throws ASTException {
 		this.depth = 0;
-		arcSet = new HashMap<Mark,Mark>();
+		createdMarks = new HashMap<Mark,Mark>();
 		markDepth = new HashMap<Mark,Integer>();
 
+		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
+		sortedImmTrans.sort(new PriorityComparator());
+
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
-		arcSet.put(init, init);
+		createdMarks.put(init, init);
 		novisited.offer(init);
 		markDepth.put(init, depth+1);
 		createMarking(novisited, net);
@@ -66,20 +74,22 @@ public class CreateMarkingBFS implements CreateMarking {
 			}
 
 			boolean hasImmTrans = false;
-			for (Trans tr : net.getImmTransSet()) {
+			int highestPriority = 0;
+			for (Trans tr : sortedImmTrans) {
+				if (highestPriority > tr.getPriority()) {
+					break;
+				}
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
+					highestPriority = tr.getPriority();
 					hasImmTrans = true;
 					Mark dest = PetriAnalysis.doFiring(net, tr);
-					if (arcSet.containsKey(dest)) {
-						dest = arcSet.get(dest);
-//						if (numberOfFiring.get(dest) > depth+1) {
-//							numberOfFiring.put(dest, depth+1);
-//						}
+					if (createdMarks.containsKey(dest)) {
+						dest = createdMarks.get(dest);
 					} else {
 						novisited.offer(dest);
 						markDepth.put(dest, depth+1);
-						arcSet.put(dest, dest);
+						createdMarks.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
 					break;
@@ -92,29 +102,24 @@ public class CreateMarkingBFS implements CreateMarking {
 				}
 				markGraph.getImmGroup().get(genv).add(m);
 				markGraph.getImmGroup().get(genv).add(m);
-//				m.setMarkGroup(markGraph.getImmGroup().get(genv));
 				continue;
 			} else {
 				if (!markGraph.getGenGroup().containsKey(genv)) {
 					markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
 				}
 				markGraph.getGenGroup().get(genv).add(m);
-//				m.setMarkGroup(markGraph.getGenGroup().get(genv));
 			}
 			
 			for (Trans tr : net.getGenTransSet()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:
 					Mark dest = PetriAnalysis.doFiring(net, tr);
-					if (arcSet.containsKey(dest)) {
-						dest = arcSet.get(dest);
-//						if (numberOfFiring.get(dest) > depth+1) {
-//							numberOfFiring.put(dest, depth+1);
-//						}
+					if (createdMarks.containsKey(dest)) {
+						dest = createdMarks.get(dest);
 					} else {
 						novisited.offer(dest);
 						markDepth.put(dest, depth+1);
-						arcSet.put(dest, dest);
+						createdMarks.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
 					break;
@@ -122,19 +127,19 @@ public class CreateMarkingBFS implements CreateMarking {
 				}
 			}
 			
+			System.out.println("-------");
 			for (Trans tr : net.getExpTransSet()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					Mark dest = PetriAnalysis.doFiring(net, tr);
-					if (arcSet.containsKey(dest)) {
-						dest = arcSet.get(dest);
-//						if (numberOfFiring.get(dest) > depth+1) {
-//							numberOfFiring.put(dest, depth+1);
-//						}
+					System.out.println(tr.getLabel());
+					System.out.println("dest " + JSPetriNet.markToString(net, dest));
+					if (createdMarks.containsKey(dest)) {
+						dest = createdMarks.get(dest);
 					} else {
 						novisited.offer(dest);
 						markDepth.put(dest, depth+1);
-						arcSet.put(dest, dest);
+						createdMarks.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
 					break;

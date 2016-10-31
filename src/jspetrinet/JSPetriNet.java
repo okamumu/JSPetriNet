@@ -45,14 +45,16 @@ public class JSPetriNet {
 		return m;
 	}
 
-	public static MarkingGraph marking(PrintWriter pw, Net net, Mark m, int depth) throws ASTException {
+	public static MarkingGraph marking(PrintWriter pw, Net net, Mark m, int depth, boolean tangible) throws ASTException {
 		MarkingGraph mp = new MarkingGraph();
 		if (depth == 0) {
-//			mp.setCreateMarking(new CreateMarkingDFS(mp));
-			mp.setCreateMarking(new CreateMarkingDFSwithPriority(mp));
+			if (tangible) {
+				mp.setCreateMarking(new CreateMarkingDFStangible(mp));
+			} else {
+				mp.setCreateMarking(new CreateMarkingDFS(mp));
+			}
 		} else {
-//			mp.setCreateMarking(new CreateMarkingBFS(mp, depth));
-			mp.setCreateMarking(new CreateMarkingBFSwithPriority(mp, depth));
+			mp.setCreateMarking(new CreateMarkingBFS(mp, depth));
 		}
 		pw.print("Create marking...");
 		long start = System.nanoTime();

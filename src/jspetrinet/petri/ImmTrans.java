@@ -14,14 +14,6 @@ public final class ImmTrans extends Trans {
 	// getter	
 	public final ASTree getWeight() {
 		return weight;
-//		Object result = weight.eval(env);
-//		if (result instanceof Double) {
-//			return (Double) result;
-//		} else if (result instanceof Integer) {
-//				return ((Integer) result).doubleValue();
-//		} else {
-//			throw new TypeMismatch();
-//		}
 	}
 	
 	public final void setWeight(ASTree weight) {

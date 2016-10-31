@@ -9,20 +9,10 @@ public class MarkGroup extends jspetrinet.graph.Node {
 	private final String label;
 	private final Set<Mark> markSet;
 	
-//	private final Map<MarkGroup,Set<Mark>> enterSet;
-//	private final Map<MarkGroup,Set<Mark>> exitSet;
-
 	public MarkGroup(String label) {
 		this.label = label;
 		markSet = new HashSet<Mark>();
-//		enterSet = new HashMap<MarkGroup,Set<Mark>>();
-//		exitSet = new HashMap<MarkGroup,Set<Mark>>();
 	}
-	
-//	@Override
-//	public String toString() {
-//		return label;
-//	}
 	
 	public String getLabel() {
 		return label;
@@ -51,12 +41,4 @@ public class MarkGroup extends jspetrinet.graph.Node {
 	public final Set<Mark> getMarkSet() {
 		return markSet;
 	}
-	
-//	public final Map<MarkGroup,Set<Mark>> getEnterMarkSet() {
-//		return enterSet;
-//	}
-//
-//	public final Map<MarkGroup,Set<Mark>> getExitMarkSet() {
-//		return exitSet;
-//	}
 }

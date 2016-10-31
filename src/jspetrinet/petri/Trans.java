@@ -9,8 +9,10 @@ import jspetrinet.graph.LabeledNode;
 abstract public class Trans extends LabeledNode {
 
 	private int index;
-	private int priority;
 	private ASTree guard;
+
+	private int priority;
+	private boolean vanishable;
 
 	public Trans(String label) {
 		super(label);
@@ -35,6 +37,14 @@ abstract public class Trans extends LabeledNode {
 		this.priority = priority;
 	}
 
+	public final boolean isVanishing() {
+		return vanishable;
+	}
+	
+	public final void setVanishable(boolean vanishable) {
+		this.vanishable = vanishable;
+	}
+	
 	public final void setGuard(ASTree guard) {
 		this.guard = guard;
 	}

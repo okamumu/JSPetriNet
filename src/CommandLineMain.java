@@ -40,13 +40,15 @@ class Opts {
 	public static String SIMULATION="sim";
 
 	// options
-	public static String INPETRI="spn";
+	public static String INPETRI="i";
+	public static String OUT="o";
+	public static String INITMARK="imark";
+	public static String REWARD="reward";
+	public static String VANISHING="tangible";
+	public static String FIRINGLIMIT="flimit";
+
 	public static String GROUPGRAPH="ggraph";
 	public static String MARKGRAPH="mgraph";
-	public static String OUT="out";
-	public static String INITMARK="imark";
-	public static String FIRINGLIMIT="limit";
-	public static String REWARD="reward";
 	public static String SCC="scc";
 
 	public static String SEED="seed";
@@ -138,10 +140,19 @@ public class CommandLineMain {
 		}
 	}
 
+	private static boolean getVanish(CommandLine cmd, boolean defaultValue) {
+		if (cmd.hasOption(Opts.VANISHING)) {
+			return true;
+		} else {
+			return defaultValue;
+		}
+	}
+
 	public static void cmdView(String[] args) {
 		Options options = new Options();
 		options.addOption(Opts.INPETRI, true, "input Petrinet file");
 		options.addOption(Opts.OUT, true, "output file");
+
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
 		try {
@@ -174,6 +185,7 @@ public class CommandLineMain {
 		options.addOption(Opts.INITMARK, true, "initial marking");
 		options.addOption(Opts.FIRINGLIMIT, true, "test mode (input depth for DFS)");
 		options.addOption(Opts.OUT, true, "matrix (output)");
+		options.addOption(Opts.VANISHING, false, "vanish IMM");
 		options.addOption(Opts.GROUPGRAPH, true, "marking group graph (output)");
 		options.addOption(Opts.MARKGRAPH, true, "marking graph (output)");
 		options.addOption(Opts.REWARD, true, "reward");
@@ -190,12 +202,13 @@ public class CommandLineMain {
 		Net net = loadNet(cmd);
 		Mark imark = getInitialMark(cmd, net);
 		int depth = getLimit(cmd, 0);
+		boolean vanishing = getVanish(cmd, false);
 		
 		PrintWriter pw0;
 		pw0 = new PrintWriter(System.out);
 		MarkingGraph mp;
 		try {
-			mp = JSPetriNet.marking(pw0, net, imark, depth);
+			mp = JSPetriNet.marking(pw0, net, imark, depth, vanishing);
 		} catch (ASTException e1) {
 			System.err.println(e1.getMessage());
 			return;

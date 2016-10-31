@@ -199,8 +199,9 @@ void ImmTransDeclaration() throws ASTException: {
 		tr = current.createImmTrans(token.image,
 			new ASTVariable(token.image + ".weight"));
 		tr.setGuard(new ASTVariable(token.image + ".guard"));
-    tr.setPriority(0);
 		current.put(token.image + ".guard", new ASTValue(true));
+    tr.setPriority(0);
+    tr.setVanishable(true);
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
@@ -214,7 +215,14 @@ void ImmTransDeclaration() throws ASTException: {
         if (obj instanceof Integer) {
           tr.setPriority((Integer) obj);
         } else {
-          throw new ASTException("The priority attribute should be an integer");
+          throw new ASTException("The priority attribute should be an integer.");
+        }
+      } else if (label.equals("vanishing")) {
+        Object obj = value.eval(current);
+        if (obj instanceof Boolean) {
+          tr.setVanishable((Boolean) obj);
+        } else {
+          throw new ASTException("The vanishing attribute should be a boolean.");
         }
       } else {
 				throw new UnknownOption(label);

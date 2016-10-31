@@ -1,18 +1,23 @@
 package jspetrinet.marking;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import jspetrinet.JSPetriNet;
 import jspetrinet.exception.ASTException;
 import jspetrinet.petri.Net;
+import jspetrinet.petri.PriorityComparator;
 import jspetrinet.petri.Trans;
 
 public class CreateMarkingDFS implements CreateMarking {
 	
 	private final MarkingGraph markGraph;
-	private Map<Mark,Mark> arcSet;
+	private Map<Mark,Mark> createdMarks;
+	
+	private List<Trans> sortedImmTrans;
 	
 	public CreateMarkingDFS(MarkingGraph markGraph) {
 		this.markGraph = markGraph;
@@ -20,9 +25,13 @@ public class CreateMarkingDFS implements CreateMarking {
 	
 	@Override
 	public Mark create(Mark init, Net net) throws ASTException {
-		arcSet = new HashMap<Mark,Mark>();
+		createdMarks = new HashMap<Mark,Mark>();
+
+		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
+		sortedImmTrans.sort(new PriorityComparator());
+
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
-		arcSet.put(init, init);
+		createdMarks.put(init, init);
 		novisited.push(init);
 		createMarking(novisited, net);
 		return init;
@@ -52,16 +61,21 @@ public class CreateMarkingDFS implements CreateMarking {
 			}
 
 			boolean hasImmTrans = false;
-			for (Trans tr : net.getImmTransSet()) {
+			int highestPriority = 0;
+			for (Trans tr : sortedImmTrans) {
+				if (highestPriority > tr.getPriority()) {
+					break;
+				}
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
+					highestPriority = tr.getPriority();
 					hasImmTrans = true;
 					Mark dest = PetriAnalysis.doFiring(net, tr);
-					if (arcSet.containsKey(dest)) {
-						dest = arcSet.get(dest);
+					if (createdMarks.containsKey(dest)) {
+						dest = createdMarks.get(dest);
 					} else {
 						novisited.push(dest);
-						arcSet.put(dest, dest);
+						createdMarks.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
 					break;
@@ -73,25 +87,23 @@ public class CreateMarkingDFS implements CreateMarking {
 					markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
 				}
 				markGraph.getImmGroup().get(genv).add(m);
-//				m.setMarkGroup(markGraph.getImmGroup().get(genv));
 				continue;
 			} else {
 				if (!markGraph.getGenGroup().containsKey(genv)) {
 					markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
 				}
 				markGraph.getGenGroup().get(genv).add(m);
-//				m.setMarkGroup(markGraph.getGenGroup().get(genv));
 			}
 			
 			for (Trans tr : net.getGenTransSet()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:
 					Mark dest = PetriAnalysis.doFiring(net, tr);
-					if (arcSet.containsKey(dest)) {
-						dest = arcSet.get(dest);
+					if (createdMarks.containsKey(dest)) {
+						dest = createdMarks.get(dest);
 					} else {
 						novisited.push(dest);
-						arcSet.put(dest, dest);
+						createdMarks.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
 					break;
@@ -103,11 +115,11 @@ public class CreateMarkingDFS implements CreateMarking {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					Mark dest = PetriAnalysis.doFiring(net, tr);
-					if (arcSet.containsKey(dest)) {
-						dest = arcSet.get(dest);
+					if (createdMarks.containsKey(dest)) {
+						dest = createdMarks.get(dest);
 					} else {
 						novisited.push(dest);
-						arcSet.put(dest, dest);
+						createdMarks.put(dest, dest);
 					}
 					new MarkingArc(m, dest, tr);
 					break;
