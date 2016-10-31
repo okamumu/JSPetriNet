@@ -140,34 +140,18 @@ public class CreateMarkingDFStangible implements CreateMarking {
 				}
 			}
 			
-			// vanishing
-			if (enabledIMMList.size() != 1) {
-				tangibleMarks.add(m);
-//				System.out.print(" enabled IMM: ");
-//				for (Trans tr : enabledIMMList) {
-//					System.out.print(tr.getLabel() + " ");
-//				}
-//				System.out.println("");
-			} else {
-//				System.out.print(" enabled IMM: ");
-//				for (Trans tr : enabledIMMList) {
-//					System.out.print(tr.getLabel() + " ");
-//				}
-//				System.out.println(" vanishing");				
-			}
-
 			if (enabledIMMList.size() == 1) {
-				for (Trans tr : enabledIMMList) {
-					Mark dest = PetriAnalysis.doFiring(net, tr);
-					if (createdMarks.containsKey(dest)) {
-						dest = createdMarks.get(dest);
-						novisited.push(dest);
-					} else {
-						novisited.push(dest);
-						createdMarks.put(dest, dest);
-					}
+				// vanishing
+				Trans tr = enabledIMMList.get(0);
+				Mark dest = PetriAnalysis.doFiring(net, tr);
+				if (createdMarks.containsKey(dest)) {
+					dest = createdMarks.get(dest);
+				} else {
+					createdMarks.put(dest, dest);
 				}
+				novisited.push(dest);
 			} else {
+				tangibleMarks.add(m);
 				for (Trans tr : enabledIMMList) {
 					Mark dest = PetriAnalysis.doFiring(net, tr);
 					if (createdMarks.containsKey(dest)) {
@@ -179,7 +163,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 					arcList.add(new MarkMarkTrans(m, dest, tr));
 				}
 			}
-			
+
 			if (enabledIMMList.size() >= 1) {
 				if (!markGraph.getImmGroup().containsKey(genv)) {
 					markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
