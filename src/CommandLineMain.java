@@ -45,7 +45,7 @@ class Opts {
 	public static String INITMARK="imark";
 	public static String REWARD="reward";
 	public static String VANISHING="tangible";
-	public static String FIRINGLIMIT="flimit";
+	public static String FIRINGLIMIT="limit";
 
 	public static String GROUPGRAPH="ggraph";
 	public static String MARKGRAPH="mgraph";
@@ -53,6 +53,7 @@ class Opts {
 
 	public static String SEED="seed";
 	public static String SIMTIME="time";
+	public static String SIMRUN="run";
 }
 
 public class CommandLineMain {
@@ -339,6 +340,8 @@ public class CommandLineMain {
 		options.addOption(Opts.FIRINGLIMIT, true, "limit");
 		options.addOption(Opts.SEED, true, "seed");
 		options.addOption(Opts.SIMTIME, true, "time");
+		options.addOption(Opts.SIMRUN, true, "run");
+		options.addOption(Opts.REWARD, true, "reward");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
 		try {
@@ -353,7 +356,12 @@ public class CommandLineMain {
 		MCSimulation mc = new MCSimulation(net);
 		Mark imark = getInitialMark(cmd, net);
 		int limits = getLimit(cmd, 1000);
-		
+
+		int run = 1;
+		if (cmd.hasOption(Opts.SIMRUN)) {
+			run = Integer.parseInt(cmd.getOptionValue(Opts.SIMRUN));
+		}	
+
 		double endTime;
 		if (cmd.hasOption(Opts.SIMTIME)) {
 			String label = "simtime" + System.currentTimeMillis();
@@ -393,15 +401,51 @@ public class CommandLineMain {
 		}
 
 		Random rnd = new RandomGenerator(seed);
-		try {
-			List<EventValue> result = mc.runSimulation(imark, 0.0, endTime, limits, rnd);
-			PrintWriter pw = new PrintWriter(System.out);
-			mc.resultEvent(pw, result);
-			pw.close();
-		} catch (ASTException e) {
-			System.err.println("Failed: " + e.getMessage());
-			e.printStackTrace();
-			return;
+
+		if (cmd.hasOption(Opts.REWARD)) {
+			String rewardLabel = cmd.getOptionValue(Opts.REWARD);
+			try {
+				List<ASTree> rwdList = parseReward(net, rewardLabel);
+				Map<ASTree,Double> totalRwd = new HashMap<ASTree,Double>();
+				Map<ASTree,Double> total2Rwd = new HashMap<ASTree,Double>();
+				for (ASTree rwd : rwdList) {
+					totalRwd.put(rwd, 0.0);
+					total2Rwd.put(rwd, 0.0);
+				}			
+				for (int k=0; k<run; k++) {
+					List<EventValue> result = mc.runSimulation(imark, 0.0, endTime, limits, rnd);
+					for (ASTree rwd : rwdList) {
+						double tmp = mc.resultReward(net, result, rwd, 0.0, endTime);
+						totalRwd.put(rwd, totalRwd.get(rwd) + tmp);
+						total2Rwd.put(rwd, total2Rwd.get(rwd) + tmp*tmp);
+					}
+				}
+				for (ASTree rwd : rwdList) {
+					double mean = totalRwd.get(rwd) / run;
+					double s2 = (total2Rwd.get(rwd) - totalRwd.get(rwd) * totalRwd.get(rwd) / run) / (run - 1);
+					double lcl = mean - 1.96 * Math.sqrt(s2 / run);
+					double ucl = mean + 1.96 * Math.sqrt(s2 / run);
+					
+					System.out.println(rwd.toString());
+					System.out.println(mean + " [" + lcl + "," + ucl + "]");
+				}
+			} catch (ASTException e) {
+				e.printStackTrace();
+			}
+		} else {
+			try {
+				PrintWriter pw = new PrintWriter(System.out);
+				for (int k=0; k<run; k++) {
+					List<EventValue> result = mc.runSimulation(imark, 0.0, endTime, limits, rnd);
+					mc.resultEvent(pw, result);
+					pw.println("----------");
+				}
+				pw.close();
+			} catch (ASTException e) {
+				System.err.println("Failed: " + e.getMessage());
+				e.printStackTrace();
+				return;
+			}			
 		}
 	}
 
