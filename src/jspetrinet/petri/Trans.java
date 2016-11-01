@@ -37,7 +37,7 @@ abstract public class Trans extends LabeledNode {
 		this.priority = priority;
 	}
 
-	public final boolean isVanishing() {
+	public final boolean canVanishing() {
 		return vanishable;
 	}
 	

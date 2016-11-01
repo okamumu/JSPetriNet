@@ -13,6 +13,7 @@ import jspetrinet.exception.ASTException;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.PriorityComparator;
 import jspetrinet.petri.Trans;
+import jspetrinet.petri.ImmTrans;
 
 final class MarkMarkTrans {
 	private final Mark src;
@@ -43,7 +44,6 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	private final MarkingGraph markGraph;
 	private Map<Mark,Mark> createdMarks;
 	
-	private Set<Mark> vanishingMarks;
 	private Set<Mark> tangibleMarks;
 	
 	private List<Trans> sortedImmTrans;
@@ -53,6 +53,8 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	
 	private LinkedList<MarkMarkTrans> arcList;
 
+	private PriorityComparator transComparator;
+	
 	public CreateMarkingDFStangible(MarkingGraph markGraph) {
 		this.markGraph = markGraph;
 	}
@@ -61,16 +63,15 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	public Mark create(Mark init, Net net) throws ASTException {
 		createdMarks = new HashMap<Mark,Mark>();
 
-		vanishingMarks = new HashSet<Mark>();
 		tangibleMarks = new HashSet<Mark>();
-
 		exitSet = new HashMap<Mark,Mark>();
 		vanishedIMMList = new LinkedList<Mark>();
 		
 		arcList = new LinkedList<MarkMarkTrans>();
 
 		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
-		sortedImmTrans.sort(new PriorityComparator());
+		transComparator = new PriorityComparator();
+		sortedImmTrans.sort(transComparator);
 
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
 		createdMarks.put(init, init);
@@ -128,6 +129,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 			}
 
 			// checkEnabled IMM
+			boolean canVanishing = false;
 			List<Trans> enabledIMMList = new ArrayList<Trans>();
 			int highestPriority = 0;
 			for (Trans tr : sortedImmTrans) {
@@ -137,10 +139,14 @@ public class CreateMarkingDFStangible implements CreateMarking {
 				if (PetriAnalysis.isEnable(net, tr) == TransStatus.ENABLE) {
 					highestPriority = tr.getPriority();
 					enabledIMMList.add(tr);
+					if (((ImmTrans) tr).canVanishing()) {
+						canVanishing = true;
+						break;
+					}
 				}
 			}
-			
-			if (enabledIMMList.size() == 1) {
+
+			if (canVanishing) {
 				// vanishing
 				Trans tr = enabledIMMList.get(0);
 				Mark dest = PetriAnalysis.doFiring(net, tr);
@@ -165,10 +171,10 @@ public class CreateMarkingDFStangible implements CreateMarking {
 			}
 
 			if (enabledIMMList.size() >= 1) {
-				if (!markGraph.getImmGroup().containsKey(genv)) {
-					markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
-				}
 				if (enabledIMMList.size() >= 2) {
+					if (!markGraph.getImmGroup().containsKey(genv)) {
+						markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
+					}
 					markGraph.addMark(m);
 					markGraph.getImmGroup().get(genv).add(m);
 				}

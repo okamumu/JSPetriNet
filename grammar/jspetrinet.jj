@@ -55,6 +55,7 @@ TOKEN: {
 	| <COMMENT: "//" (~["\n", "\r"])*>
 	| <REAL: (["0"-"9"])*"."(["0"-"9"])+(["e","E"])?(["+","-"])?(["0"-"9"])*>
 	| <INTEGER: (["0"-"9"])+>
+  | <BOOLEAN: "true" | "false" | "True" | "False" | "TRUE" | "FALSE" >
 	| <STRING: "\""(~["\""])+"\"">
 	| <PLUS: "+">
 	| <MINUS: "-">
@@ -201,7 +202,7 @@ void ImmTransDeclaration() throws ASTException: {
 		tr.setGuard(new ASTVariable(token.image + ".guard"));
 		current.put(token.image + ".guard", new ASTValue(true));
     tr.setPriority(0);
-    tr.setVanishable(true);
+    tr.setVanishable(false);
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
@@ -668,6 +669,9 @@ ASTree PrimaryExpression() throws ASTException: {
 	}
 	| token = <REAL> {
 		return new ASTValue(Double.parseDouble(token.image));
+	}
+  | token = <BOOLEAN> {
+		return new ASTValue(Boolean.parseBoolean(token.image));
 	}
 	| token = <STRING> {
 		return new ASTValue(token.image);
