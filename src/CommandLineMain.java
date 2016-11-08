@@ -26,7 +26,9 @@ import jspetrinet.ast.ASTree;
 import jspetrinet.exception.*;
 import jspetrinet.marking.*;
 import jspetrinet.parser.TokenMgrError;
+import jspetrinet.petri.ExpTrans;
 import jspetrinet.petri.Net;
+import jspetrinet.petri.Trans;
 import jspetrinet.sim.EventValue;
 import jspetrinet.sim.MCSimulation;
 import jspetrinet.sim.Random;
@@ -46,6 +48,7 @@ class Opts {
 	public static String REWARD="reward";
 	public static String VANISHING="tangible";
 	public static String FIRINGLIMIT="limit";
+	public static String EXP="exp";
 
 	public static String GROUPGRAPH="ggraph";
 	public static String MARKGRAPH="mgraph";
@@ -87,6 +90,20 @@ public class CommandLineMain {
 		return result;
 	}
 	
+	static private List<Trans> parseExpTrans(Net net, String str) throws ASTException {
+		List<Trans> result = new ArrayList<Trans>();
+		String[] ary = str.split(",", 0);
+		for (String s : ary) {
+			Object obj = net.get(s);
+			if (obj instanceof ExpTrans) {
+				result.add((Trans) obj);
+			} else {
+				throw new TypeMismatch();
+			}
+		}
+		return result;
+	}
+
 	private static Net loadNet(CommandLine cmd) {
 		Net net = new Net(null, "");
 		InputStream in = null;
@@ -190,6 +207,7 @@ public class CommandLineMain {
 		options.addOption(Opts.GROUPGRAPH, true, "marking group graph (output)");
 		options.addOption(Opts.MARKGRAPH, true, "marking graph (output)");
 		options.addOption(Opts.REWARD, true, "reward");
+		options.addOption(Opts.EXP, true, "exp trans");
 		options.addOption(Opts.SCC, true, "scc");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
@@ -204,12 +222,24 @@ public class CommandLineMain {
 		Mark imark = getInitialMark(cmd, net);
 		int depth = getLimit(cmd, 0);
 		boolean vanishing = getVanish(cmd, false);
-		
+
+		List<Trans> expTrans = null;
+		if (cmd.hasOption(Opts.EXP)) {
+			try {
+				expTrans = parseExpTrans(net, cmd.getOptionValue(Opts.EXP));
+			} catch (ASTException e) {
+				System.err.println(e.getMessage());
+				System.exit(1);
+			}
+		} else {
+			expTrans = new ArrayList<Trans>();
+		}
+
 		PrintWriter pw0;
 		pw0 = new PrintWriter(System.out);
 		MarkingGraph mp;
 		try {
-			mp = JSPetriNet.marking(pw0, net, imark, depth, vanishing);
+			mp = JSPetriNet.marking(pw0, net, imark, depth, vanishing, expTrans);
 		} catch (ASTException e1) {
 			System.err.println(e1.getMessage());
 			return;

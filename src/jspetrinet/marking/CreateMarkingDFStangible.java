@@ -55,8 +55,14 @@ public class CreateMarkingDFStangible implements CreateMarking {
 
 	private PriorityComparator transComparator;
 	
+	private List<Trans> expTransSet;
+	
 	public CreateMarkingDFStangible(MarkingGraph markGraph) {
 		this.markGraph = markGraph;
+	}
+	
+	public void setGenTransSet(List<Trans> genTransSet) {
+		this.expTransSet = genTransSet;
 	}
 	
 	@Override
@@ -115,14 +121,22 @@ public class CreateMarkingDFStangible implements CreateMarking {
 			}
 
 			// make genvec
-			GenVec genv = new GenVec(net.getGenTransSet().size());
-			for (Trans tr : net.getGenTransSet()) {
-				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
+			GenVec genv = new GenVec(net.getExpTransSet().size() + net.getGenTransSet().size());
+			for (Trans tr : expTransSet) {
+				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					genv.set(tr.getIndex(), 1);
 					break;
+				default:
+				}
+			}
+			for (Trans tr : net.getGenTransSet()) {
+				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
+				case ENABLE:
+					genv.set(net.getExpTransSet().size() + tr.getIndex(), 1);
+					break;
 				case PREEMPTION:
-					genv.set(tr.getIndex(), 2);
+					genv.set(net.getExpTransSet().size() + tr.getIndex(), 2);
 					break;
 				default:
 				}

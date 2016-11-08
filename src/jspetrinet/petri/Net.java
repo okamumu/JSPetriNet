@@ -119,6 +119,12 @@ public class Net extends ASTEnv {
 			tr.setIndex(j);
 			j++;
 		}
+		
+		int k = 0;
+		for (Trans tr : expTransList) {
+			tr.setIndex(k);
+			k++;
+		}
 	}
 	
 	// methods	
