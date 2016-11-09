@@ -19,8 +19,14 @@ public class CreateMarkingDFS implements CreateMarking {
 	
 	private List<Trans> sortedImmTrans;
 	
+	private List<Trans> expTransSet;
+	
 	public CreateMarkingDFS(MarkingGraph markGraph) {
 		this.markGraph = markGraph;
+	}
+	
+	public void setGenTransSet(List<Trans> genTransSet) {
+		this.expTransSet = genTransSet;
 	}
 	
 	@Override
@@ -55,6 +61,14 @@ public class CreateMarkingDFS implements CreateMarking {
 					break;
 				case PREEMPTION:
 					genv.set(tr.getIndex(), 2);
+					break;
+				default:
+				}
+			}
+			for (Trans tr : expTransSet) {
+				switch (PetriAnalysis.isEnable(net, tr)) {
+				case ENABLE:
+					genv.set(tr.getIndex(), 1);
 					break;
 				default:
 				}

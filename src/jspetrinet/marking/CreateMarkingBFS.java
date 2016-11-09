@@ -127,13 +127,13 @@ public class CreateMarkingBFS implements CreateMarking {
 				}
 			}
 			
-			System.out.println("-------");
+//			System.out.println("-------");
 			for (Trans tr : net.getExpTransSet()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					Mark dest = PetriAnalysis.doFiring(net, tr);
-					System.out.println(tr.getLabel());
-					System.out.println("dest " + JSPetriNet.markToString(net, dest));
+//					System.out.println(tr.getLabel());
+//					System.out.println("dest " + JSPetriNet.markToString(net, dest));
 					if (createdMarks.containsKey(dest)) {
 						dest = createdMarks.get(dest);
 					} else {

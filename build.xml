@@ -23,16 +23,16 @@
 			includeantruntime="false"/>
 	</target>
 
-	<target name="jar" depends="compile">
+	<!-- <target name="jar" depends="compile">
 		<jar jarfile="${ant.project.name}-${version}.jar" basedir="bin">
 			<manifest>
 				<attribute name="Main-Class" value="CommandLineMain"/>
 				<attribute name="Class-Path" value="lib/${commons}"/>
 			</manifest>
 		</jar>
-	</target>
+	</target> -->
 
-	<target name="exejar" depends="compile">
+	<target name="jar" depends="compile">
 		<jar jarfile="${ant.project.name}-${version}.jar" basedir="bin">
 			<zipfileset src="lib/${commons}" />
 			<manifest>

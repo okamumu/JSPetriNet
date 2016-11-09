@@ -78,7 +78,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
 		transComparator = new PriorityComparator();
 		sortedImmTrans.sort(transComparator);
-
+		
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
 		createdMarks.put(init, init);
 		novisited.push(init);
@@ -143,20 +143,28 @@ public class CreateMarkingDFStangible implements CreateMarking {
 			}
 
 			// checkEnabled IMM
+			boolean hasNonVanishing = false;
 			boolean canVanishing = false;
 			List<Trans> enabledIMMList = new ArrayList<Trans>();
 			int highestPriority = 0;
-			for (Trans tr : sortedImmTrans) {
-				if (highestPriority > tr.getPriority()) {
+			for (Trans t : sortedImmTrans) {
+				ImmTrans tr = (ImmTrans) t;
+				if (highestPriority > tr.getPriority() || canVanishing) {
 					break;
 				}
-				if (PetriAnalysis.isEnable(net, tr) == TransStatus.ENABLE) {
+				switch (PetriAnalysis.isEnable(net, tr)) {
+				case ENABLE:
 					highestPriority = tr.getPriority();
 					enabledIMMList.add(tr);
-					if (((ImmTrans) tr).canVanishing()) {
-						canVanishing = true;
-						break;
+					if (hasNonVanishing == false) {
+						if (tr.canVanishing()) {
+							canVanishing = true;
+						} else {
+							hasNonVanishing = true;
+						}
 					}
+					break;
+				default:
 				}
 			}
 

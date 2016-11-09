@@ -14,9 +14,9 @@ public class PriorityComparator implements Comparator<Trans> {
 				if (v1 == v2) { // if (v1 == true && v2 == false) {
 					return 0;
 				} else if (v1) {
-					return -1;
-				} else {
 					return 1;
+				} else {
+					return -1;
 				}
 			} else if (p1 < p2) {
 				return 1;

@@ -55,7 +55,9 @@ public class JSPetriNet {
 				cmdt.setGenTransSet(expTransSet);
 				mp.setCreateMarking(cmdt);
 			} else {
-				mp.setCreateMarking(new CreateMarkingDFS(mp));
+				CreateMarkingDFS cmdt = new CreateMarkingDFS(mp);
+				cmdt.setGenTransSet(expTransSet);
+				mp.setCreateMarking(cmdt);
 			}
 		} else {
 			mp.setCreateMarking(new CreateMarkingBFS(mp, depth));
@@ -87,20 +89,6 @@ public class JSPetriNet {
 
 	public static String genvecToString(Net net, GenVec genv) {
 		String result = "(";
-		for (Trans t: net.getExpTransSet()) {
-			switch(genv.get(t.getIndex())) {
-			case 0:
-				break;
-			case 1:
-				if (!result.equals("(")) {
-					result += " ";
-				}
-				result += t.getLabel() + "->enable";
-				break;
-			default:
-				break;
-			}
-		}
 		for (Trans t: net.getGenTransSet()) {
 			switch(genv.get(net.getExpTransSet().size() + t.getIndex())) {
 			case 0:
@@ -120,6 +108,20 @@ public class JSPetriNet {
 					result += " ";
 				}
 				result += t.getLabel() + "->preemption";
+				break;
+			default:
+				break;
+			}
+		}
+		for (Trans t: net.getExpTransSet()) {
+			switch(genv.get(t.getIndex())) {
+			case 0:
+				break;
+			case 1:
+				if (!result.equals("(")) {
+					result += " ";
+				}
+				result += t.getLabel() + "->enable";
 				break;
 			default:
 				break;
