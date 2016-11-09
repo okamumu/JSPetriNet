@@ -118,12 +118,10 @@ public class Net extends ASTEnv {
 		for (Trans tr : genTransList) {
 			tr.setIndex(j);
 			j++;
-		}
-		
-		int k = 0;
+		}		
 		for (Trans tr : expTransList) {
-			tr.setIndex(k);
-			k++;
+			tr.setIndex(j);
+			j++;
 		}
 	}
 	

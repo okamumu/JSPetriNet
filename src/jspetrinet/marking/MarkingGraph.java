@@ -62,9 +62,9 @@ public class MarkingGraph {
 		return genGroup;
 	}
 
-	public final MarkGroup getExpGroup() {
-		return genGroup.get(new GenVec(numOfGenTrans));
-	}
+//	public final MarkGroup getExpGroup() {
+//		return genGroup.get(new GenVec(numOfGenTrans));
+//	}
 	
 	public final boolean containtsMark(Mark m) {
 		return markSet.containsKey(m);

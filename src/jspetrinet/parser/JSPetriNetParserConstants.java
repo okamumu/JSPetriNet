@@ -87,13 +87,15 @@ public interface JSPetriNetParserConstants {
   /** RegularExpression Id. */
   int NTOKEN = 43;
   /** RegularExpression Id. */
-  int OPEN = 44;
+  int ECOND = 44;
   /** RegularExpression Id. */
-  int CLOSE = 45;
+  int OPEN = 45;
   /** RegularExpression Id. */
-  int NL = 46;
+  int CLOSE = 46;
   /** RegularExpression Id. */
-  int SEND = 47;
+  int NL = 47;
+  /** RegularExpression Id. */
+  int SEND = 48;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -146,6 +148,7 @@ public interface JSPetriNetParserConstants {
     "<IDENTIFIER>",
     "\"##\"",
     "\"#\"",
+    "\"?\"",
     "\"(\"",
     "\")\"",
     "<NL>",

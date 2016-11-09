@@ -2,28 +2,16 @@ package jspetrinet.marking;
 
 import java.util.Arrays;
 
+import jspetrinet.petri.Net;
+
 public final class GenVec implements Comparable<GenVec> {
 
 	private final byte[] vec;
 
-//	public GenVec(String label, int length) {
-//		this.label = label;
-//		this.vec = new int [length];
-//	}
-
-//	public GenVec(String label, int[] v) {
-//		this.label = label;
-//		this.vec = v;
-//	}
-
-	public GenVec(int size) {
+	public GenVec(Net net) {
+		int size = net.getGenTransSet().size() + net.getExpTransSet().size();
 		this.vec = new byte [size];
 	}
-
-	// getter
-//	public final int[] get() {
-//		return vec;
-//	}
 
 	public final int get(int i) {
 		return vec[i];

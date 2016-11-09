@@ -23,7 +23,7 @@ public class MRGPAnalysis {
 	private Net net;
 	
 	private Map<GenVec,MarkGroup> immGroup;
-	MarkGroup expGroup;
+//	MarkGroup expGroup;
 	private Map<GenVec,MarkGroup> genGroup;
 	
 	private final Map<GroupPair,String> matrixName;
@@ -37,7 +37,7 @@ public class MRGPAnalysis {
 		matrixName = new HashMap<GroupPair,String>();
 		immGroup = mp.getImmGroup();
 		genGroup = mp.getGenGroup();
-		expGroup = mp.getExpGroup();
+//		expGroup = mp.getExpGroup();
 	}
 
 	public void writeMarkSet(PrintWriter pw) {
@@ -71,8 +71,8 @@ public class MRGPAnalysis {
 				MarkGroup mg = genGroup.get(gv);
 				String glabel = JSPetriNet.genvecToString(net, gv);
 				pw.println("# " + mat.getGroupLabel(mg) + "rwd" + " " + glabel);
-				pw.println("# size " + mg.size());
 				List<List<Object>> s = mat.getMakingSet(mg);
+				pw.println("# size " + mg.size() + " " + reward.size());
 				for (List<Object> e: s) {
 					Mark m = (Mark) e.get(1);
 					net.setCurrentMark(m);

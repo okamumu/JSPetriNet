@@ -74,6 +74,7 @@ TOKEN: {
 	| <IDENTIFIER: ["A"-"Z", "a"-"z", "_"](["0"-"9", "A"-"Z", "a"-"z", "_", "."])*>
 	| <GLOBAL_NTOKEN: "##">
 	| <NTOKEN: "#">
+  | <ECOND: "?">
 	| <OPEN: "(">
 	| <CLOSE: ")">
 	| <NL: "\r\n" | "\n" | "\r">
@@ -681,6 +682,9 @@ ASTree PrimaryExpression() throws ASTException: {
 	}
 	| <GLOBAL_NTOKEN> token = <IDENTIFIER> {
 		return new ASTNumOfToken((Place) global.get(token.image));
+	}
+  | <ECOND> token = <IDENTIFIER> {
+		return new ASTEnableCond((Trans) current.get(token.image));
 	}
 	| token = <IDENTIFIER> {
 		return new ASTVariable(token.image);

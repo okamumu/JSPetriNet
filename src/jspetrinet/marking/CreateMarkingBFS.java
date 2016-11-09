@@ -60,7 +60,7 @@ public class CreateMarkingBFS implements CreateMarking {
 			net.setCurrentMark(m);
 
 			// make genvec
-			GenVec genv = new GenVec(net.getGenTransSet().size());
+			GenVec genv = new GenVec(net);
 			for (Trans tr : net.getGenTransSet()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:

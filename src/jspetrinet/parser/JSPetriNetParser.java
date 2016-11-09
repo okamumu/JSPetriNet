@@ -43,6 +43,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
       case IDENTIFIER:
       case GLOBAL_NTOKEN:
       case NTOKEN:
+      case ECOND:
       case OPEN:
       case NL:
       case SEND:{
@@ -77,6 +78,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
       case IDENTIFIER:
       case GLOBAL_NTOKEN:
       case NTOKEN:
+      case ECOND:
       case OPEN:{
         Statement();
         break;
@@ -142,6 +144,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
     case IDENTIFIER:
     case GLOBAL_NTOKEN:
     case NTOKEN:
+    case ECOND:
     case OPEN:{
       Expression();
       break;
@@ -185,6 +188,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
     case IDENTIFIER:
     case GLOBAL_NTOKEN:
     case NTOKEN:
+    case ECOND:
     case OPEN:{
       Statement();
       break;
@@ -734,7 +738,7 @@ optlist = new PairValueList();
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case 48:{
+      case 49:{
         ;
         break;
         }
@@ -742,7 +746,7 @@ optlist = new PairValueList();
         jj_la1[21] = jj_gen;
         break label_2;
       }
-      jj_consume_token(48);
+      jj_consume_token(49);
       val = OptionValue();
 optlist.add(val);
     }
@@ -753,7 +757,7 @@ optlist.add(val);
   final public PairValue OptionValue() throws ParseException, ASTException {Token token;
         ASTree val;
     token = jj_consume_token(IDENTIFIER);
-    jj_consume_token(49);
+    jj_consume_token(50);
     val = Expression();
 {if ("" != null) return new PairValue(token.image, val);}
     throw new Error("Missing return statement in function");
@@ -794,6 +798,7 @@ optlist.add(val);
       case IDENTIFIER:
       case GLOBAL_NTOKEN:
       case NTOKEN:
+      case ECOND:
       case OPEN:{
         ;
         break;
@@ -843,6 +848,7 @@ System.out.println(val.eval(current));
       case IDENTIFIER:
       case GLOBAL_NTOKEN:
       case NTOKEN:
+      case ECOND:
       case OPEN:{
         val = OrExpression();
         break;
@@ -862,14 +868,14 @@ System.out.println(val.eval(current));
     token = jj_consume_token(IDENTIFIER);
 
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case 50:{
-      jj_consume_token(50);
+    case 51:{
+      jj_consume_token(51);
       val = Expression();
 
       break;
       }
-    case 49:{
-      jj_consume_token(49);
+    case 50:{
+      jj_consume_token(50);
       val = Expression();
 
       break;
@@ -1111,6 +1117,7 @@ val1 = new ASTMod(val1, val2);
     case IDENTIFIER:
     case GLOBAL_NTOKEN:
     case NTOKEN:
+    case ECOND:
     case OPEN:{
       val1 = PrimaryExpression();
 {if ("" != null) return val1;}
@@ -1177,6 +1184,12 @@ val1 = new ASTMod(val1, val2);
 {if ("" != null) return new ASTNumOfToken((Place) global.get(token.image));}
       break;
       }
+    case ECOND:{
+      jj_consume_token(ECOND);
+      token = jj_consume_token(IDENTIFIER);
+{if ("" != null) return new ASTEnableCond((Trans) current.get(token.image));}
+      break;
+      }
     case IDENTIFIER:{
       token = jj_consume_token(IDENTIFIER);
 {if ("" != null) return new ASTVariable(token.image);}
@@ -1186,9 +1199,9 @@ val1 = new ASTMod(val1, val2);
       jj_consume_token(IFELSE);
       jj_consume_token(OPEN);
       val1 = Expression();
-      jj_consume_token(48);
+      jj_consume_token(49);
       val2 = Expression();
-      jj_consume_token(48);
+      jj_consume_token(49);
       val3 = Expression();
       jj_consume_token(CLOSE);
 {if ("" != null) return new ASTIfThenElse(val1, val2, val3);}
@@ -1219,7 +1232,7 @@ val1 = new ASTMod(val1, val2);
 
   private boolean jj_3R_11()
  {
-    if (jj_scan_token(50)) return true;
+    if (jj_scan_token(51)) return true;
     return false;
   }
 
@@ -1243,7 +1256,7 @@ val1 = new ASTMod(val1, val2);
 
   private boolean jj_3R_12()
  {
-    if (jj_scan_token(49)) return true;
+    if (jj_scan_token(50)) return true;
     return false;
   }
 
@@ -1269,7 +1282,7 @@ val1 = new ASTMod(val1, val2);
       jj_la1_0 = new int[] {0x1fd5ffc0,0x1f95ffc0,0x400000,0x0,0x1f95ffc0,0x1f95ffc0,0x400000,0x0,0x0,0x4ffc0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x1f810000,0x1,0x1f810000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x18000000,0x18000000,0xe0000000,0xe0000000,0x1f810000,0x7810000,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0xde04,0x1e04,0x0,0xc000,0x1e04,0x1e04,0x0,0xc000,0xc000,0x0,0x4000,0x1000,0x1000,0x1000,0x1000,0x1000,0x1000,0x1000,0x1000,0x1000,0x1000,0x10000,0x8000,0x1e04,0xc000,0x1e04,0x60000,0x1,0x2,0x18,0x18,0x1e0,0x1e0,0x0,0x0,0x0,0x0,0x1e04,0x1e00,};
+      jj_la1_1 = new int[] {0x1be04,0x3e04,0x0,0x18000,0x3e04,0x3e04,0x0,0x18000,0x18000,0x0,0x8000,0x2000,0x2000,0x2000,0x2000,0x2000,0x2000,0x2000,0x2000,0x2000,0x2000,0x20000,0x10000,0x3e04,0x18000,0x3e04,0xc0000,0x1,0x2,0x18,0x18,0x1e0,0x1e0,0x0,0x0,0x0,0x0,0x3e04,0x3e00,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[1];
   private boolean jj_rescan = false;
@@ -1456,7 +1469,7 @@ val1 = new ASTMod(val1, val2);
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[51];
+    boolean[] la1tokens = new boolean[52];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -1473,7 +1486,7 @@ val1 = new ASTMod(val1, val2);
         }
       }
     }
-    for (int i = 0; i < 51; i++) {
+    for (int i = 0; i < 52; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
