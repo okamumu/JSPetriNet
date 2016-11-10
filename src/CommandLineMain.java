@@ -22,7 +22,7 @@ import jspetrinet.analysis.MRGPAnalysis;
 import jspetrinet.analysis.MarkClassAnalysis;
 import jspetrinet.analysis.MarkingAnalysis;
 import jspetrinet.analysis.MarkingMatrix;
-import jspetrinet.ast.ASTree;
+import jspetrinet.ast.AST;
 import jspetrinet.exception.*;
 import jspetrinet.marking.*;
 import jspetrinet.parser.TokenMgrError;
@@ -76,13 +76,13 @@ public class CommandLineMain {
 		return result;
 	}
 	
-	static private List<ASTree> parseReward(Net net, String str) throws ASTException {
-		List<ASTree> result = new ArrayList<ASTree>();
+	static private List<AST> parseReward(Net net, String str) throws ASTException {
+		List<AST> result = new ArrayList<AST>();
 		String[] ary = str.split(",", 0);
 		for (String s : ary) {
 			Object obj = net.get(s);
-			if (obj instanceof ASTree) {
-				result.add((ASTree) obj);
+			if (obj instanceof AST) {
+				result.add((AST) obj);
 			} else {
 				throw new TypeMismatch();
 			}
@@ -411,7 +411,7 @@ public class CommandLineMain {
 				return;
 			}
 			try {
-				endTime = Utility.convertObjctToDouble(((ASTree) net.get(label)).eval(net));
+				endTime = Utility.convertObjctToDouble(((AST) net.get(label)).eval(net));
 			} catch (ASTException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -435,22 +435,22 @@ public class CommandLineMain {
 		if (cmd.hasOption(Opts.REWARD)) {
 			String rewardLabel = cmd.getOptionValue(Opts.REWARD);
 			try {
-				List<ASTree> rwdList = parseReward(net, rewardLabel);
-				Map<ASTree,Double> totalRwd = new HashMap<ASTree,Double>();
-				Map<ASTree,Double> total2Rwd = new HashMap<ASTree,Double>();
-				for (ASTree rwd : rwdList) {
+				List<AST> rwdList = parseReward(net, rewardLabel);
+				Map<AST,Double> totalRwd = new HashMap<AST,Double>();
+				Map<AST,Double> total2Rwd = new HashMap<AST,Double>();
+				for (AST rwd : rwdList) {
 					totalRwd.put(rwd, 0.0);
 					total2Rwd.put(rwd, 0.0);
 				}			
 				for (int k=0; k<run; k++) {
 					List<EventValue> result = mc.runSimulation(imark, 0.0, endTime, limits, rnd);
-					for (ASTree rwd : rwdList) {
+					for (AST rwd : rwdList) {
 						double tmp = mc.resultReward(net, result, rwd, 0.0, endTime);
 						totalRwd.put(rwd, totalRwd.get(rwd) + tmp);
 						total2Rwd.put(rwd, total2Rwd.get(rwd) + tmp*tmp);
 					}
 				}
-				for (ASTree rwd : rwdList) {
+				for (AST rwd : rwdList) {
 					double mean = totalRwd.get(rwd) / run;
 					double s2 = (total2Rwd.get(rwd) - totalRwd.get(rwd) * totalRwd.get(rwd) / run) / (run - 1);
 					double lcl = mean - 1.96 * Math.sqrt(s2 / run);

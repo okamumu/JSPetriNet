@@ -1,18 +1,18 @@
 package jspetrinet.petri;
 
-import jspetrinet.ast.ASTree;
+import jspetrinet.ast.AST;
 
 public class ExpTrans extends Trans {
 	
-	private ASTree rate;
+	private AST rate;
 	
-	public ExpTrans(String label, ASTree rate) {
+	public ExpTrans(String label, AST rate) {
 		super(label);
 		this.rate = rate;
 	}
 	
 	// getter
-	public final ASTree getRate() {
+	public final AST getRate() {
 		return rate;
 //		Object result = rate.eval(env);
 //		if (result instanceof Double) {
@@ -24,7 +24,7 @@ public class ExpTrans extends Trans {
 //		}
 	}
 	
-	public final void setRate(ASTree rate) {
+	public final void setRate(AST rate) {
 		this.rate = rate;
 	}
 }

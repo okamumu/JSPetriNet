@@ -1,12 +1,12 @@
 package jspetrinet.parser;
 
-import jspetrinet.ast.ASTree;
+import jspetrinet.ast.AST;
 
 public final class PairValue {
 	private final String label;
-	private final ASTree value;
+	private final AST value;
 	
-	public PairValue(String label, ASTree value) {
+	public PairValue(String label, AST value) {
 		this.label = label;
 		this.value = value;
 	}
@@ -15,7 +15,7 @@ public final class PairValue {
 		return label;
 	}
 	
-	public ASTree getValue() {
+	public AST getValue() {
 		return value;
 	}
 

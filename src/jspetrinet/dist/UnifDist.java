@@ -1,36 +1,36 @@
 package jspetrinet.dist;
 
 import jspetrinet.ast.ASTEnv;
-import jspetrinet.ast.ASTree;
+import jspetrinet.ast.AST;
 import jspetrinet.exception.ASTException;
 import jspetrinet.sim.Random;
 import jspetrinet.sim.Utility;
 
 public class UnifDist extends Dist {
 	
-	private ASTree lower;
-	private ASTree upper;
+	private AST lower;
+	private AST upper;
 	private Object lowerObj;
 	private Object upperObj;
 
-	public UnifDist(ASTree lower, ASTree upper) {
+	public UnifDist(AST lower, AST upper) {
 		this.lower = lower;
 		this.upper = upper;
 	}
 	
-	public final ASTree getLower() {
+	public final AST getLower() {
 		return lower;
 	}
 
-	public final ASTree getUpper() {
+	public final AST getUpper() {
 		return upper;
 	}
 	
-	public final void setLower(ASTree lower) {
+	public final void setLower(AST lower) {
 		this.lower = lower;
 	}
 
-	public final void setUpper(ASTree upper) {
+	public final void setUpper(AST upper) {
 		this.upper = upper;
 	}
 

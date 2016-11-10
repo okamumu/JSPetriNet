@@ -1,15 +1,15 @@
 package jspetrinet.petri;
 
-import jspetrinet.ast.ASTree;
+import jspetrinet.ast.AST;
 
 public class GenTrans extends Trans {
 
 	static public GenTransPolicy DefaultPolicy = GenTransPolicy.PRD;
 	
-	private ASTree dist;
+	private AST dist;
 	private GenTransPolicy policy;
 	
-	public GenTrans(String label, ASTree dist, GenTransPolicy policy) {
+	public GenTrans(String label, AST dist, GenTransPolicy policy) {
 		super(label);
 		this.dist = dist;
 		this.policy = policy;
@@ -21,11 +21,11 @@ public class GenTrans extends Trans {
 	}
 
 	// getter
-	public final ASTree getDist() {
+	public final AST getDist() {
 		return dist;
 	}
 	
-	public final void setDist(ASTree dist) {
+	public final void setDist(AST dist) {
 		this.dist = dist;
 	}
 	

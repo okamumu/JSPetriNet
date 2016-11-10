@@ -1,6 +1,6 @@
 package jspetrinet.ast;
 
-public class ASTValue extends ASTree {
+public class ASTValue extends AST {
 
 	private final Object value;
 

@@ -1,7 +1,7 @@
 package jspetrinet.petri;
 
 import jspetrinet.ast.ASTEnv;
-import jspetrinet.ast.ASTree;
+import jspetrinet.ast.AST;
 import jspetrinet.exception.ASTException;
 import jspetrinet.exception.TypeMismatch;
 import jspetrinet.graph.LabeledNode;
@@ -9,7 +9,7 @@ import jspetrinet.graph.LabeledNode;
 abstract public class Trans extends LabeledNode {
 
 	private int index;
-	private ASTree guard;
+	private AST guard;
 
 	private int priority;
 	private boolean vanishable;
@@ -45,7 +45,7 @@ abstract public class Trans extends LabeledNode {
 		this.vanishable = vanishable;
 	}
 	
-	public final void setGuard(ASTree guard) {
+	public final void setGuard(AST guard) {
 		this.guard = guard;
 	}
 

@@ -1,25 +1,25 @@
 package jspetrinet.dist;
 
 import jspetrinet.ast.ASTEnv;
-import jspetrinet.ast.ASTree;
+import jspetrinet.ast.AST;
 import jspetrinet.exception.ASTException;
 import jspetrinet.sim.Random;
 import jspetrinet.sim.Utility;
 
 public class ConstDist extends Dist {
 	
-	ASTree constValue;
+	AST constValue;
 	Object constValueObj;
 
-	public ConstDist(ASTree constValue) {
+	public ConstDist(AST constValue) {
 		this.constValue = constValue;
 	}
 
-	public final ASTree getConstValue() {
+	public final AST getConstValue() {
 		return constValue;
 	}
 
-	public final void setConstValue(ASTree constValue) {
+	public final void setConstValue(AST constValue) {
 		this.constValue = constValue;
 	}
 

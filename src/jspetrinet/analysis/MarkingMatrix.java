@@ -197,6 +197,9 @@ public class MarkingMatrix {
 						elem.add(revMarkIndex.get(dest));
 						ExpTrans tr = (ExpTrans) markingArc.getTrans();
 						try {
+//							System.out.println("start eval: " + tr.getLabel());
+//							Object obj2 = tr.getRate().eval(net);
+//							elem.add(obj2);
 							elem.add(tr.getRate().eval(net));
 						} catch (ASTException e) {
 							System.err.println("Fail to get rate: " + tr.getLabel());
