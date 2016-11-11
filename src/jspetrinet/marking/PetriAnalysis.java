@@ -12,8 +12,14 @@ import jspetrinet.petri.Place;
 import jspetrinet.petri.Trans;
 
 public final class PetriAnalysis {
+	
+//	private static int numE = 0;
+//	private static int numG = 0;
+//	private static int numF = 0;
 
 	public final static TransStatus isEnable(ASTEnv env, Trans tr) throws ASTException {
+//		numE++;
+//		System.out.println("enabled " + numE);
 		Mark m = env.getCurrentMark();
 		if (!tr.guardEval(env)) {
 			return TransStatus.DISABLE;
@@ -36,6 +42,8 @@ public final class PetriAnalysis {
 	}
 
 	public final static TransStatus isEnableGenTrans(ASTEnv env, Trans tr) throws ASTException {
+//		numG++;
+//		System.out.println("enabledG " + numG);
 		Boolean maybePreemption = false;
 		Mark m = env.getCurrentMark();
 		if (!tr.guardEval(env)) {
@@ -67,6 +75,8 @@ public final class PetriAnalysis {
 	}
 
 	public final static Mark doFiring(Net net, Trans tr) throws ASTException {
+//		numF++;
+//		System.out.println("firing " + numF);
 		Mark nextMark = new Mark(net.getCurrentMark());
 		for (Arc arc : tr.getInArc()) {
 			Place place = (Place) arc.getSrc();

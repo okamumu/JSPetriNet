@@ -47,7 +47,11 @@ public class CreateMarkingDFS implements CreateMarking {
 		while (!novisited.isEmpty()) {
 			Mark m = novisited.pop();
 			net.setCurrentMark(m);
+
+//			System.out.println("visit G : " + JSPetriNet.markToString(net, m));
+
 			if (markGraph.containtsMark(m)) {
+//				System.out.println("   skip visited : " + JSPetriNet.markToString(net, m));
 				continue;
 			}
 			markGraph.addMark(m);

@@ -42,6 +42,8 @@ final class MarkMarkTrans {
 public class CreateMarkingDFStangible implements CreateMarking {
 	
 	private final MarkingGraph markGraph;
+	private final List<Trans> expTransSet;
+	
 	private Map<Mark,Mark> createdMarks;
 	
 	private Set<Mark> tangibleMarks;
@@ -55,13 +57,8 @@ public class CreateMarkingDFStangible implements CreateMarking {
 
 	private PriorityComparator transComparator;
 	
-	private List<Trans> expTransSet;
-	
-	public CreateMarkingDFStangible(MarkingGraph markGraph) {
+	public CreateMarkingDFStangible(MarkingGraph markGraph, List<Trans> genTransSet) {
 		this.markGraph = markGraph;
-	}
-	
-	public void setGenTransSet(List<Trans> genTransSet) {
 		this.expTransSet = genTransSet;
 	}
 	
