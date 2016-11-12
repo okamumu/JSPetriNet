@@ -9,18 +9,13 @@ import jspetrinet.parser.JSPetriNetParser;
 import jspetrinet.parser.ParseException;
 import jspetrinet.parser.TokenMgrError;
 
-public class Guard implements Serializable {
+public class Guard {
 	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -8127649463467917612L;
-
 	static public AST createGuard(Net global, String formula) throws ASTException {
 		JSPetriNetParser parser = new JSPetriNetParser(new ByteArrayInputStream(formula.getBytes()));
 		parser.setNet(global);
 		try {
-			return parser.getASTree();
+			return parser.getAST();
 		} catch (TokenMgrError ex) {
 			System.out.println("token error: " + ex.getMessage());
 			return null;

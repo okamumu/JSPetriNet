@@ -50,11 +50,12 @@ public class JSPetriNet {
 		MarkingGraph mp = new MarkingGraph();
 		if (depth == 0) {
 			if (tangible) {
-				mp.setCreateMarking(new CreateMarkingDFStangible2(mp, expTransSet));
+				mp.setCreateMarking(new CreateMarkingDFStangible4(mp, expTransSet));
 			} else {
-				CreateMarkingDFS cmdt = new CreateMarkingDFS(mp);
-				cmdt.setGenTransSet(expTransSet);
-				mp.setCreateMarking(cmdt);
+//				CreateMarkingDFS cmdt = new CreateMarkingDFS(mp);
+//				cmdt.setGenTransSet(expTransSet);
+//				mp.setCreateMarking(cmdt);
+				mp.setCreateMarking(new CreateMarkingDFStangible3(mp, expTransSet));
 			}
 		} else {
 			mp.setCreateMarking(new CreateMarkingBFS(mp, depth));
