@@ -36,16 +36,51 @@ class ExitMark {
 		}
 	}
 	
-	void setMark(Mark emark) {
-		switch (numOfMark) {
+	void addMark(Mark emark) {
+		switch (this.numOfMark) {
 		case 0:
 			this.emark = emark;
-			numOfMark = 1;
+			this.numOfMark = 1;
 			break;
 		case 1:
 			if (this.emark != emark) {
-				numOfMark = 2;
-				emark = null;
+				this.emark = null;
+				this.numOfMark = 2;
+			};
+			break;
+		default:
+		}
+	}
+
+	void addMark(ExitMark other) {
+		switch (this.numOfMark) {
+		case 0:
+			switch (other.numOfMark) {
+			case 1:
+				this.emark = other.emark;
+				this.numOfMark = 1;
+				break;
+			case 2:
+				this.emark = null;
+				this.numOfMark = 2;
+				break;
+			default:
+			}
+			break;
+		case 1:
+			switch (other.numOfMark) {
+			case 1:
+				if (this.emark != other.emark) {
+					this.emark = null;
+					this.numOfMark = 2;
+				};
+				break;
+			case 0:
+			case 2:
+				this.emark = null;
+				this.numOfMark = 2;
+				break;
+			default:
 			}
 			break;
 		default:
@@ -59,7 +94,7 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 	private final List<Trans> expTransSet;
 
 	private Map<Mark,Mark> createdMarks;
-//	private Map<GenVec,GenVec> createdGenVec;
+	private Map<GenVec,GenVec> createdGenVec;
 
 	private Map<Mark,GenVec> immToGenVec;
 	private Set<Mark> visitedIMM;
@@ -83,7 +118,7 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 	@Override
 	public Mark create(Mark init, Net net) throws ASTException {
 		createdMarks = new HashMap<Mark,Mark>();
-//		createdGenVec = new HashMap<GenVec,GenVec>();
+		createdGenVec = new HashMap<GenVec,GenVec>();
 		immToGenVec = new HashMap<Mark,GenVec>();
 
 		visitedIMM = new HashSet<Mark>();
@@ -178,18 +213,18 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 			}
 		}
 		
-//		if (!createdGenVec.containsKey(genv)) {
-//			createdGenVec.put(genv, genv);
-//			return genv;
-//		} else {
-//			return createdGenVec.get(genv);
-//		}
+		if (!createdGenVec.containsKey(genv)) {
+			createdGenVec.put(genv, genv);
+			return genv;
+		} else {
+			return createdGenVec.get(genv);
+		}
 		
-		return genv;
+//		return genv;
 	}
 	
-	private List<Mark> createEnabledIMM(Net net, Mark m) throws ASTException {
-		List<Mark> enabledIMMList = new ArrayList<Mark>();
+	private List<Mark> createNextMarksIMM(Net net, Mark m) throws ASTException {
+		List<Mark> nextMarksFromIMM = new ArrayList<Mark>();
 		int highestPriority = 0;
 		for (Trans t : sortedImmTrans) {
 			ImmTrans tr = (ImmTrans) t;
@@ -205,13 +240,13 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 				} else {
 					createdMarks.put(dest, dest);
 				}
-				enabledIMMList.add(dest);
+				nextMarksFromIMM.add(dest);
 				arcListIMM.add(new MarkMarkTrans(m, dest, tr));
 				break;
 			default:
 			}
 		}
-		return enabledIMMList;
+		return nextMarksFromIMM;
 	}
 	
 	private void setGenVecToImm(Net net, GenVec genv, Mark m) {
@@ -230,11 +265,11 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 		markGraph.getGenGroup().get(genv).add(m);
 	}
 
-	private void visitImmMark(Net net, List<Mark> enabledIMMList, int size, Mark m) throws ASTException {
+	private void visitImmMark(Net net, List<Mark> nextMarksFromIMM, int size, Mark m) throws ASTException {
 		if (!exitMarkSet.containsKey(m)) {
 			exitMarkSet.put(m, new ExitMark());
 			novisitedIMM.push(null);
-			for (Mark dest : enabledIMMList) {
+			for (Mark dest : nextMarksFromIMM) {
 				novisitedIMM.push(dest);
 			}
 			markPath.addLast(m);
@@ -243,7 +278,7 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 			System.err.println("loop exist!: " + JSPetriNet.markToString(net, m));
 			if (!markPath.contains(m)) {
 				novisitedIMM.push(null);
-				for (Mark dest: enabledIMMList) {
+				for (Mark dest: nextMarksFromIMM) {
 					novisitedIMM.push(dest);
 				}
 				markPath.addLast(m);
@@ -318,11 +353,11 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 //			// new visit
 //			net.setCurrentMark(m);
 //
-//			List<Trans> enabledIMMList = createEnabledIMM(net);
-//			int size = enabledIMMList.size();
+//			List<Trans> nextMarksFromIMM = createEnabledIMM(net);
+//			int size = nextMarksFromIMM.size();
 //			if (size > 0) {
 //				immToGenVec.put(m, createGenVec(net));
-//				visitImmMark(net, enabledIMMList, size, m);
+//				visitImmMark(net, nextMarksFromIMM, size, m);
 //			} else {
 //				for (Mark v : markPath) {
 //					exitMarkSet.get(v).setMark(m);
@@ -341,7 +376,7 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 				Mark e = markPath.removeLast();
 				Mark r = markPath.peekLast();
 				if (r != null) {
-					exitMarkSet.get(r).setMark(exitMarkSet.get(e).get());
+					exitMarkSet.get(r).addMark(exitMarkSet.get(e));
 				}
 				visitedIMM.add(e);		
 				visited.add(e);
@@ -350,28 +385,28 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 
 			if (visitedIMM.contains(m)) {
 				Mark r = markPath.peekLast();
-				exitMarkSet.get(r).setMark(exitMarkSet.get(m).get());
+				exitMarkSet.get(r).addMark(exitMarkSet.get(m));
 				continue;
 			}
 
 			// check tangible GEN (set visited - visitedIMM)
 			if (visited.contains(m)) {
 				Mark r = markPath.peekLast();
-				exitMarkSet.get(r).setMark(m);
+				exitMarkSet.get(r).addMark(m);
 				continue;
 			}
 
 			// new visit
 			net.setCurrentMark(m);
 
-			List<Mark> enabledIMMList = createEnabledIMM(net, m);
-			int size = enabledIMMList.size();
+			List<Mark> nextMarksFromIMM = createNextMarksIMM(net, m);
+			int size = nextMarksFromIMM.size();
 			if (size > 0) {
 				immToGenVec.put(m, createGenVec(net));
-				visitImmMark(net, enabledIMMList, size, m);
+				visitImmMark(net, nextMarksFromIMM, size, m);
 			} else {
 				Mark r = markPath.peekLast();
-				exitMarkSet.get(r).setMark(m);
+				exitMarkSet.get(r).addMark(m);
 				setGenVecToGen(net, createGenVec(net), m);
 				visitGenMark(net, m);
 			}
@@ -388,11 +423,11 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 			// new visit
 			net.setCurrentMark(m);
 
-			List<Mark> enabledIMMList = createEnabledIMM(net, m);
-			int size = enabledIMMList.size();
+			List<Mark> nextMarksFromIMM = createNextMarksIMM(net, m);
+			int size = nextMarksFromIMM.size();
 			if (size > 0) {
 				immToGenVec.put(m, createGenVec(net));
-				visitImmMark(net, enabledIMMList, size, m);
+				visitImmMark(net, nextMarksFromIMM, size, m);
 				vanishing(net);
 			} else {
 				setGenVecToGen(net, createGenVec(net), m);
