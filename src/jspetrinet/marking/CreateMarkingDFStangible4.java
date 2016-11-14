@@ -187,8 +187,8 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 		return genv;
 	}
 	
-	private List<Trans> createEnabledIMM(Net net) throws ASTException {
-		List<Trans> enabledIMMList = new ArrayList<Trans>();
+	private List<Mark> createEnabledIMM(Net net, Mark m) throws ASTException {
+		List<Mark> enabledIMMList = new ArrayList<Mark>();
 		int highestPriority = 0;
 		for (Trans t : sortedImmTrans) {
 			ImmTrans tr = (ImmTrans) t;
@@ -198,7 +198,14 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 			switch (PetriAnalysis.isEnable(net, tr)) {
 			case ENABLE:
 				highestPriority = tr.getPriority();
-				enabledIMMList.add(tr);
+				Mark dest = PetriAnalysis.doFiring(net, tr);
+				if (createdMarks.containsKey(dest)) {
+					dest = createdMarks.get(dest);
+				} else {
+					createdMarks.put(dest, dest);
+				}
+				enabledIMMList.add(dest);
+				arcListIMM.add(new MarkMarkTrans(m, dest, tr));
 				break;
 			default:
 			}
@@ -222,38 +229,26 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 		markGraph.getGenGroup().get(genv).add(m);
 	}
 
-	private void visitImmMark(Net net, List<Trans> enabledIMMList, int size, Mark m) throws ASTException {
+	private Mark visitImmMark(Net net, List<Mark> enabledIMMList, int size, Mark m) throws ASTException {
 		if (!exitMarkSet.containsKey(m)) {
 			exitMarkSet.put(m, new ExitMark());
 			novisitedIMM.push(null);
-			for (Trans tr : enabledIMMList) {
-				Mark dest = PetriAnalysis.doFiring(net, tr);
-				if (createdMarks.containsKey(dest)) {
-					dest = createdMarks.get(dest);
-				} else {
-					createdMarks.put(dest, dest);
-				}
+			for (Mark dest : enabledIMMList) {
 				novisitedIMM.push(dest);
-				if (size != 1) {
-					arcListIMM.add(new MarkMarkTrans(m, dest, tr));
-				}
 			}
 			markPath.addLast(m);
+			return m;
 		} else {
 			System.err.println("loop exist!: " + JSPetriNet.markToString(net, m));
 			if (!markPath.contains(m)) {
 				novisitedIMM.push(null);
-				for (Trans tr : enabledIMMList) {
-					Mark dest = PetriAnalysis.doFiring(net, tr);
-					if (createdMarks.containsKey(dest)) {
-						dest = createdMarks.get(dest);
-					} else {
-						createdMarks.put(dest, dest);
-					}
+				for (Mark dest: enabledIMMList) {
 					novisitedIMM.push(dest);
-					arcListIMM.add(new MarkMarkTrans(m, dest, tr));
 				}
-				markPath.addLast(m);				
+				markPath.addLast(m);
+				return m;
+			} else {
+				return markPath.peekLast();
 			}
 		}
 	}
@@ -292,51 +287,95 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 		visited.add(m);
 	}
 
+//	private void vanishing(Net net) throws ASTException {
+//		while (!novisitedIMM.isEmpty()) {
+//			Mark m = novisitedIMM.pop();
+//
+//			if (m == null) {
+//				Mark e = markPath.removeLast();
+//				visitedIMM.add(e);		
+//				visited.add(e);
+//				continue;
+//			}
+//
+//			if (visitedIMM.contains(m)) {
+//				Mark e = exitMarkSet.get(m).get();
+//				for (Mark v : markPath) {
+//					exitMarkSet.get(v).setMark(e);
+//				}
+//				continue;
+//			}
+//
+//			// check tangible GEN (set visited - visitedIMM)
+//			if (visited.contains(m)) {
+//				for (Mark v : markPath) {
+//					exitMarkSet.get(v).setMark(m);
+//				}
+//				continue;
+//			}
+//
+//			// new visit
+//			net.setCurrentMark(m);
+//
+//			List<Trans> enabledIMMList = createEnabledIMM(net);
+//			int size = enabledIMMList.size();
+//			if (size > 0) {
+//				immToGenVec.put(m, createGenVec(net));
+//				visitImmMark(net, enabledIMMList, size, m);
+//			} else {
+//				for (Mark v : markPath) {
+//					exitMarkSet.get(v).setMark(m);
+//				}
+//				setGenVecToGen(net, createGenVec(net), m);
+//				visitGenMark(net, m);
+//			}
+//		}
+//	}
+	
 	private void vanishing(Net net) throws ASTException {
+		Mark r = markPath.peekLast();
 		while (!novisitedIMM.isEmpty()) {
 			Mark m = novisitedIMM.pop();
 
 			if (m == null) {
 				Mark e = markPath.removeLast();
+				r = markPath.peekLast();
+				exitMarkSet.get(r).setMark(exitMarkSet.get(e).get());
 				visitedIMM.add(e);		
 				visited.add(e);
 				continue;
 			}
 
 			if (visitedIMM.contains(m)) {
-				Mark e = exitMarkSet.get(m).get();
-				for (Mark v : markPath) {
-					exitMarkSet.get(v).setMark(e);
-				}
+				r = markPath.peekLast();
+				exitMarkSet.get(r).setMark(exitMarkSet.get(m).get());
 				continue;
 			}
 
 			// check tangible GEN (set visited - visitedIMM)
 			if (visited.contains(m)) {
-				for (Mark v : markPath) {
-					exitMarkSet.get(v).setMark(m);
-				}
+				r = markPath.peekLast();
+				exitMarkSet.get(r).setMark(m);
 				continue;
 			}
 
 			// new visit
 			net.setCurrentMark(m);
 
-			List<Trans> enabledIMMList = createEnabledIMM(net);
+			List<Mark> enabledIMMList = createEnabledIMM(net, m);
 			int size = enabledIMMList.size();
 			if (size > 0) {
 				immToGenVec.put(m, createGenVec(net));
-				visitImmMark(net, enabledIMMList, size, m);
+				r = visitImmMark(net, enabledIMMList, size, m);
 			} else {
-				for (Mark v : markPath) {
-					exitMarkSet.get(v).setMark(m);
-				}
+				r = markPath.peekLast();
+				exitMarkSet.get(r).setMark(m);
 				setGenVecToGen(net, createGenVec(net), m);
 				visitGenMark(net, m);
 			}
 		}
 	}
-	
+
 	private void createMarking(Net net) throws ASTException {
 		while (!novisitedGEN.isEmpty()) {
 			Mark m = novisitedGEN.pop();
@@ -347,7 +386,7 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 			// new visit
 			net.setCurrentMark(m);
 
-			List<Trans> enabledIMMList = createEnabledIMM(net);
+			List<Mark> enabledIMMList = createEnabledIMM(net, m);
 			int size = enabledIMMList.size();
 			if (size > 0) {
 				immToGenVec.put(m, createGenVec(net));
