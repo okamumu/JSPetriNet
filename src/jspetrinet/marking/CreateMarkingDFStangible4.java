@@ -45,6 +45,7 @@ class ExitMark {
 		case 1:
 			if (this.emark != emark) {
 				numOfMark = 2;
+				emark = null;
 			}
 			break;
 		default:
@@ -229,7 +230,7 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 		markGraph.getGenGroup().get(genv).add(m);
 	}
 
-	private Mark visitImmMark(Net net, List<Mark> enabledIMMList, int size, Mark m) throws ASTException {
+	private void visitImmMark(Net net, List<Mark> enabledIMMList, int size, Mark m) throws ASTException {
 		if (!exitMarkSet.containsKey(m)) {
 			exitMarkSet.put(m, new ExitMark());
 			novisitedIMM.push(null);
@@ -237,7 +238,7 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 				novisitedIMM.push(dest);
 			}
 			markPath.addLast(m);
-			return m;
+//			return m;
 		} else {
 			System.err.println("loop exist!: " + JSPetriNet.markToString(net, m));
 			if (!markPath.contains(m)) {
@@ -246,9 +247,9 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 					novisitedIMM.push(dest);
 				}
 				markPath.addLast(m);
-				return m;
+//				return m;
 			} else {
-				return markPath.peekLast();
+//				return markPath.peekLast();
 			}
 		}
 	}
@@ -333,28 +334,29 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 //	}
 	
 	private void vanishing(Net net) throws ASTException {
-		Mark r = markPath.peekLast();
 		while (!novisitedIMM.isEmpty()) {
 			Mark m = novisitedIMM.pop();
 
 			if (m == null) {
 				Mark e = markPath.removeLast();
-				r = markPath.peekLast();
-				exitMarkSet.get(r).setMark(exitMarkSet.get(e).get());
+				Mark r = markPath.peekLast();
+				if (r != null) {
+					exitMarkSet.get(r).setMark(exitMarkSet.get(e).get());
+				}
 				visitedIMM.add(e);		
 				visited.add(e);
 				continue;
 			}
 
 			if (visitedIMM.contains(m)) {
-				r = markPath.peekLast();
+				Mark r = markPath.peekLast();
 				exitMarkSet.get(r).setMark(exitMarkSet.get(m).get());
 				continue;
 			}
 
 			// check tangible GEN (set visited - visitedIMM)
 			if (visited.contains(m)) {
-				r = markPath.peekLast();
+				Mark r = markPath.peekLast();
 				exitMarkSet.get(r).setMark(m);
 				continue;
 			}
@@ -366,9 +368,9 @@ public class CreateMarkingDFStangible4 implements CreateMarking {
 			int size = enabledIMMList.size();
 			if (size > 0) {
 				immToGenVec.put(m, createGenVec(net));
-				r = visitImmMark(net, enabledIMMList, size, m);
+				visitImmMark(net, enabledIMMList, size, m);
 			} else {
-				r = markPath.peekLast();
+				Mark r = markPath.peekLast();
 				exitMarkSet.get(r).setMark(m);
 				setGenVecToGen(net, createGenVec(net), m);
 				visitGenMark(net, m);
