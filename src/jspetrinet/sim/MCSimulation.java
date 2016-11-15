@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import jspetrinet.JSPetriNet;
-import jspetrinet.ast.ASTree;
+import jspetrinet.ast.AST;
 import jspetrinet.dist.Dist;
 import jspetrinet.exception.ASTException;
 import jspetrinet.exception.TypeMismatch;
@@ -177,7 +177,7 @@ public class MCSimulation {
 		return eventValues;
 	}
 
-	public List<EventValue> runSimulation(Mark initMarking, double startTime, double endTime, ASTree stopCondition, int limitFiring, Random rnd) throws ASTException {
+	public List<EventValue> runSimulation(Mark initMarking, double startTime, double endTime, AST stopCondition, int limitFiring, Random rnd) throws ASTException {
 		List<EventValue> eventValues = new ArrayList<EventValue>();
 		int firingcount = 0;
 		double currentTime = startTime;
@@ -284,11 +284,11 @@ public class MCSimulation {
 		return eventValues;
 	}
 
-	private double evalReward(Net net, ASTree reward) throws ASTException {
+	private double evalReward(Net net, AST reward) throws ASTException {
 		return Utility.convertObjctToDouble(reward.eval(net));
 	}
 
-	public double resultReward(Net net, List<EventValue> simResult, ASTree reward, double startTime, double endTime) throws ASTException {
+	public double resultReward(Net net, List<EventValue> simResult, AST reward, double startTime, double endTime) throws ASTException {
 		double totalReward = 0;
 		for(int i=0;i<simResult.size();i++){
 			net.setCurrentMark(simResult.get(i).getEventMarking());

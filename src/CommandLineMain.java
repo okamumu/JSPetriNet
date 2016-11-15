@@ -24,13 +24,15 @@ import jspetrinet.JSPetriNet;
 import jspetrinet.analysis.MRGPAnalysis;
 import jspetrinet.analysis.MarkClassAnalysis;
 import jspetrinet.analysis.MarkingMatrix;
-import jspetrinet.ast.ASTree;
+import jspetrinet.ast.AST;
 import jspetrinet.exception.ASTException;
 import jspetrinet.exception.TypeMismatch;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingGraph;
 import jspetrinet.parser.TokenMgrError;
+import jspetrinet.petri.ExpTrans;
 import jspetrinet.petri.Net;
+import jspetrinet.petri.Trans;
 import jspetrinet.sim.EventValue;
 import jspetrinet.sim.MCSimulation;
 import jspetrinet.sim.Random;
@@ -50,6 +52,7 @@ class Opts {
 	public static String REWARD="reward";
 	public static String VANISHING="tangible";
 	public static String FIRINGLIMIT="limit";
+	public static String EXP="exp";
 
 	public static String GROUPGRAPH="ggraph";
 	public static String MARKGRAPH="mgraph";
@@ -77,13 +80,27 @@ public class CommandLineMain {
 		return result;
 	}
 
-	static private List<ASTree> parseReward(Net net, String str) throws ASTException {
-		List<ASTree> result = new ArrayList<ASTree>();
+	static private List<AST> parseReward(Net net, String str) throws ASTException {
+		List<AST> result = new ArrayList<AST>();
 		String[] ary = str.split(",", 0);
 		for (String s : ary) {
 			Object obj = net.get(s);
-			if (obj instanceof ASTree) {
-				result.add((ASTree) obj);
+			if (obj instanceof AST) {
+				result.add((AST) obj);
+			} else {
+				throw new TypeMismatch();
+			}
+		}
+		return result;
+	}
+
+	static private List<Trans> parseExpTrans(Net net, String str) throws ASTException {
+		List<Trans> result = new ArrayList<Trans>();
+		String[] ary = str.split(",", 0);
+		for (String s : ary) {
+			Object obj = net.get(s);
+			if (obj instanceof ExpTrans) {
+				result.add((Trans) obj);
 			} else {
 				throw new TypeMismatch();
 			}
@@ -194,6 +211,7 @@ public class CommandLineMain {
 		options.addOption(Opts.GROUPGRAPH, true, "marking group graph (output)");
 		options.addOption(Opts.MARKGRAPH, true, "marking graph (output)");
 		options.addOption(Opts.REWARD, true, "reward");
+		options.addOption(Opts.EXP, true, "exp trans");
 		options.addOption(Opts.SCC, true, "scc");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
@@ -209,11 +227,23 @@ public class CommandLineMain {
 		int depth = getLimit(cmd, 0);
 		boolean vanishing = getVanish(cmd, false);
 
+		List<Trans> expTrans = null;
+		if (cmd.hasOption(Opts.EXP)) {
+			try {
+				expTrans = parseExpTrans(net, cmd.getOptionValue(Opts.EXP));
+			} catch (ASTException e) {
+				System.err.println(e.getMessage());
+				System.exit(1);
+			}
+		} else {
+			expTrans = new ArrayList<Trans>();
+		}
+
 		PrintWriter pw0;
 		pw0 = new PrintWriter(System.out);
 		MarkingGraph mp;
 		try {
-			mp = JSPetriNet.marking(pw0, net, imark, depth, vanishing);
+			mp = JSPetriNet.marking(pw0, net, imark, depth, vanishing, expTrans);
 		} catch (ASTException e1) {
 			System.err.println(e1.getMessage());
 			return;
@@ -385,7 +415,7 @@ public class CommandLineMain {
 				return;
 			}
 			try {
-				endTime = Utility.convertObjctToDouble(((ASTree) net.get(label)).eval(net));
+				endTime = Utility.convertObjctToDouble(((AST) net.get(label)).eval(net));
 			} catch (ASTException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -409,22 +439,22 @@ public class CommandLineMain {
 		if (cmd.hasOption(Opts.REWARD)) {
 			String rewardLabel = cmd.getOptionValue(Opts.REWARD);
 			try {
-				List<ASTree> rwdList = parseReward(net, rewardLabel);
-				Map<ASTree,Double> totalRwd = new HashMap<ASTree,Double>();
-				Map<ASTree,Double> total2Rwd = new HashMap<ASTree,Double>();
-				for (ASTree rwd : rwdList) {
+				List<AST> rwdList = parseReward(net, rewardLabel);
+				Map<AST,Double> totalRwd = new HashMap<AST,Double>();
+				Map<AST,Double> total2Rwd = new HashMap<AST,Double>();
+				for (AST rwd : rwdList) {
 					totalRwd.put(rwd, 0.0);
 					total2Rwd.put(rwd, 0.0);
 				}
 				for (int k=0; k<run; k++) {
 					List<EventValue> result = mc.runSimulation(imark, 0.0, endTime, limits, rnd);
-					for (ASTree rwd : rwdList) {
+					for (AST rwd : rwdList) {
 						double tmp = mc.resultReward(net, result, rwd, 0.0, endTime);
 						totalRwd.put(rwd, totalRwd.get(rwd) + tmp);
 						total2Rwd.put(rwd, total2Rwd.get(rwd) + tmp*tmp);
 					}
 				}
-				for (ASTree rwd : rwdList) {
+				for (AST rwd : rwdList) {
 					double mean = totalRwd.get(rwd) / run;
 					double s2 = (total2Rwd.get(rwd) - totalRwd.get(rwd) * totalRwd.get(rwd) / run) / (run - 1);
 					double lcl = mean - 1.96 * Math.sqrt(s2 / run);
