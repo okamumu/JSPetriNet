@@ -8,8 +8,9 @@ import java.util.Map;
 
 import jspetrinet.JSPetriNet;
 import jspetrinet.ast.ASTree;
-import jspetrinet.dist.*;
-import jspetrinet.exception.*;
+import jspetrinet.dist.Dist;
+import jspetrinet.exception.ASTException;
+import jspetrinet.exception.TypeMismatch;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingArc;
 import jspetrinet.marking.PetriAnalysis;
@@ -147,7 +148,6 @@ public class MCSimulation {
 				}
 			}
 			if(selTrans==null){
-				System.out.println("aaa");
 				//終了したことを記録
 				break;
 			}
@@ -155,7 +155,6 @@ public class MCSimulation {
 			updateRemainingTime(selTrans, mindt);
 			currentTime += mindt;
 			if(currentTime>endTime){
-				System.out.println("aaa");
 				break;
 			}
 			//発火処理
@@ -284,7 +283,7 @@ public class MCSimulation {
 		}
 		return eventValues;
 	}
-	
+
 	private double evalReward(Net net, ASTree reward) throws ASTException {
 		return Utility.convertObjctToDouble(reward.eval(net));
 	}

@@ -4,10 +4,13 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,11 +23,12 @@ import org.apache.commons.cli.ParseException;
 import jspetrinet.JSPetriNet;
 import jspetrinet.analysis.MRGPAnalysis;
 import jspetrinet.analysis.MarkClassAnalysis;
-import jspetrinet.analysis.MarkingAnalysis;
 import jspetrinet.analysis.MarkingMatrix;
 import jspetrinet.ast.ASTree;
-import jspetrinet.exception.*;
-import jspetrinet.marking.*;
+import jspetrinet.exception.ASTException;
+import jspetrinet.exception.TypeMismatch;
+import jspetrinet.marking.Mark;
+import jspetrinet.marking.MarkingGraph;
 import jspetrinet.parser.TokenMgrError;
 import jspetrinet.petri.Net;
 import jspetrinet.sim.EventValue;
@@ -57,7 +61,7 @@ class Opts {
 }
 
 public class CommandLineMain {
-	
+
 	static private Map<String,Integer> parseMark(String str) {
 		Map<String,Integer> result = new HashMap<String,Integer>();
 		String[] ary = str.split(",", 0);
@@ -72,7 +76,7 @@ public class CommandLineMain {
 		}
 		return result;
 	}
-	
+
 	static private List<ASTree> parseReward(Net net, String str) throws ASTException {
 		List<ASTree> result = new ArrayList<ASTree>();
 		String[] ary = str.split(",", 0);
@@ -86,7 +90,7 @@ public class CommandLineMain {
 		}
 		return result;
 	}
-	
+
 	private static Net loadNet(CommandLine cmd) {
 		Net net = new Net(null, "");
 		InputStream in = null;
@@ -115,7 +119,7 @@ public class CommandLineMain {
 		net.setIndex();
 		return net;
 	}
-	
+
 	private static Mark getInitialMark(CommandLine cmd, Net net) {
 		Mark imark = null;
 		if (cmd.hasOption(Opts.INITMARK)) {
@@ -132,7 +136,7 @@ public class CommandLineMain {
 		}
 		return imark;
 	}
-	
+
 	private static int getLimit(CommandLine cmd, int defaultValue) {
 		if (cmd.hasOption(Opts.FIRINGLIMIT)) {
 			return Integer.parseInt(cmd.getOptionValue(Opts.FIRINGLIMIT));
@@ -179,7 +183,7 @@ public class CommandLineMain {
 		JSPetriNet.writeDotfile(bw, net);
 		bw.close();
 	}
-		
+
 	public static void cmdAnalysis(String[] args) {
 		Options options = new Options();
 		options.addOption(Opts.INPETRI, true, "input PetriNet file");
@@ -204,7 +208,7 @@ public class CommandLineMain {
 		Mark imark = getInitialMark(cmd, net);
 		int depth = getLimit(cmd, 0);
 		boolean vanishing = getVanish(cmd, false);
-		
+
 		PrintWriter pw0;
 		pw0 = new PrintWriter(System.out);
 		MarkingGraph mp;
@@ -218,7 +222,7 @@ public class CommandLineMain {
 
 		MarkingMatrix mat = new MarkingMatrix(mp, true);
 		MRGPAnalysis mrgp = new MRGPAnalysis(mat);
-		
+
 		PrintWriter pw1, pw2, pw6;
 		if (cmd.hasOption(Opts.OUT)) {
 			try {
@@ -231,7 +235,7 @@ public class CommandLineMain {
 			} catch (IOException e) {
 				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
 				return;
-			}			
+			}
 			mrgp.writeMarkSet(pw1);
 			mrgp.writeMatrix(pw2);
 			mrgp.writeStateVec(pw6, imark);
@@ -249,7 +253,7 @@ public class CommandLineMain {
 			pw2.flush();
 			pw6.flush();
 		}
-		
+
 		if (cmd.hasOption(Opts.REWARD)) {
 			String rewardLabel = cmd.getOptionValue(Opts.REWARD);
 
@@ -263,7 +267,7 @@ public class CommandLineMain {
 				} catch (IOException e) {
 					System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
 					return;
-				}			
+				}
 				try {
 					mrgp.writeStateRewardVec(pw5, parseReward(net, rewardLabel));
 				} catch (ASTException ex) {
@@ -293,7 +297,7 @@ public class CommandLineMain {
 			} catch (IOException e) {
 				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.GROUPGRAPH));
 				return;
-			}			
+			}
 			mat.getMarkingGraph().dotMarkGroup(pw);
 			pw.close();
 		}
@@ -308,11 +312,11 @@ public class CommandLineMain {
 			} catch (IOException e) {
 				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.MARKGRAPH));
 				return;
-			}			
+			}
 			mat.getMarkingGraph().dotMarking(pw);
 			pw.close();
 		}
-		
+
 		if (cmd.hasOption(Opts.SCC)) {
 			PrintWriter pw;
 			try {
@@ -352,7 +356,7 @@ public class CommandLineMain {
 		}
 
 		Net net = loadNet(cmd);
-		
+
 		MCSimulation mc = new MCSimulation(net);
 		Mark imark = getInitialMark(cmd, net);
 		int limits = getLimit(cmd, 1000);
@@ -360,7 +364,7 @@ public class CommandLineMain {
 		int run = 1;
 		if (cmd.hasOption(Opts.SIMRUN)) {
 			run = Integer.parseInt(cmd.getOptionValue(Opts.SIMRUN));
-		}	
+		}
 
 		double endTime;
 		if (cmd.hasOption(Opts.SIMTIME)) {
@@ -411,7 +415,7 @@ public class CommandLineMain {
 				for (ASTree rwd : rwdList) {
 					totalRwd.put(rwd, 0.0);
 					total2Rwd.put(rwd, 0.0);
-				}			
+				}
 				for (int k=0; k<run; k++) {
 					List<EventValue> result = mc.runSimulation(imark, 0.0, endTime, limits, rnd);
 					for (ASTree rwd : rwdList) {
@@ -425,7 +429,7 @@ public class CommandLineMain {
 					double s2 = (total2Rwd.get(rwd) - totalRwd.get(rwd) * totalRwd.get(rwd) / run) / (run - 1);
 					double lcl = mean - 1.96 * Math.sqrt(s2 / run);
 					double ucl = mean + 1.96 * Math.sqrt(s2 / run);
-					
+
 					System.out.println(rwd.toString());
 					System.out.println(mean + " [" + lcl + "," + ucl + "]");
 				}
@@ -445,7 +449,7 @@ public class CommandLineMain {
 				System.err.println("Failed: " + e.getMessage());
 				e.printStackTrace();
 				return;
-			}			
+			}
 		}
 	}
 
