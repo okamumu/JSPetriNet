@@ -1,25 +1,25 @@
 package jspetrinet.dist;
 
 import jspetrinet.ast.ASTEnv;
-import jspetrinet.ast.ASTree;
+import jspetrinet.ast.AST;
 import jspetrinet.exception.ASTException;
 import jspetrinet.sim.Random;
 import jspetrinet.sim.Utility;
 
 public class ExpDist extends Dist {
 	
-	private ASTree rate;
+	private AST rate;
 	private Object rateObj;
 
-	public ExpDist(ASTree rate) {
+	public ExpDist(AST rate) {
 		this.rate = rate;
 	}
 	
-	public final ASTree getRate() {
+	public final AST getRate() {
 		return rate;
 	}
 
-	public final void setRate(ASTree rate) {
+	public final void setRate(AST rate) {
 		this.rate = rate;
 	}
 

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import jspetrinet.JSPetriNet;
-import jspetrinet.ast.ASTree;
+import jspetrinet.ast.AST;
 import jspetrinet.exception.ASTException;
 import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
@@ -23,7 +23,7 @@ public class MRGPAnalysis {
 	private Net net;
 	
 	private Map<GenVec,MarkGroup> immGroup;
-	MarkGroup expGroup;
+//	MarkGroup expGroup;
 	private Map<GenVec,MarkGroup> genGroup;
 	
 	private final Map<GroupPair,String> matrixName;
@@ -37,7 +37,7 @@ public class MRGPAnalysis {
 		matrixName = new HashMap<GroupPair,String>();
 		immGroup = mp.getImmGroup();
 		genGroup = mp.getGenGroup();
-		expGroup = mp.getExpGroup();
+//		expGroup = mp.getExpGroup();
 	}
 
 	public void writeMarkSet(PrintWriter pw) {
@@ -65,19 +65,19 @@ public class MRGPAnalysis {
 		}
 	}
 	
-	public void writeStateRewardVec(PrintWriter pw, List<ASTree> reward) throws ASTException {
+	public void writeStateRewardVec(PrintWriter pw, List<AST> reward) throws ASTException {
 		for (GenVec gv : mat.getSortedAllGenVec()) {
 			if (genGroup.containsKey(gv)) {
 				MarkGroup mg = genGroup.get(gv);
 				String glabel = JSPetriNet.genvecToString(net, gv);
 				pw.println("# " + mat.getGroupLabel(mg) + "rwd" + " " + glabel);
-				pw.println("# size " + mg.size());
 				List<List<Object>> s = mat.getMakingSet(mg);
+				pw.println("# size " + mg.size() + " " + reward.size());
 				for (List<Object> e: s) {
 					Mark m = (Mark) e.get(1);
 					net.setCurrentMark(m);
 					pw.print(mat.getGroupLabel(mg) + "rwd" + colsep + e.get(0));
-					for (ASTree a : reward) {
+					for (AST a : reward) {
 						pw.print(colsep + a.eval(net));
 					}
 					pw.println();

@@ -35,6 +35,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
       case COMMENT:
       case REAL:
       case INTEGER:
+      case BOOLEAN:
       case STRING:
       case PLUS:
       case MINUS:
@@ -42,6 +43,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
       case IDENTIFIER:
       case GLOBAL_NTOKEN:
       case NTOKEN:
+      case ECOND:
       case OPEN:
       case NL:
       case SEND:{
@@ -68,6 +70,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
       case BEGIN:
       case REAL:
       case INTEGER:
+      case BOOLEAN:
       case STRING:
       case PLUS:
       case MINUS:
@@ -75,6 +78,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
       case IDENTIFIER:
       case GLOBAL_NTOKEN:
       case NTOKEN:
+      case ECOND:
       case OPEN:{
         Statement();
         break;
@@ -132,6 +136,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
     case IFELSE:
     case REAL:
     case INTEGER:
+    case BOOLEAN:
     case STRING:
     case PLUS:
     case MINUS:
@@ -139,6 +144,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
     case IDENTIFIER:
     case GLOBAL_NTOKEN:
     case NTOKEN:
+    case ECOND:
     case OPEN:{
       Expression();
       break;
@@ -174,6 +180,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
     case BEGIN:
     case REAL:
     case INTEGER:
+    case BOOLEAN:
     case STRING:
     case PLUS:
     case MINUS:
@@ -181,6 +188,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
     case IDENTIFIER:
     case GLOBAL_NTOKEN:
     case NTOKEN:
+    case ECOND:
     case OPEN:{
       Statement();
       break;
@@ -359,7 +367,7 @@ tr = current.createExpTrans(token.image,
       optlist = OptionList();
 for (PairValue pval : optlist.getList()) {
                         String label = pval.getLabel();
-                        ASTree value = pval.getValue();
+                        AST value = pval.getValue();
                         if (label.equals("rate")) {
                                 current.put(token.image + ".rate", value);
                         } else if (label.equals("guard")) {
@@ -387,14 +395,14 @@ tr = current.createImmTrans(token.image,
                 tr.setGuard(new ASTVariable(token.image + ".guard"));
                 current.put(token.image + ".guard", new ASTValue(true));
     tr.setPriority(0);
-    tr.setVanishable(true);
+    tr.setVanishable(false);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
       jj_consume_token(OPEN);
       optlist = OptionList();
 for (PairValue pval : optlist.getList()) {
                         String label = pval.getLabel();
-                        ASTree value = pval.getValue();
+                        AST value = pval.getValue();
                         if (label.equals("weight")) {
                                 current.put(token.image + ".weight", value);
                         } else if (label.equals("guard")) {
@@ -438,7 +446,7 @@ current.createGenTrans(token.image,
       optlist = OptionList();
 for (PairValue pval : optlist.getList()) {
                         String label = pval.getLabel();
-                        ASTree value = pval.getValue();
+                        AST value = pval.getValue();
                         GenTrans tr = (GenTrans) current.get(token.image);
                         if (label.equals("dist")) {
                                 current.put(token.image + ".dist", value);
@@ -483,7 +491,7 @@ current.createGenTrans(token.image, new ASTVariable(token.image + ".dist"), GenT
       optlist = OptionList();
 for (PairValue pval : optlist.getList()) {
                         String label = pval.getLabel();
-                        ASTree value = pval.getValue();
+                        AST value = pval.getValue();
                         GenTrans tr = (GenTrans) current.get(token.image);
                         ConstDist dist = (ConstDist) current.get(token.image + ".dist");
                         if (label.equals("value")) {
@@ -529,7 +537,7 @@ current.createGenTrans(token.image, new ASTVariable(token.image + ".dist"), GenT
       optlist = OptionList();
 for (PairValue pval : optlist.getList()) {
                         String label = pval.getLabel();
-                        ASTree value = pval.getValue();
+                        AST value = pval.getValue();
                         GenTrans tr = (GenTrans) current.get(token.image);
                         UnifDist dist = (UnifDist) current.get(token.image + ".dist");
                         if (label.equals("lower")) {
@@ -598,7 +606,7 @@ Object s, d;
       optlist = OptionList();
 for (PairValue pval : optlist.getList()) {
                         String label = pval.getLabel();
-                        ASTree value = pval.getValue();
+                        AST value = pval.getValue();
                         if (label.equals("multi")) {
                                 a.setMulti(value);
                         } else if (label.equals("firing")) {
@@ -634,7 +642,7 @@ Place p = (Place) current.get(src.image);
       optlist = OptionList();
 for (PairValue pval : optlist.getList()) {
                         String label = pval.getLabel();
-                        ASTree value = pval.getValue();
+                        AST value = pval.getValue();
                         if (label.equals("multi")) {
                                 a.setMulti(value);
                         } else if (label.equals("firing")) {
@@ -670,7 +678,7 @@ Place p = (Place) current.get(dest.image);
       optlist = OptionList();
 for (PairValue pval : optlist.getList()) {
                         String label = pval.getLabel();
-                        ASTree value = pval.getValue();
+                        AST value = pval.getValue();
                         if (label.equals("multi")) {
                                 a.setMulti(value);
                         } else if (label.equals("firing")) {
@@ -706,7 +714,7 @@ Place p = (Place) current.get(src.image);
       optlist = OptionList();
 for (PairValue pval : optlist.getList()) {
                         String label = pval.getLabel();
-                        ASTree value = pval.getValue();
+                        AST value = pval.getValue();
                         if (label.equals("multi")) {
                                 a.setMulti(value);
                         } else {
@@ -730,7 +738,7 @@ optlist = new PairValueList();
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case 47:{
+      case 49:{
         ;
         break;
         }
@@ -738,7 +746,7 @@ optlist = new PairValueList();
         jj_la1[21] = jj_gen;
         break label_2;
       }
-      jj_consume_token(47);
+      jj_consume_token(49);
       val = OptionValue();
 optlist.add(val);
     }
@@ -747,15 +755,15 @@ optlist.add(val);
   }
 
   final public PairValue OptionValue() throws ParseException, ASTException {Token token;
-        ASTree val;
+        AST val;
     token = jj_consume_token(IDENTIFIER);
-    jj_consume_token(48);
+    jj_consume_token(50);
     val = Expression();
 {if ("" != null) return new PairValue(token.image, val);}
     throw new Error("Missing return statement in function");
   }
 
-  final public ASTree getASTree() throws ParseException, ASTException {ASTree val;
+  final public AST getAST() throws ParseException, ASTException {AST val;
     val = Expression();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case SEND:{
@@ -775,13 +783,14 @@ optlist.add(val);
     throw new Error("Missing return statement in function");
   }
 
-  final public void getASTTest() throws ParseException, ASTException {ASTree val;
+  final public void getASTTest() throws ParseException, ASTException {AST val;
     label_3:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case IFELSE:
       case REAL:
       case INTEGER:
+      case BOOLEAN:
       case STRING:
       case PLUS:
       case MINUS:
@@ -789,6 +798,7 @@ optlist.add(val);
       case IDENTIFIER:
       case GLOBAL_NTOKEN:
       case NTOKEN:
+      case ECOND:
       case OPEN:{
         ;
         break;
@@ -822,7 +832,7 @@ System.out.println(val.eval(current));
   }
 
 /////
-  final public ASTree Expression() throws ParseException, ASTException {ASTree val;
+  final public AST Expression() throws ParseException, ASTException {AST val;
     if (jj_2_1(2)) {
       val = AssignExpression();
     } else {
@@ -830,6 +840,7 @@ System.out.println(val.eval(current));
       case IFELSE:
       case REAL:
       case INTEGER:
+      case BOOLEAN:
       case STRING:
       case PLUS:
       case MINUS:
@@ -837,6 +848,7 @@ System.out.println(val.eval(current));
       case IDENTIFIER:
       case GLOBAL_NTOKEN:
       case NTOKEN:
+      case ECOND:
       case OPEN:{
         val = OrExpression();
         break;
@@ -851,19 +863,19 @@ System.out.println(val.eval(current));
     throw new Error("Missing return statement in function");
   }
 
-  final public ASTree AssignExpression() throws ParseException, ASTException {Token token;
-        ASTree val;
+  final public AST AssignExpression() throws ParseException, ASTException {Token token;
+        AST val;
     token = jj_consume_token(IDENTIFIER);
 
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case 49:{
-      jj_consume_token(49);
+    case 51:{
+      jj_consume_token(51);
       val = Expression();
 
       break;
       }
-    case 48:{
-      jj_consume_token(48);
+    case 50:{
+      jj_consume_token(50);
       val = Expression();
 
       break;
@@ -878,8 +890,8 @@ current.put(token.image, val);
     throw new Error("Missing return statement in function");
   }
 
-  final public ASTree OrExpression() throws ParseException, ASTException {ASTree val1;
-        ASTree val2;
+  final public AST OrExpression() throws ParseException, ASTException {AST val1;
+        AST val2;
     val1 = AndExpression();
     label_4:
     while (true) {
@@ -894,14 +906,14 @@ current.put(token.image, val);
       }
       jj_consume_token(OR);
       val2 = AndExpression();
-val1 = new ASTOr(val1, val2);
+val1 = new ASTLogical(val1, val2, "||");
     }
 {if ("" != null) return val1;}
     throw new Error("Missing return statement in function");
   }
 
-  final public ASTree AndExpression() throws ParseException, ASTException {ASTree val1;
-        ASTree val2;
+  final public AST AndExpression() throws ParseException, ASTException {AST val1;
+        AST val2;
     val1 = EqExpression();
     label_5:
     while (true) {
@@ -916,14 +928,14 @@ val1 = new ASTOr(val1, val2);
       }
       jj_consume_token(AND);
       val2 = EqExpression();
-val1 = new ASTAnd(val1, val2);
+val1 = new ASTLogical(val1, val2, "&&");
     }
 {if ("" != null) return val1;}
     throw new Error("Missing return statement in function");
   }
 
-  final public ASTree EqExpression() throws ParseException, ASTException {ASTree val1;
-        ASTree val2;
+  final public AST EqExpression() throws ParseException, ASTException {AST val1;
+        AST val2;
     val1 = CompareExpression();
     label_6:
     while (true) {
@@ -941,13 +953,13 @@ val1 = new ASTAnd(val1, val2);
       case EQ:{
         jj_consume_token(EQ);
         val2 = CompareExpression();
-val1 = new ASTEq(val1, val2);
+val1 = new ASTComparator(val1, val2, "==");
         break;
         }
       case NEQ:{
         jj_consume_token(NEQ);
         val2 = CompareExpression();
-val1 = new ASTNeq(val1, val2);
+val1 = new ASTComparator(val1, val2, "!=");
         break;
         }
       default:
@@ -960,8 +972,8 @@ val1 = new ASTNeq(val1, val2);
     throw new Error("Missing return statement in function");
   }
 
-  final public ASTree CompareExpression() throws ParseException, ASTException {ASTree val1;
-        ASTree val2;
+  final public AST CompareExpression() throws ParseException, ASTException {AST val1;
+        AST val2;
     val1 = TermExpression();
     label_7:
     while (true) {
@@ -981,25 +993,25 @@ val1 = new ASTNeq(val1, val2);
       case GT:{
         jj_consume_token(GT);
         val2 = TermExpression();
-val1 = new ASTGt(val1, val2);
+val1 = new ASTComparator(val1, val2, ">");
         break;
         }
       case GTE:{
         jj_consume_token(GTE);
         val2 = TermExpression();
-val1 = new ASTGte(val1, val2);
+val1 = new ASTComparator(val1, val2, ">=");
         break;
         }
       case LT:{
         jj_consume_token(LT);
         val2 = TermExpression();
-val1 = new ASTLt(val1, val2);
+val1 = new ASTComparator(val1, val2, "<");
         break;
         }
       case LTE:{
         jj_consume_token(LTE);
         val2 = TermExpression();
-val1 = new ASTLte(val1, val2);
+val1 = new ASTComparator(val1, val2, "<=");
         break;
         }
       default:
@@ -1012,8 +1024,8 @@ val1 = new ASTLte(val1, val2);
     throw new Error("Missing return statement in function");
   }
 
-  final public ASTree TermExpression() throws ParseException, ASTException {ASTree val1;
-        ASTree val2;
+  final public AST TermExpression() throws ParseException, ASTException {AST val1;
+        AST val2;
     val1 = MultiplyExpression();
     label_8:
     while (true) {
@@ -1031,13 +1043,13 @@ val1 = new ASTLte(val1, val2);
       case PLUS:{
         jj_consume_token(PLUS);
         val2 = MultiplyExpression();
-val1 = new ASTPlus(val1, val2);
+val1 = new ASTArithmetic(val1, val2, "+");
         break;
         }
       case MINUS:{
         jj_consume_token(MINUS);
         val2 = MultiplyExpression();
-val1 = new ASTMinus(val1, val2);
+val1 = new ASTArithmetic(val1, val2, "-");
         break;
         }
       default:
@@ -1050,8 +1062,8 @@ val1 = new ASTMinus(val1, val2);
     throw new Error("Missing return statement in function");
   }
 
-  final public ASTree MultiplyExpression() throws ParseException, ASTException {ASTree val1;
-        ASTree val2;
+  final public AST MultiplyExpression() throws ParseException, ASTException {AST val1;
+        AST val2;
     val1 = Factor();
     label_9:
     while (true) {
@@ -1070,19 +1082,19 @@ val1 = new ASTMinus(val1, val2);
       case MULTIPLY:{
         jj_consume_token(MULTIPLY);
         val2 = Factor();
-val1 = new ASTMulti(val1, val2);
+val1 = new ASTArithmetic(val1, val2, "*");
         break;
         }
       case DIVIDE:{
         jj_consume_token(DIVIDE);
         val2 = Factor();
-val1 = new ASTDivide(val1, val2);
+val1 = new ASTArithmetic(val1, val2, "/");
         break;
         }
       case MOD:{
         jj_consume_token(MOD);
         val2 = Factor();
-val1 = new ASTMod(val1, val2);
+val1 = new ASTArithmetic(val1, val2, "%");
         break;
         }
       default:
@@ -1095,15 +1107,17 @@ val1 = new ASTMod(val1, val2);
     throw new Error("Missing return statement in function");
   }
 
-  final public ASTree Factor() throws ParseException, ASTException {ASTree val1;
+  final public AST Factor() throws ParseException, ASTException {AST val1;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case IFELSE:
     case REAL:
     case INTEGER:
+    case BOOLEAN:
     case STRING:
     case IDENTIFIER:
     case GLOBAL_NTOKEN:
     case NTOKEN:
+    case ECOND:
     case OPEN:{
       val1 = PrimaryExpression();
 {if ("" != null) return val1;}
@@ -1112,7 +1126,7 @@ val1 = new ASTMod(val1, val2);
     case NOT:{
       jj_consume_token(NOT);
       val1 = PrimaryExpression();
-{if ("" != null) return new ASTNot(val1);}
+{if ("" != null) return new ASTUnary(val1, "!");}
       break;
       }
     case PLUS:{
@@ -1124,7 +1138,7 @@ val1 = new ASTMod(val1, val2);
     case MINUS:{
       jj_consume_token(MINUS);
       val1 = PrimaryExpression();
-{if ("" != null) return new ASTUnaryMinus(val1);}
+{if ("" != null) return new ASTUnary(val1, "-");}
       break;
       }
     default:
@@ -1135,7 +1149,7 @@ val1 = new ASTMod(val1, val2);
     throw new Error("Missing return statement in function");
   }
 
-  final public ASTree PrimaryExpression() throws ParseException, ASTException {ASTree val1, val2, val3;
+  final public AST PrimaryExpression() throws ParseException, ASTException {AST val1, val2, val3;
         Token token;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case INTEGER:{
@@ -1146,6 +1160,11 @@ val1 = new ASTMod(val1, val2);
     case REAL:{
       token = jj_consume_token(REAL);
 {if ("" != null) return new ASTValue(Double.parseDouble(token.image));}
+      break;
+      }
+    case BOOLEAN:{
+      token = jj_consume_token(BOOLEAN);
+{if ("" != null) return new ASTValue(Boolean.parseBoolean(token.image));}
       break;
       }
     case STRING:{
@@ -1165,6 +1184,12 @@ val1 = new ASTMod(val1, val2);
 {if ("" != null) return new ASTNumOfToken((Place) global.get(token.image));}
       break;
       }
+    case ECOND:{
+      jj_consume_token(ECOND);
+      token = jj_consume_token(IDENTIFIER);
+{if ("" != null) return new ASTEnableCond((Trans) current.get(token.image));}
+      break;
+      }
     case IDENTIFIER:{
       token = jj_consume_token(IDENTIFIER);
 {if ("" != null) return new ASTVariable(token.image);}
@@ -1174,12 +1199,12 @@ val1 = new ASTMod(val1, val2);
       jj_consume_token(IFELSE);
       jj_consume_token(OPEN);
       val1 = Expression();
-      jj_consume_token(47);
+      jj_consume_token(49);
       val2 = Expression();
-      jj_consume_token(47);
+      jj_consume_token(49);
       val3 = Expression();
       jj_consume_token(CLOSE);
-{if ("" != null) return new ASTIfThenElse(val1, val2, val3);}
+{if ("" != null) return new ASTTernary(val1, val2, val3, "ite");}
       break;
       }
     case OPEN:{
@@ -1205,15 +1230,9 @@ val1 = new ASTMod(val1, val2);
     finally { jj_save(0, xla); }
   }
 
-  private boolean jj_3R_12()
- {
-    if (jj_scan_token(48)) return true;
-    return false;
-  }
-
   private boolean jj_3R_11()
  {
-    if (jj_scan_token(49)) return true;
+    if (jj_scan_token(51)) return true;
     return false;
   }
 
@@ -1232,6 +1251,12 @@ val1 = new ASTMod(val1, val2);
     jj_scanpos = xsp;
     if (jj_3R_12()) return true;
     }
+    return false;
+  }
+
+  private boolean jj_3R_12()
+ {
+    if (jj_scan_token(50)) return true;
     return false;
   }
 
@@ -1254,10 +1279,10 @@ val1 = new ASTMod(val1, val2);
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0xfd5ffc0,0xf95ffc0,0x400000,0x0,0xf95ffc0,0xf95ffc0,0x400000,0x0,0x0,0x4ffc0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0xf810000,0x1,0xf810000,0x0,0x80000000,0x0,0x0,0x0,0x0,0x0,0xc000000,0xc000000,0x70000000,0x70000000,0xf810000,0x3810000,};
+      jj_la1_0 = new int[] {0x1fd5ffc0,0x1f95ffc0,0x400000,0x0,0x1f95ffc0,0x1f95ffc0,0x400000,0x0,0x0,0x4ffc0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x1f810000,0x1,0x1f810000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x18000000,0x18000000,0xe0000000,0xe0000000,0x1f810000,0x7810000,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x6f02,0xf02,0x0,0x6000,0xf02,0xf02,0x0,0x6000,0x6000,0x0,0x2000,0x800,0x800,0x800,0x800,0x800,0x800,0x800,0x800,0x800,0x800,0x8000,0x4000,0xf02,0x6000,0xf02,0x30000,0x0,0x1,0xc,0xc,0xf0,0xf0,0x0,0x0,0x0,0x0,0xf02,0xf00,};
+      jj_la1_1 = new int[] {0x1be04,0x3e04,0x0,0x18000,0x3e04,0x3e04,0x0,0x18000,0x18000,0x0,0x8000,0x2000,0x2000,0x2000,0x2000,0x2000,0x2000,0x2000,0x2000,0x2000,0x2000,0x20000,0x10000,0x3e04,0x18000,0x3e04,0xc0000,0x1,0x2,0x18,0x18,0x1e0,0x1e0,0x0,0x0,0x0,0x0,0x3e04,0x3e00,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[1];
   private boolean jj_rescan = false;
@@ -1444,7 +1469,7 @@ val1 = new ASTMod(val1, val2);
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[50];
+    boolean[] la1tokens = new boolean[52];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -1461,7 +1486,7 @@ val1 = new ASTMod(val1, val2);
         }
       }
     }
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 52; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

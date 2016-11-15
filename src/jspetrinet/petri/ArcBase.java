@@ -1,22 +1,22 @@
 package jspetrinet.petri;
 
 import jspetrinet.ast.ASTEnv;
-import jspetrinet.ast.ASTree;
+import jspetrinet.ast.AST;
 import jspetrinet.exception.ASTException;
 import jspetrinet.exception.TypeMismatch;
 import jspetrinet.graph.Arc;
 
 abstract public class ArcBase extends Arc {
 
-	private ASTree multi;
-	private ASTree firingFunc;
+	private AST multi;
+	private AST firingFunc;
 	
-	public ArcBase(Place src, Trans dest, ASTree multi) {
+	public ArcBase(Place src, Trans dest, AST multi) {
 		super(src, dest);
 		this.multi = multi;
 	}
 
-	public ArcBase(Trans src, Place dest, ASTree multi) {
+	public ArcBase(Trans src, Place dest, AST multi) {
 		super(src, dest);
 		this.multi = multi;
 	}
@@ -33,15 +33,15 @@ abstract public class ArcBase extends Arc {
 		}
 	}
 	
-	public final void setMulti(ASTree multi) {
+	public final void setMulti(AST multi) {
 		this.multi = multi;
 	}
 	
-	public final ASTree getFiring() {
+	public final AST getFiring() {
 		return firingFunc;
 	}
 
-	public final void setFiring(ASTree firingFunc) {
+	public final void setFiring(AST firingFunc) {
 		this.firingFunc = firingFunc;
 	}
 

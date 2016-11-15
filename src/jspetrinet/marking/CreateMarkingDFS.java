@@ -19,8 +19,14 @@ public class CreateMarkingDFS implements CreateMarking {
 	
 	private List<Trans> sortedImmTrans;
 	
+	private List<Trans> expTransSet;
+	
 	public CreateMarkingDFS(MarkingGraph markGraph) {
 		this.markGraph = markGraph;
+	}
+	
+	public void setGenTransSet(List<Trans> genTransSet) {
+		this.expTransSet = genTransSet;
 	}
 	
 	@Override
@@ -41,13 +47,17 @@ public class CreateMarkingDFS implements CreateMarking {
 		while (!novisited.isEmpty()) {
 			Mark m = novisited.pop();
 			net.setCurrentMark(m);
+
+//			System.out.println("visit G : " + JSPetriNet.markToString(net, m));
+
 			if (markGraph.containtsMark(m)) {
+//				System.out.println("   skip visited : " + JSPetriNet.markToString(net, m));
 				continue;
 			}
 			markGraph.addMark(m);
 
 			// make genvec
-			GenVec genv = new GenVec(net.getGenTransSet().size());
+			GenVec genv = new GenVec(net);
 			for (Trans tr : net.getGenTransSet()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:
@@ -55,6 +65,14 @@ public class CreateMarkingDFS implements CreateMarking {
 					break;
 				case PREEMPTION:
 					genv.set(tr.getIndex(), 2);
+					break;
+				default:
+				}
+			}
+			for (Trans tr : expTransSet) {
+				switch (PetriAnalysis.isEnable(net, tr)) {
+				case ENABLE:
+					genv.set(tr.getIndex(), 1);
 					break;
 				default:
 				}

@@ -60,7 +60,7 @@ public class CreateMarkingBFS implements CreateMarking {
 			net.setCurrentMark(m);
 
 			// make genvec
-			GenVec genv = new GenVec(net.getGenTransSet().size());
+			GenVec genv = new GenVec(net);
 			for (Trans tr : net.getGenTransSet()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:
@@ -127,13 +127,13 @@ public class CreateMarkingBFS implements CreateMarking {
 				}
 			}
 			
-			System.out.println("-------");
+//			System.out.println("-------");
 			for (Trans tr : net.getExpTransSet()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					Mark dest = PetriAnalysis.doFiring(net, tr);
-					System.out.println(tr.getLabel());
-					System.out.println("dest " + JSPetriNet.markToString(net, dest));
+//					System.out.println(tr.getLabel());
+//					System.out.println("dest " + JSPetriNet.markToString(net, dest));
 					if (createdMarks.containsKey(dest)) {
 						dest = createdMarks.get(dest);
 					} else {

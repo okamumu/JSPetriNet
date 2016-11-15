@@ -55,6 +55,7 @@ TOKEN: {
 	| <COMMENT: "//" (~["\n", "\r"])*>
 	| <REAL: (["0"-"9"])*"."(["0"-"9"])+(["e","E"])?(["+","-"])?(["0"-"9"])*>
 	| <INTEGER: (["0"-"9"])+>
+  | <BOOLEAN: "true" | "false" | "True" | "False" | "TRUE" | "FALSE" >
 	| <STRING: "\""(~["\""])+"\"">
 	| <PLUS: "+">
 	| <MINUS: "-">
@@ -73,6 +74,7 @@ TOKEN: {
 	| <IDENTIFIER: ["A"-"Z", "a"-"z", "_"](["0"-"9", "A"-"Z", "a"-"z", "_", "."])*>
 	| <GLOBAL_NTOKEN: "##">
 	| <NTOKEN: "#">
+  | <ECOND: "?">
 	| <OPEN: "(">
 	| <CLOSE: ")">
 	| <NL: "\r\n" | "\n" | "\r">
@@ -177,7 +179,7 @@ void ExpTransDeclaration() throws ASTException: {
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
-			ASTree value = pval.getValue();
+			AST value = pval.getValue();
 			if (label.equals("rate")) {
 				current.put(token.image + ".rate", value);
 			} else if (label.equals("guard")) {
@@ -201,11 +203,11 @@ void ImmTransDeclaration() throws ASTException: {
 		tr.setGuard(new ASTVariable(token.image + ".guard"));
 		current.put(token.image + ".guard", new ASTValue(true));
     tr.setPriority(0);
-    tr.setVanishable(true);
+    tr.setVanishable(false);
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
-			ASTree value = pval.getValue();
+			AST value = pval.getValue();
 			if (label.equals("weight")) {
 				current.put(token.image + ".weight", value);
 			} else if (label.equals("guard")) {
@@ -242,7 +244,7 @@ void GenTransDeclaration() throws ASTException: {
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
-			ASTree value = pval.getValue();
+			AST value = pval.getValue();
 			GenTrans tr = (GenTrans) current.get(token.image);
 			if (label.equals("dist")) {
 				current.put(token.image + ".dist", value);
@@ -280,7 +282,7 @@ void GenConstTransDeclaration() throws ASTException: {
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
-			ASTree value = pval.getValue();
+			AST value = pval.getValue();
 			GenTrans tr = (GenTrans) current.get(token.image);
 			ConstDist dist = (ConstDist) current.get(token.image + ".dist");
 			if (label.equals("value")) {
@@ -319,7 +321,7 @@ void GenUnifTransDeclaration() throws ASTException: {
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
-			ASTree value = pval.getValue();
+			AST value = pval.getValue();
 			GenTrans tr = (GenTrans) current.get(token.image);
 			UnifDist dist = (UnifDist) current.get(token.image + ".dist");
 			if (label.equals("lower")) {
@@ -378,7 +380,7 @@ void ArcDeclaration() throws ASTException: {
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
-			ASTree value = pval.getValue();
+			AST value = pval.getValue();
 			if (label.equals("multi")) {
 				a.setMulti(value);
 			} else if (label.equals("firing")) {
@@ -404,7 +406,7 @@ void IArcDeclaration() throws ASTException: {
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
-			ASTree value = pval.getValue();
+			AST value = pval.getValue();
 			if (label.equals("multi")) {
 				a.setMulti(value);
 			} else if (label.equals("firing")) {
@@ -430,7 +432,7 @@ void OArcDeclaration() throws ASTException: {
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
-			ASTree value = pval.getValue();
+			AST value = pval.getValue();
 			if (label.equals("multi")) {
 				a.setMulti(value);
 			} else if (label.equals("firing")) {
@@ -456,7 +458,7 @@ void HArcDeclaration() throws ASTException: {
 	} ("(" optlist = OptionList() {
 		for (PairValue pval : optlist.getList()) {
 			String label = pval.getLabel();
-			ASTree value = pval.getValue();
+			AST value = pval.getValue();
 			if (label.equals("multi")) {
 				a.setMulti(value);
 			} else {
@@ -483,7 +485,7 @@ PairValueList OptionList() throws ASTException: {
 
 PairValue OptionValue() throws ASTException: {
 	Token token;
-	ASTree val;
+	AST val;
 }{
 	token = <IDENTIFIER>
 	"="
@@ -492,8 +494,8 @@ PairValue OptionValue() throws ASTException: {
 	}
 }
 
-ASTree getASTree() throws ASTException: {
-	ASTree val;
+AST getAST() throws ASTException: {
+	AST val;
 } {
 	val = Expression() (<SEND> | <EOF>) {
 		return val;
@@ -501,7 +503,7 @@ ASTree getASTree() throws ASTException: {
 }
 
 void getASTTest() throws ASTException: {
-	ASTree val;
+	AST val;
 } {
 	(val = Expression() {
 		System.out.println(val.eval(current));
@@ -509,8 +511,8 @@ void getASTTest() throws ASTException: {
 }
 
 /////
-ASTree Expression() throws ASTException: {
-	ASTree val;
+AST Expression() throws ASTException: {
+	AST val;
 } {
 	(LOOKAHEAD(2) val = AssignExpression()
 	| val = OrExpression()) {
@@ -518,9 +520,9 @@ ASTree Expression() throws ASTException: {
 	}
 }
 
-ASTree AssignExpression() throws ASTException: {
+AST AssignExpression() throws ASTException: {
 	Token token;
-	ASTree val;
+	AST val;
 } {
 	token = <IDENTIFIER> { }
 	(":=" val = Expression() { }
@@ -543,124 +545,124 @@ ASTree AssignExpression() throws ASTException: {
 	}
 }
 
-ASTree OrExpression() throws ASTException: {
-	ASTree val1;
-	ASTree val2;
+AST OrExpression() throws ASTException: {
+	AST val1;
+	AST val2;
 } {
 	val1 = AndExpression() (
 		<OR> val2 = AndExpression() {
-			val1 = new ASTOr(val1, val2);
+			val1 = new ASTLogical(val1, val2, "||");
 		}
 	)* {
 		return val1;
 	}
 }
 
-ASTree AndExpression() throws ASTException: {
-	ASTree val1;
-	ASTree val2;
+AST AndExpression() throws ASTException: {
+	AST val1;
+	AST val2;
 } {
 	val1 = EqExpression() (
 		<AND> val2 = EqExpression() {
-			val1 = new ASTAnd(val1, val2);
+			val1 = new ASTLogical(val1, val2, "&&");
 		}
 	)* {
 		return val1;
 	}
 }
 
-ASTree EqExpression() throws ASTException: {
-	ASTree val1;
-	ASTree val2;
+AST EqExpression() throws ASTException: {
+	AST val1;
+	AST val2;
 } {
 	val1 = CompareExpression() (
 		<EQ> val2 = CompareExpression() {
-			val1 = new ASTEq(val1, val2);
+			val1 = new ASTComparator(val1, val2, "==");
 		}
 		| <NEQ> val2 = CompareExpression() {
-			val1 = new ASTNeq(val1, val2);
+			val1 = new ASTComparator(val1, val2, "!=");
 		}
 	)* {
 		return val1;
 	}
 }
 
-ASTree CompareExpression() throws ASTException: {
-	ASTree val1;
-	ASTree val2;
+AST CompareExpression() throws ASTException: {
+	AST val1;
+	AST val2;
 } {
 	val1 = TermExpression() (
 		<GT> val2 = TermExpression() {
-			val1 = new ASTGt(val1, val2);
+			val1 = new ASTComparator(val1, val2, ">");
 		}
 		| <GTE> val2 = TermExpression() {
-			val1 = new ASTGte(val1, val2);
+			val1 = new ASTComparator(val1, val2, ">=");
 		}
 		| <LT> val2 = TermExpression() {
-			val1 = new ASTLt(val1, val2);
+			val1 = new ASTComparator(val1, val2, "<");
 		}
 		| <LTE> val2 = TermExpression() {
-			val1 = new ASTLte(val1, val2);
+			val1 = new ASTComparator(val1, val2, "<=");
 		}
 	)* {
 		return val1;
 	}
 }
 
-ASTree TermExpression() throws ASTException: {
-	ASTree val1;
-	ASTree val2;
+AST TermExpression() throws ASTException: {
+	AST val1;
+	AST val2;
 } {
 	val1 = MultiplyExpression() (
 		<PLUS> val2 = MultiplyExpression() {
-			val1 = new ASTPlus(val1, val2);
+			val1 = new ASTArithmetic(val1, val2, "+");
 		}
 		| <MINUS> val2 = MultiplyExpression() {
-			val1 = new ASTMinus(val1, val2);
+			val1 = new ASTArithmetic(val1, val2, "-");
 		}
 	)* {
 		return val1;
 	}
 }
 
-ASTree MultiplyExpression() throws ASTException: {
-	ASTree val1;
-	ASTree val2;
+AST MultiplyExpression() throws ASTException: {
+	AST val1;
+	AST val2;
 } {
 	val1 = Factor() (
 		<MULTIPLY> val2 = Factor() {
-			val1 = new ASTMulti(val1, val2);
+			val1 = new ASTArithmetic(val1, val2, "*");
 		}
 		| <DIVIDE> val2 = Factor() {
-			val1 = new ASTDivide(val1, val2);
+			val1 = new ASTArithmetic(val1, val2, "/");
 		}
 		| <MOD> val2 = Factor() {
-			val1 = new ASTMod(val1, val2);
+			val1 = new ASTArithmetic(val1, val2, "%");
 		}
 	)* {
 		return val1;
 	}
 }
 
-ASTree Factor() throws ASTException: {
-	ASTree val1;
+AST Factor() throws ASTException: {
+	AST val1;
 } {
 	val1 = PrimaryExpression() {
 		return val1;
 	}
 	| <NOT> val1 = PrimaryExpression() {
-		return new ASTNot(val1);
+		return new ASTUnary(val1, "!");
 	}
 	| <PLUS> val1 = PrimaryExpression() {
 		return val1;
 	}
 	| <MINUS> val1 = PrimaryExpression() {
-		return new ASTUnaryMinus(val1);
+		return new ASTUnary(val1, "-");
 	}
 }
 
-ASTree PrimaryExpression() throws ASTException: {
-	ASTree val1, val2, val3;
+AST PrimaryExpression() throws ASTException: {
+	AST val1, val2, val3;
 	Token token;
 } {
 	token = <INTEGER> {
@@ -668,6 +670,9 @@ ASTree PrimaryExpression() throws ASTException: {
 	}
 	| token = <REAL> {
 		return new ASTValue(Double.parseDouble(token.image));
+	}
+  | token = <BOOLEAN> {
+		return new ASTValue(Boolean.parseBoolean(token.image));
 	}
 	| token = <STRING> {
 		return new ASTValue(token.image);
@@ -678,11 +683,14 @@ ASTree PrimaryExpression() throws ASTException: {
 	| <GLOBAL_NTOKEN> token = <IDENTIFIER> {
 		return new ASTNumOfToken((Place) global.get(token.image));
 	}
+  | <ECOND> token = <IDENTIFIER> {
+		return new ASTEnableCond((Trans) current.get(token.image));
+	}
 	| token = <IDENTIFIER> {
 		return new ASTVariable(token.image);
 	}
 	| (<IFELSE> "(" val1 = Expression() "," val2 = Expression() "," val3 = Expression() ")") {
-		return new ASTIfThenElse(val1, val2, val3);
+		return new ASTTernary(val1, val2, val3, "ite");
 	}
 	| (<OPEN> val1 = Expression() <CLOSE>) {
 		return val1;

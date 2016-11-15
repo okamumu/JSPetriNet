@@ -1,11 +1,11 @@
 package jspetrinet.dist;
 
 import jspetrinet.ast.ASTEnv;
-import jspetrinet.ast.ASTree;
+import jspetrinet.ast.AST;
 import jspetrinet.exception.ASTException;
 import jspetrinet.sim.Random;
 
-abstract public class Dist extends ASTree {
+abstract public class Dist extends AST {
 	
 	@Override
 	public final Object eval(ASTEnv env) throws ASTException {

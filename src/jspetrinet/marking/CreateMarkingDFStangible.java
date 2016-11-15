@@ -13,6 +13,7 @@ import jspetrinet.exception.ASTException;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.PriorityComparator;
 import jspetrinet.petri.Trans;
+import jspetrinet.petri.ImmTrans;
 
 final class MarkMarkTrans {
 	private final Mark src;
@@ -41,9 +42,10 @@ final class MarkMarkTrans {
 public class CreateMarkingDFStangible implements CreateMarking {
 	
 	private final MarkingGraph markGraph;
+	private final List<Trans> expTransSet;
+	
 	private Map<Mark,Mark> createdMarks;
 	
-	private Set<Mark> vanishingMarks;
 	private Set<Mark> tangibleMarks;
 	
 	private List<Trans> sortedImmTrans;
@@ -53,25 +55,27 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	
 	private LinkedList<MarkMarkTrans> arcList;
 
-	public CreateMarkingDFStangible(MarkingGraph markGraph) {
+	private PriorityComparator transComparator;
+	
+	public CreateMarkingDFStangible(MarkingGraph markGraph, List<Trans> genTransSet) {
 		this.markGraph = markGraph;
+		this.expTransSet = genTransSet;
 	}
 	
 	@Override
 	public Mark create(Mark init, Net net) throws ASTException {
 		createdMarks = new HashMap<Mark,Mark>();
 
-		vanishingMarks = new HashSet<Mark>();
 		tangibleMarks = new HashSet<Mark>();
-
 		exitSet = new HashMap<Mark,Mark>();
 		vanishedIMMList = new LinkedList<Mark>();
 		
 		arcList = new LinkedList<MarkMarkTrans>();
 
 		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
-		sortedImmTrans.sort(new PriorityComparator());
-
+		transComparator = new PriorityComparator();
+		sortedImmTrans.sort(transComparator);
+		
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
 		createdMarks.put(init, init);
 		novisited.push(init);
@@ -114,7 +118,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 			}
 
 			// make genvec
-			GenVec genv = new GenVec(net.getGenTransSet().size());
+			GenVec genv = new GenVec(net);
 			for (Trans tr : net.getGenTransSet()) {
 				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 				case ENABLE:
@@ -126,21 +130,42 @@ public class CreateMarkingDFStangible implements CreateMarking {
 				default:
 				}
 			}
-
-			// checkEnabled IMM
-			List<Trans> enabledIMMList = new ArrayList<Trans>();
-			int highestPriority = 0;
-			for (Trans tr : sortedImmTrans) {
-				if (highestPriority > tr.getPriority()) {
+			for (Trans tr : expTransSet) {
+				switch (PetriAnalysis.isEnable(net, tr)) {
+				case ENABLE:
+					genv.set(tr.getIndex(), 1);
 					break;
-				}
-				if (PetriAnalysis.isEnable(net, tr) == TransStatus.ENABLE) {
-					highestPriority = tr.getPriority();
-					enabledIMMList.add(tr);
+				default:
 				}
 			}
-			
-			if (enabledIMMList.size() == 1) {
+
+			// checkEnabled IMM
+			boolean hasNonVanishing = false;
+			boolean canVanishing = false;
+			List<Trans> enabledIMMList = new ArrayList<Trans>();
+			int highestPriority = 0;
+			for (Trans t : sortedImmTrans) {
+				ImmTrans tr = (ImmTrans) t;
+				if (highestPriority > tr.getPriority() || canVanishing) {
+					break;
+				}
+				switch (PetriAnalysis.isEnable(net, tr)) {
+				case ENABLE:
+					highestPriority = tr.getPriority();
+					enabledIMMList.add(tr);
+					if (hasNonVanishing == false) {
+						if (tr.canVanishing()) {
+							canVanishing = true;
+						} else {
+							hasNonVanishing = true;
+						}
+					}
+					break;
+				default:
+				}
+			}
+
+			if (canVanishing) {
 				// vanishing
 				Trans tr = enabledIMMList.get(0);
 				Mark dest = PetriAnalysis.doFiring(net, tr);
@@ -165,10 +190,10 @@ public class CreateMarkingDFStangible implements CreateMarking {
 			}
 
 			if (enabledIMMList.size() >= 1) {
-				if (!markGraph.getImmGroup().containsKey(genv)) {
-					markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
-				}
 				if (enabledIMMList.size() >= 2) {
+					if (!markGraph.getImmGroup().containsKey(genv)) {
+						markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
+					}
 					markGraph.addMark(m);
 					markGraph.getImmGroup().get(genv).add(m);
 				}

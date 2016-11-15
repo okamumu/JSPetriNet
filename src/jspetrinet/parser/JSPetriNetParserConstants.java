@@ -49,49 +49,53 @@ public interface JSPetriNetParserConstants {
   /** RegularExpression Id. */
   int INTEGER = 24;
   /** RegularExpression Id. */
-  int STRING = 25;
+  int BOOLEAN = 25;
   /** RegularExpression Id. */
-  int PLUS = 26;
+  int STRING = 26;
   /** RegularExpression Id. */
-  int MINUS = 27;
+  int PLUS = 27;
   /** RegularExpression Id. */
-  int MULTIPLY = 28;
+  int MINUS = 28;
   /** RegularExpression Id. */
-  int DIVIDE = 29;
+  int MULTIPLY = 29;
   /** RegularExpression Id. */
-  int MOD = 30;
+  int DIVIDE = 30;
   /** RegularExpression Id. */
-  int OR = 31;
+  int MOD = 31;
   /** RegularExpression Id. */
-  int AND = 32;
+  int OR = 32;
   /** RegularExpression Id. */
-  int NOT = 33;
+  int AND = 33;
   /** RegularExpression Id. */
-  int EQ = 34;
+  int NOT = 34;
   /** RegularExpression Id. */
-  int NEQ = 35;
+  int EQ = 35;
   /** RegularExpression Id. */
-  int GT = 36;
+  int NEQ = 36;
   /** RegularExpression Id. */
-  int LT = 37;
+  int GT = 37;
   /** RegularExpression Id. */
-  int GTE = 38;
+  int LT = 38;
   /** RegularExpression Id. */
-  int LTE = 39;
+  int GTE = 39;
   /** RegularExpression Id. */
-  int IDENTIFIER = 40;
+  int LTE = 40;
   /** RegularExpression Id. */
-  int GLOBAL_NTOKEN = 41;
+  int IDENTIFIER = 41;
   /** RegularExpression Id. */
-  int NTOKEN = 42;
+  int GLOBAL_NTOKEN = 42;
   /** RegularExpression Id. */
-  int OPEN = 43;
+  int NTOKEN = 43;
   /** RegularExpression Id. */
-  int CLOSE = 44;
+  int ECOND = 44;
   /** RegularExpression Id. */
-  int NL = 45;
+  int OPEN = 45;
   /** RegularExpression Id. */
-  int SEND = 46;
+  int CLOSE = 46;
+  /** RegularExpression Id. */
+  int NL = 47;
+  /** RegularExpression Id. */
+  int SEND = 48;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -125,6 +129,7 @@ public interface JSPetriNetParserConstants {
     "<COMMENT>",
     "<REAL>",
     "<INTEGER>",
+    "<BOOLEAN>",
     "<STRING>",
     "\"+\"",
     "\"-\"",
@@ -143,6 +148,7 @@ public interface JSPetriNetParserConstants {
     "<IDENTIFIER>",
     "\"##\"",
     "\"#\"",
+    "\"?\"",
     "\"(\"",
     "\")\"",
     "<NL>",

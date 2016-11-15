@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jspetrinet.ast.*;
 import jspetrinet.exception.ASTException;
 import jspetrinet.graph.Arc;
 import jspetrinet.marking.GenVec;
@@ -110,6 +111,7 @@ public class MarkingMatrix {
 		return revMarkGroupIndex.get(mg);
 	}
 
+	// create group graph
 	public void makeArcI(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
 		for (Mark src: srcMarkGroup.getMarkSet()) {
 			for (Arc arc: src.getOutArc()) {
@@ -122,6 +124,7 @@ public class MarkingMatrix {
 		}
 	}
 
+	// create group graph
 	public void makeArcE(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
 		for (Mark src: srcMarkGroup.getMarkSet()) {
 			for (Arc arc: src.getOutArc()) {
@@ -137,6 +140,7 @@ public class MarkingMatrix {
 		}
 	}
 
+	// create group graph
 	public void makeArcG(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
 		Set<Trans> mm = new HashSet<Trans>();
 		for (Mark src: srcMarkGroup.getMarkSet()) {
@@ -202,6 +206,55 @@ public class MarkingMatrix {
 							System.err.println("Fail to get rate: " + tr.getLabel());
 						}
 						resultE.add(elem);
+					} else if (markingArc.getTrans() instanceof GenTrans) {
+						elem.add(revMarkIndex.get(src));
+						elem.add(revMarkIndex.get(dest));
+						GenTrans tr = (GenTrans) markingArc.getTrans();
+						try {
+							elem.add(tr.getDist().eval(net));
+						} catch (ASTException e) {
+							System.err.println("Fail to get dist: " + tr.getLabel());
+						}
+						if (!result.containsKey(tr)) {
+							result.put(tr, new ArrayList<List<Object>>());
+						}
+						result.get(tr).add(elem);
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	public Map<Trans,List<List<Object>>> getMatrixG(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup, Map<Mark,AST> diag) {
+		Map<Trans,List<List<Object>>> result = new HashMap<Trans,List<List<Object>>>();
+		List<List<Object>> resultE = new ArrayList<List<Object>>();
+		result.put(null, resultE);
+		for (Mark src: srcMarkGroup.getMarkSet()) {
+			net.setCurrentMark(src);
+			for (Arc arc: src.getOutArc()) {
+				Mark dest = (Mark) arc.getDest();
+				if (destMarkGroup.getMarkSet().contains(dest)) {
+					List<Object> elem = new ArrayList<Object>();
+					MarkingArc markingArc = (MarkingArc) arc;
+					if (markingArc.getTrans() instanceof ExpTrans) {
+						elem.add(revMarkIndex.get(src));
+						elem.add(revMarkIndex.get(dest));
+						ExpTrans tr = (ExpTrans) markingArc.getTrans();
+						try {
+							elem.add(tr.getRate().eval(net));
+						} catch (ASTException e) {
+							System.err.println("Fail to get rate: " + tr.getLabel());
+						}
+						resultE.add(elem);
+						
+						// make diag
+						if (!diag.containsKey(src)) {
+							diag.put(src, new ASTUnary(tr.getRate(), "-"));
+						} else {
+							diag.put(src, new ASTArithmetic(diag.get(src), tr.getRate(), "-"));
+						}
+
 					} else if (markingArc.getTrans() instanceof GenTrans) {
 						elem.add(revMarkIndex.get(src));
 						elem.add(revMarkIndex.get(dest));

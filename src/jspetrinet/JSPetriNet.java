@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -44,14 +45,17 @@ public class JSPetriNet {
 		}
 		return m;
 	}
-
-	public static MarkingGraph marking(PrintWriter pw, Net net, Mark m, int depth, boolean tangible) throws ASTException {
+	
+	public static MarkingGraph marking(PrintWriter pw, Net net, Mark m, int depth, boolean tangible, List<Trans> expTransSet) throws ASTException {
 		MarkingGraph mp = new MarkingGraph();
 		if (depth == 0) {
 			if (tangible) {
-				mp.setCreateMarking(new CreateMarkingDFStangible(mp));
+				mp.setCreateMarking(new CreateMarkingDFStangible4(mp, expTransSet));
 			} else {
-				mp.setCreateMarking(new CreateMarkingDFS(mp));
+//				CreateMarkingDFS cmdt = new CreateMarkingDFS(mp);
+//				cmdt.setGenTransSet(expTransSet);
+//				mp.setCreateMarking(cmdt);
+				mp.setCreateMarking(new CreateMarkingDFStangible3(mp, expTransSet));
 			}
 		} else {
 			mp.setCreateMarking(new CreateMarkingBFS(mp, depth));
@@ -84,7 +88,7 @@ public class JSPetriNet {
 	public static String genvecToString(Net net, GenVec genv) {
 		String result = "(";
 		for (Trans t: net.getGenTransSet()) {
-			switch(genv.get(t.getIndex())) {
+			switch(genv.get(net.getExpTransSet().size() + t.getIndex())) {
 			case 0:
 //				if (!result.equals("(")) {
 //					result += " ";
@@ -102,6 +106,20 @@ public class JSPetriNet {
 					result += " ";
 				}
 				result += t.getLabel() + "->preemption";
+				break;
+			default:
+				break;
+			}
+		}
+		for (Trans t: net.getExpTransSet()) {
+			switch(genv.get(t.getIndex())) {
+			case 0:
+				break;
+			case 1:
+				if (!result.equals("(")) {
+					result += " ";
+				}
+				result += t.getLabel() + "->enable";
 				break;
 			default:
 				break;
