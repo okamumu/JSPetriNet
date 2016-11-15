@@ -395,7 +395,7 @@ tr = current.createImmTrans(token.image,
                 tr.setGuard(new ASTVariable(token.image + ".guard"));
                 current.put(token.image + ".guard", new ASTValue(true));
     tr.setPriority(0);
-    tr.setVanishable(false);
+    tr.setVanishable(true);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case OPEN:{
       jj_consume_token(OPEN);

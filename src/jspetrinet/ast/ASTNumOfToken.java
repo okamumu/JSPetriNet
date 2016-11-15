@@ -16,6 +16,10 @@ public class ASTNumOfToken extends AST {
 	
 	@Override
 	public Object eval(ASTEnv env) {
-		return env.getCurrentMark().get(place.getIndex());
+		if (env.getCurrentMark() == null) {
+			return "#" + place.getLabel();
+		} else {
+			return env.getCurrentMark().get(place.getIndex());
+		}
 	}
 }

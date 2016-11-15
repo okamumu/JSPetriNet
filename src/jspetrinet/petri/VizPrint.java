@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
+import jspetrinet.exception.ASTException;
 import jspetrinet.graph.Arc;
 import jspetrinet.graph.Component;
 import jspetrinet.graph.Visitor;
@@ -21,6 +22,7 @@ public class VizPrint implements Visitor {
 		hash = new HashSet<Component>();
 		allnodes = new LinkedList<Component>();
 		this.net = net;
+		net.setCurrentMark(null);
 	}
 	
 	public void toviz(PrintWriter bw) {
@@ -55,7 +57,12 @@ public class VizPrint implements Visitor {
 			}
 		} else if (component instanceof ExpTrans) {
 			ExpTrans c =  (ExpTrans) component;
-			bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.2];");
+			try {
+				String g = c.toGuardString(net);
+				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\n[" + g + "] \" width=0.8, height=0.2];");
+			} catch (ASTException e) {
+				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.2];");
+			}
 			hash.add(component);
 			allnodes.remove(component);
 			for (Arc a : c.getInArc()) {
@@ -66,7 +73,12 @@ public class VizPrint implements Visitor {
 			}
 		} else if (component instanceof ImmTrans) {
 			ImmTrans c =  (ImmTrans) component;
-			bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.02, style=\"filled,dashed\"];");
+			try {
+				String g = c.toGuardString(net);
+				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\n[" + g + "] \" width=0.8, height=0.02, style=\"filled,dashed\"];");
+			} catch (ASTException e) {
+				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.02, style=\"filled,dashed\"];");
+			}
 			hash.add(component);
 			allnodes.remove(component);
 			for (Arc a : c.getInArc()) {
@@ -77,7 +89,12 @@ public class VizPrint implements Visitor {
 			}
 		} else if (component instanceof GenTrans) {
 			GenTrans c =  (GenTrans) component;
-			bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.2, style=filled];");
+			try {
+				String g = c.toGuardString(net);
+				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\n[" + g + "] \" width=0.8, height=0.2, style=filled];");
+			} catch (ASTException e) {
+				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.2, style=filled];");
+			}
 			hash.add(component);
 			allnodes.remove(component);
 			for (Arc a : c.getInArc()) {

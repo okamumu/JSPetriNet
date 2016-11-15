@@ -49,6 +49,18 @@ abstract public class Trans extends LabeledNode {
 		this.guard = guard;
 	}
 
+	public final String toGuardString(ASTEnv m) throws ASTException {
+		if (guard == null) {
+			throw new ASTException("");
+		}
+		Object result = guard.eval(m);
+		if (result instanceof Boolean) {
+			throw new ASTException("");
+		} else {
+			return result.toString();
+		}
+	}
+
 	public final Boolean guardEval(ASTEnv m) throws ASTException {
 		if (guard == null) {
 			return true;
