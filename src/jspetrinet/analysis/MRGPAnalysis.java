@@ -92,7 +92,7 @@ public class MRGPAnalysis {
 				MarkGroup mg = immGroup.get(gv);
 				String glabel = JSPetriNet.genvecToString(net, gv);
 				pw.println("# " + mat.getGroupLabel(mg) + "init" + " " + glabel);
-				pw.println("# size " + mg.size());
+				pw.println("# size " + mg.size() + " 1");
 				List<List<Object>> s = mat.getMakingSet(mg);
 				for (List<Object> e: s) {
 					Mark m = (Mark) e.get(1);
@@ -109,7 +109,7 @@ public class MRGPAnalysis {
 				MarkGroup mg = genGroup.get(gv);
 				String glabel = JSPetriNet.genvecToString(net, gv);
 				pw.println("# " + mat.getGroupLabel(mg) + "init" + " " + glabel);
-				pw.println("# size " + mg.size());
+				pw.println("# size " + mg.size() + " 1");
 				List<List<Object>> s = mat.getMakingSet(mg);
 				for (List<Object> e: s) {
 					Mark m = (Mark) e.get(1);
