@@ -84,6 +84,59 @@ public class MRGPAnalysis {
 		}
 	}
 
+	public void writeDiagVec(PrintWriter pw) throws ASTException {
+		for (GenVec gv : mat.getSortedAllGenVec()) {
+			if (immGroup.containsKey(gv)) {
+				MarkGroup mg = immGroup.get(gv);
+				String glabel = JSPetriNet.genvecToString(net, gv);
+				pw.println("# " + mat.getGroupLabel(mg) + "diag" + " " + glabel);
+				List<List<Object>> s = mat.getDiagVecI(net, mg);
+				pw.println("# size " + mg.size() + " 1");
+				for (List<Object> e: s) {
+					Mark m = (Mark) e.get(1);
+					AST d = (AST) e.get(2);
+					net.setCurrentMark(m);
+					pw.print(mat.getGroupLabel(mg) + "diag" + colsep + e.get(0));
+					pw.print(colsep + d.eval(net));
+					pw.println();
+				}
+			}
+			if (genGroup.containsKey(gv)) {
+				MarkGroup mg = genGroup.get(gv);
+				String glabel = JSPetriNet.genvecToString(net, gv);
+				Map<Trans,List<List<Object>>> d0 = mat.getDiagVecG(net, mg);
+				{
+					List<List<Object>> s = d0.get(null);
+					pw.println("# " + mat.getGroupLabel(mg) + "Ediag" + " " + glabel);
+					pw.println("# size " + mg.size() + " 1");
+					for (List<Object> e: s) {
+						Mark m = (Mark) e.get(1);
+						AST d = (AST) e.get(2);
+						net.setCurrentMark(m);
+						pw.print(mat.getGroupLabel(mg) + "Ediag" + colsep + e.get(0));
+						pw.print(colsep + d.eval(net));
+						pw.println();
+					}					
+				}				
+				for (Map.Entry<Trans, List<List<Object>>> entry : d0.entrySet()) {
+					if (entry.getKey() != null) {
+						List<List<Object>> s = entry.getValue();
+						pw.println("# " + mat.getGroupLabel(mg) + "P" + entry.getKey().getIndex() + "diag" + " " + glabel);
+						pw.println("# size " + mg.size() + " 1");
+						for (List<Object> e: s) {
+							Mark m = (Mark) e.get(1);
+							AST d = (AST) e.get(2);
+							net.setCurrentMark(m);
+							pw.print(mat.getGroupLabel(mg) + "diag" + colsep + e.get(0));
+							pw.print(colsep + d.eval(net));
+							pw.println();
+						}
+					}
+				}
+			}
+		}
+	}
+
 	public void writeStateVec(PrintWriter pw, Mark imark) {
 		for (GenVec gv : mat.getSortedAllGenVec()) {
 			if (immGroup.containsKey(gv)) {

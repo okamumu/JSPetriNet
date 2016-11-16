@@ -1,9 +1,7 @@
 package jspetrinet.marking;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import jspetrinet.JSPetriNet;
@@ -38,9 +36,9 @@ public class MarkingGraph {
 		return markSet.size();
 	}
 	
-	public final List<Mark> getMarkList() {
-		return new ArrayList<Mark>(markSet.keySet());
-	}
+//	public final List<Mark> getMarkList() {
+//		return new ArrayList<Mark>(markSet.keySet());
+//	}
 	
 	public final int immSize() {
 		int total = 0;

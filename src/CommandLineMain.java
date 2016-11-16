@@ -253,12 +253,13 @@ public class CommandLineMain {
 		MarkingMatrix mat = new MarkingMatrix(mp, true);
 		MRGPAnalysis mrgp = new MRGPAnalysis(mat);
 
-		PrintWriter pw1, pw2, pw6;
+		PrintWriter pw1, pw2, pw6, pw7;
 		if (cmd.hasOption(Opts.OUT)) {
 			try {
 				pw1 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".states")));
 				pw2 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".matrix")));
 				pw6 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".init")));
+				pw7 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".diag")));
 			} catch (FileNotFoundException e) {
 				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
 				return;
@@ -269,19 +270,34 @@ public class CommandLineMain {
 			mrgp.writeMarkSet(pw1);
 			mrgp.writeMatrix(pw2);
 			mrgp.writeStateVec(pw6, imark);
+			try {
+				mrgp.writeDiagVec(pw7);
+			} catch (ASTException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			pw1.close();
 			pw2.close();
 			pw6.close();
+			pw7.close();
 		} else {
 			pw1 = new PrintWriter(System.out);
 			pw2 = new PrintWriter(System.out);
 			pw6 = new PrintWriter(System.out);
+			pw7 = new PrintWriter(System.out);
 			mrgp.writeMarkSet(pw1);
 			mrgp.writeMatrix(pw2);
 			mrgp.writeStateVec(pw6, imark);
+			try {
+				mrgp.writeDiagVec(pw7);
+			} catch (ASTException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			pw1.flush();
 			pw2.flush();
 			pw6.flush();
+			pw7.flush();
 		}
 
 		if (cmd.hasOption(Opts.REWARD)) {

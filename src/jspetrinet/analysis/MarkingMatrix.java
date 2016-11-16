@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jspetrinet.JSPetriNet;
 import jspetrinet.ast.*;
 import jspetrinet.exception.ASTException;
 import jspetrinet.graph.Arc;
@@ -226,50 +227,76 @@ public class MarkingMatrix {
 		return result;
 	}
 
-	public Map<Trans,List<List<Object>>> getDiagVecG(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup, Map<Mark,AST> diag) {
+	public List<List<Object>> getDiagVecI(Net net, MarkGroup srcMarkGroup) {
+		List<List<Object>> result = new ArrayList<List<Object>>();
+		for (Mark src: srcMarkGroup.getMarkSet()) {
+			AST d = null;
+			for (Arc arc: src.getOutArc()) {
+				MarkingArc markingArc = (MarkingArc) arc;
+				if (markingArc.getTrans() instanceof ImmTrans) {
+					ImmTrans tr = (ImmTrans) markingArc.getTrans();
+					if (d == null) {
+						d = tr.getWeight();
+					} else {
+						d = new ASTArithmetic(d, tr.getWeight(), "+");
+					}
+				}
+			}
+			List<Object> elem = new ArrayList<Object>();
+			elem.add(revMarkIndex.get(src));
+			elem.add(src);
+			if (d == null) {
+				elem.add(new ASTValue(0));
+			} else {
+				elem.add(d);
+			}
+			result.add(elem);
+		}
+		return result;
+	}
+
+	public Map<Trans,List<List<Object>>> getDiagVecG(Net net, MarkGroup mg) {
 		Map<Trans,List<List<Object>>> result = new HashMap<Trans,List<List<Object>>>();
 		List<List<Object>> resultE = new ArrayList<List<Object>>();
 		result.put(null, resultE);
-		for (Mark src: srcMarkGroup.getMarkSet()) {
-			net.setCurrentMark(src);
-			for (Arc arc: src.getOutArc()) {
-				Mark dest = (Mark) arc.getDest();
-				if (destMarkGroup.getMarkSet().contains(dest)) {
-					List<Object> elem = new ArrayList<Object>();
-					MarkingArc markingArc = (MarkingArc) arc;
-					if (markingArc.getTrans() instanceof ExpTrans) {
-						elem.add(revMarkIndex.get(src));
-						elem.add(revMarkIndex.get(dest));
-						ExpTrans tr = (ExpTrans) markingArc.getTrans();
-						try {
-							elem.add(tr.getRate().eval(net));
-						} catch (ASTException e) {
-							System.err.println("Fail to get rate: " + tr.getLabel());
-						}
-						resultE.add(elem);
-						
-						// make diag
-						if (!diag.containsKey(src)) {
-							diag.put(src, new ASTUnary(tr.getRate(), "-"));
-						} else {
-							diag.put(src, new ASTArithmetic(diag.get(src), tr.getRate(), "-"));
-						}
-
-					} else if (markingArc.getTrans() instanceof GenTrans) {
-						elem.add(revMarkIndex.get(src));
-						elem.add(revMarkIndex.get(dest));
-						GenTrans tr = (GenTrans) markingArc.getTrans();
-						try {
-							elem.add(tr.getDist().eval(net));
-						} catch (ASTException e) {
-							System.err.println("Fail to get dist: " + tr.getLabel());
-						}
-						if (!result.containsKey(tr)) {
-							result.put(tr, new ArrayList<List<Object>>());
-						}
-						result.get(tr).add(elem);
+		for (Mark m: mg.getMarkSet()) {
+			Map<Trans,AST> tmp = new HashMap<Trans,AST>();
+			tmp.put(null, null);
+			for (Arc arc: m.getOutArc()) {
+				MarkingArc markingArc = (MarkingArc) arc;
+				if (markingArc.getTrans() instanceof ExpTrans) {
+					ExpTrans tr = (ExpTrans) markingArc.getTrans();
+					if (tmp.get(null) == null) {
+						tmp.put(null, tr.getRate());
+					} else {
+						tmp.put(null, new ASTArithmetic(tmp.get(null), tr.getRate(), "+"));
+					}
+				} else if (markingArc.getTrans() instanceof GenTrans) {
+					GenTrans tr = (GenTrans) markingArc.getTrans();
+					if (!tmp.containsKey(tr)) {
+						tmp.put(tr, tr.getDist());
+					} else {
+						tmp.put(tr, new ASTArithmetic(tmp.get(tr), tr.getDist(), "+"));
 					}
 				}
+			}
+			for (Map.Entry<Trans, AST> entry : tmp.entrySet()) {
+				List<Object> elem = new ArrayList<Object>();
+				elem.add(revMarkIndex.get(m));
+				elem.add(m);
+				if (entry.getValue() == null) {
+					elem.add(new ASTValue(0));
+				} else {
+					elem.add(entry.getValue());
+				}
+				List<List<Object>> listelem;
+				if (!result.containsKey(entry.getKey())) {
+					listelem = new ArrayList<List<Object>>();
+					result.put(entry.getKey(), listelem);
+				} else {
+					listelem = result.get(entry.getKey());
+				}
+				listelem.add(elem);
 			}
 		}
 		return result;
