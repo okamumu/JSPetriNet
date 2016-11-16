@@ -19,15 +19,15 @@ import jspetrinet.marking.MarkingGraph;
 import jspetrinet.petri.*;
 
 public class MarkingMatrix {
-	protected final MarkingGraph mp;
+	private final MarkingGraph mp;
 
-	protected final Map<Mark,Integer> revMarkIndex;
-	protected final Map<MarkGroup,String> revMarkGroupIndex;
+	private final Map<Mark,Integer> revMarkIndex;
+	private final Map<MarkGroup,String> revMarkGroupIndex;
 
-	protected final Map<GenVec,MarkGroup> genGroup;
-	protected final Map<GenVec,MarkGroup> immGroup;
+	private final Map<GenVec,MarkGroup> immGroup;
+	private final Map<GenVec,MarkGroup> genGroup;
 	
-	protected List<GenVec> sortedAllGenVec;
+	private List<GenVec> sortedAllGenVec;
 
 	public MarkingMatrix(MarkingGraph mp, boolean oneBased) {
 		this.mp = mp;
@@ -226,7 +226,7 @@ public class MarkingMatrix {
 		return result;
 	}
 
-	public Map<Trans,List<List<Object>>> getMatrixG(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup, Map<Mark,AST> diag) {
+	public Map<Trans,List<List<Object>>> getDiagVecG(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup, Map<Mark,AST> diag) {
 		Map<Trans,List<List<Object>>> result = new HashMap<Trans,List<List<Object>>>();
 		List<List<Object>> resultE = new ArrayList<List<Object>>();
 		result.put(null, resultE);

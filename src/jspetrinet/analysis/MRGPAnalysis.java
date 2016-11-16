@@ -18,13 +18,12 @@ import jspetrinet.petri.Trans;
 public class MRGPAnalysis {
 
 	private PrintWriter pw;
-	private MarkingMatrix mat;
-	private MarkingGraph mp;
-	private Net net;
+	private final MarkingMatrix mat;
+	private final MarkingGraph mp;
+	private final Net net;
 	
-	private Map<GenVec,MarkGroup> immGroup;
-//	MarkGroup expGroup;
-	private Map<GenVec,MarkGroup> genGroup;
+	private final Map<GenVec,MarkGroup> immGroup;
+	private final Map<GenVec,MarkGroup> genGroup;
 	
 	private final Map<GroupPair,String> matrixName;
 	
@@ -37,7 +36,6 @@ public class MRGPAnalysis {
 		matrixName = new HashMap<GroupPair,String>();
 		immGroup = mp.getImmGroup();
 		genGroup = mp.getGenGroup();
-//		expGroup = mp.getExpGroup();
 	}
 
 	public void writeMarkSet(PrintWriter pw) {

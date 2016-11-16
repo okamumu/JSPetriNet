@@ -9,16 +9,13 @@ import jspetrinet.graph.Arc;
 public final class Mark extends jspetrinet.graph.Node implements Comparable<Mark> {
 
 	private final int[] vec;
-//	private MarkGroup markGroup;
 
 	public Mark(int size) {
 		this.vec = new int [size];
-//		markGroup = null;
 	}
 
 	public Mark(Mark m) {
 		this.vec = Arrays.copyOf(m.vec, m.vec.length);
-//		markGroup = null;
 	}
 
 	public final int get(int i) {
@@ -26,7 +23,7 @@ public final class Mark extends jspetrinet.graph.Node implements Comparable<Mark
 	}
 	
 	public final void set(int i, int v) {
-		vec[i] = (byte) v;
+		vec[i] = v;
 	}
 
 	public final List<Mark> next() {
@@ -36,16 +33,12 @@ public final class Mark extends jspetrinet.graph.Node implements Comparable<Mark
 		}
 		return next;
 	}
-	
-//	public final MarkGroup getMarkGroup() {
-//		return markGroup;
-//	}
-	
-//	public final void setMarkGroup(MarkGroup mg) {
-//		mg.add(this);
-//		markGroup = mg;
-//	}
-	
+
+	@Override
+	public String toString() {
+		return Arrays.toString(vec);
+	}
+
 	@Override
 	public final int hashCode() {
 		return Arrays.hashCode(vec);

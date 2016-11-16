@@ -76,9 +76,9 @@ public class JSPetriNet {
 		for (Place p : net.getPlaceSet()) {
 			if (vec.get(p.getIndex()) != 0) {
 				if (result.equals("")) {
-					result = p.getLabel() + ":" + vec.get(p.getIndex());
+					result = p.getLabel() + ":" + vec.get(p.getIndex());						
 				} else {
-					result = result + "," + p.getLabel() + ":" + vec.get(p.getIndex());
+					result = result + "," + p.getLabel() + ":" + vec.get(p.getIndex());						
 				}
 			}
 		}
@@ -88,7 +88,7 @@ public class JSPetriNet {
 	public static String genvecToString(Net net, GenVec genv) {
 		String result = "(";
 		for (Trans t: net.getGenTransSet()) {
-			switch(genv.get(net.getExpTransSet().size() + t.getIndex())) {
+			switch(genv.get(t.getIndex())) {
 			case 0:
 //				if (!result.equals("(")) {
 //					result += " ";

@@ -24,6 +24,11 @@ public final class GenVec implements Comparable<GenVec> {
 	public final void set(int i, byte value) {
 		vec[i] = value;
 	}
+	
+	@Override
+	public String toString() {
+		return Arrays.toString(vec);
+	}
 
 	@Override
 	public final int hashCode() {
