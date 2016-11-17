@@ -9,7 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
+import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.marking.*;
 import jspetrinet.parser.JSPetriNetParser;
 import jspetrinet.parser.ParseException;
@@ -17,14 +18,14 @@ import jspetrinet.petri.*;
 
 public class JSPetriNet {
 
-	public static Net load(Net net, InputStream in) throws ParseException, ASTException {
+	public static Net load(Net net, InputStream in) throws ParseException, JSPNException {
 		JSPetriNetParser parser = new JSPetriNetParser(in);
 		parser.setNet(net);
 		parser.makeNet();
 		return net;
 	}
 
-	public static Net eval(Net net, String text) throws ParseException, ASTException, UnsupportedEncodingException {
+	public static Net eval(Net net, String text) throws ParseException, JSPNException, UnsupportedEncodingException {
 		InputStream in = new ByteArrayInputStream(text.getBytes("utf-8"));
 		JSPetriNetParser parser = new JSPetriNetParser(in);
 		parser.setNet(net);
@@ -32,30 +33,33 @@ public class JSPetriNet {
 		return net;
 	}
 
-	public static Mark mark(Net net, Map<String,Integer> map) throws ASTException {
+	public static Mark mark(Net net, Map<String,Integer> map) throws JSPNException {
 		Mark m = new Mark(net.getNumOfPlace());
-		for (Map.Entry<String, Integer> e : map.entrySet()) {
-			Object obj = net.get(e.getKey());
-			if (obj instanceof Place) {
+		for (Map.Entry<String, Integer> entry : map.entrySet()) {
+			Object obj = null;
+			try {
+				obj = net.get(entry.getKey());
 				Place p = (Place) obj;
-				m.set(p.getIndex(), e.getValue());
-			} else {
-				throw new ASTException(e.getKey() + " is not a place.");
+				m.set(p.getIndex(), entry.getValue());
+			} catch (JSPNException ex) {
+				throw new JSPNException(JSPNExceptionType.NOT_FIND, "Did not find " + entry.getKey() + ". ");
+			} catch(ClassCastException ex) {
+				throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, entry.getKey() + " was not a place object. " + obj.toString());
 			}
 		}
 		return m;
 	}
 	
-	public static MarkingGraph marking(PrintWriter pw, Net net, Mark m, int depth, boolean tangible, List<Trans> expTransSet) throws ASTException {
+	public static MarkingGraph marking(PrintWriter pw, Net net, Mark m, int depth, boolean tangible, List<Trans> expTransSet) throws JSPNException {
 		MarkingGraph mp = new MarkingGraph();
 		if (depth == 0) {
 			if (tangible) {
-				mp.setCreateMarking(new CreateMarkingDFStangible4(mp, expTransSet));
+				mp.setCreateMarking(new CreateMarkingDFStangible(mp, expTransSet));
 			} else {
 //				CreateMarkingDFS cmdt = new CreateMarkingDFS(mp);
 //				cmdt.setGenTransSet(expTransSet);
 //				mp.setCreateMarking(cmdt);
-				mp.setCreateMarking(new CreateMarkingDFStangible3(mp, expTransSet));
+				mp.setCreateMarking(new CreateMarkingDFS2(mp, expTransSet));
 			}
 		} else {
 			mp.setCreateMarking(new CreateMarkingBFS(mp, depth));

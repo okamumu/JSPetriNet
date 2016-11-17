@@ -9,13 +9,13 @@ import java.util.Map;
 import java.util.Set;
 
 import jspetrinet.JSPetriNet;
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.PriorityComparator;
 import jspetrinet.petri.Trans;
 import jspetrinet.petri.ImmTrans;
 
-public class CreateMarkingDFStangible3 implements CreateMarking {
+public class CreateMarkingDFS2 implements CreateMarking {
 	
 	private final MarkingGraph markGraph;
 	private final List<Trans> expTransSet;
@@ -28,13 +28,13 @@ public class CreateMarkingDFStangible3 implements CreateMarking {
 	private LinkedList<Mark> novisitedIMM;
 	private LinkedList<Mark> novisitedGEN;
 	
-	public CreateMarkingDFStangible3(MarkingGraph markGraph, List<Trans> genTransSet) {
+	public CreateMarkingDFS2(MarkingGraph markGraph, List<Trans> genTransSet) {
 		this.markGraph = markGraph;
 		this.expTransSet = genTransSet;
 	}
 	
 	@Override
-	public Mark create(Mark init, Net net) throws ASTException {
+	public Mark create(Mark init, Net net) throws JSPNException {
 		createdMarks = new HashMap<Mark,Mark>();
 
 		visitedGEN = new HashSet<Mark>();
@@ -52,7 +52,7 @@ public class CreateMarkingDFStangible3 implements CreateMarking {
 		return init;
 	}
 	
-	private GenVec createGenVec(Net net) throws ASTException {
+	private GenVec createGenVec(Net net) throws JSPNException {
 		GenVec genv = new GenVec(net);
 		for (Trans tr : net.getGenTransSet()) {
 			switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
@@ -76,7 +76,7 @@ public class CreateMarkingDFStangible3 implements CreateMarking {
 		return genv;
 	}
 	
-	private List<Trans> createEnabledIMM(Net net) throws ASTException {
+	private List<Trans> createEnabledIMM(Net net) throws JSPNException {
 		List<Trans> enabledIMMList = new ArrayList<Trans>();
 		int highestPriority = 0;
 		for (Trans t : sortedImmTrans) {
@@ -111,7 +111,7 @@ public class CreateMarkingDFStangible3 implements CreateMarking {
 		markGraph.getGenGroup().get(genv).add(m);
 	}
 
-	private void visitImmMark(Net net, List<Trans> enabledIMMList, Mark m) throws ASTException {
+	private void visitImmMark(Net net, List<Trans> enabledIMMList, Mark m) throws JSPNException {
 		for (Trans tr : enabledIMMList) {
 			Mark dest = PetriAnalysis.doFiring(net, tr);
 			if (createdMarks.containsKey(dest)) {
@@ -125,7 +125,7 @@ public class CreateMarkingDFStangible3 implements CreateMarking {
 		visitedGEN.add(m);
 	}
 	
-	private void visitGenMark(Net net, Mark m) throws ASTException {
+	private void visitGenMark(Net net, Mark m) throws JSPNException {
 		for (Trans tr : net.getGenTransSet()) {
 			switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 			case ENABLE:
@@ -159,7 +159,7 @@ public class CreateMarkingDFStangible3 implements CreateMarking {
 		visitedGEN.add(m);
 	}
 
-	private void vanishing(Net net) throws ASTException {
+	private void vanishing(Net net) throws JSPNException {
 		while (!novisitedIMM.isEmpty()) {
 			Mark m = novisitedIMM.pop();
 			if (visitedGEN.contains(m)) {
@@ -181,7 +181,7 @@ public class CreateMarkingDFStangible3 implements CreateMarking {
 		}
 	}
 	
-	private void createMarking(Net net) throws ASTException {
+	private void createMarking(Net net) throws JSPNException {
 		while (!novisitedGEN.isEmpty()) {
 			Mark m = novisitedGEN.pop();
 			if (visitedGEN.contains(m)) {

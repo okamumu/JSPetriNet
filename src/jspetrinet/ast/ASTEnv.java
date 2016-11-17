@@ -3,7 +3,7 @@ package jspetrinet.ast;
 import java.util.HashMap;
 import java.util.Map;
 
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.NotFindObjectException;
 import jspetrinet.marking.Mark;
 
@@ -36,7 +36,7 @@ public class ASTEnv {
 		currentMark = m;
 	}
 	
-	public Object get(String label) throws ASTException {
+	public Object get(String label) throws JSPNException {
 		if (!hash.containsKey(label)) {
 			throw new NotFindObjectException(label);
 		}

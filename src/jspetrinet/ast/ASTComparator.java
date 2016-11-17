@@ -13,7 +13,7 @@ public final class ASTComparator extends ASTBinary {
 		this.op = op;
 	}
 
-	private final Object eq() throws ASTException {
+	private final Object eq() throws JSPNException {
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return ((Integer) lhs).intValue() == ((Integer) rhs).intValue();
 		} else if (lhs instanceof Integer && rhs instanceof Double) {
@@ -29,7 +29,7 @@ public final class ASTComparator extends ASTBinary {
 		}
 	}
 
-	private final Object neq() throws ASTException {
+	private final Object neq() throws JSPNException {
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return ((Integer) lhs).intValue() != ((Integer) rhs).intValue();
 		} else if (lhs instanceof Integer && rhs instanceof Double) {
@@ -45,7 +45,7 @@ public final class ASTComparator extends ASTBinary {
 		}
 	}
 
-	private final Object lt() throws ASTException {
+	private final Object lt() throws JSPNException {
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return ((Integer) lhs).intValue() < ((Integer) rhs).intValue();
 		} else if (lhs instanceof Integer && rhs instanceof Double) {
@@ -59,7 +59,7 @@ public final class ASTComparator extends ASTBinary {
 		}
 	}
 
-	private final Object lte() throws ASTException {
+	private final Object lte() throws JSPNException {
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return ((Integer) lhs).intValue() <= ((Integer) rhs).intValue();
 		} else if (lhs instanceof Integer && rhs instanceof Double) {
@@ -73,7 +73,7 @@ public final class ASTComparator extends ASTBinary {
 		}
 	}
 
-	private final Object gt() throws ASTException {
+	private final Object gt() throws JSPNException {
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return ((Integer) lhs).intValue() > ((Integer) rhs).intValue();
 		} else if (lhs instanceof Integer && rhs instanceof Double) {
@@ -87,7 +87,7 @@ public final class ASTComparator extends ASTBinary {
 		}
 	}
 
-	private final Object gte() throws ASTException {
+	private final Object gte() throws JSPNException {
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return ((Integer) lhs).intValue() >= ((Integer) rhs).intValue();
 		} else if (lhs instanceof Integer && rhs instanceof Double) {
@@ -102,7 +102,7 @@ public final class ASTComparator extends ASTBinary {
 	}
 
 	@Override
-	public final Object eval(ASTEnv m) throws ASTException {
+	public final Object eval(ASTEnv m) throws JSPNException {
 		lhs = this.getLeft().eval(m);
 		rhs = this.getRight().eval(m);
 		

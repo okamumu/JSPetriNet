@@ -2,7 +2,7 @@ package jspetrinet.dist;
 
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.AST;
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
 import jspetrinet.sim.Random;
 import jspetrinet.sim.Utility;
 
@@ -35,7 +35,7 @@ public class UnifDist extends Dist {
 	}
 
 	@Override
-	public void updateObj(ASTEnv env) throws ASTException {
+	public void updateObj(ASTEnv env) throws JSPNException {
 		lowerObj = lower.eval(env);
 		upperObj = upper.eval(env);
 	}
@@ -46,7 +46,7 @@ public class UnifDist extends Dist {
 	}
 
 	@Override
-	public double nextImpl(Random rnd) throws ASTException {
+	public double nextImpl(Random rnd) throws JSPNException {
 		return rnd.nextUnif(Utility.convertObjctToDouble(lowerObj),
 				Utility.convertObjctToDouble(upperObj));
 	}

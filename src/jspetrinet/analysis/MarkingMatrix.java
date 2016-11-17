@@ -8,9 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jspetrinet.JSPetriNet;
 import jspetrinet.ast.*;
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
 import jspetrinet.graph.Arc;
 import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
@@ -71,10 +70,6 @@ public class MarkingMatrix {
 		}
 	}
 	
-	public MarkingGraph getMarkingGraph() {
-		return mp;
-	}
-
 	private void createIndex(boolean oneBased) {
 		revMarkIndex.clear();
 		final int start = oneBased ? 1 : 0;
@@ -103,17 +98,10 @@ public class MarkingMatrix {
 			x++;
 		}
 	}
-	
-	public List<GenVec> getSortedAllGenVec() {
-		return this.sortedAllGenVec;
-	}
-	
-	public String getGroupLabel(MarkGroup mg) {
-		return revMarkGroupIndex.get(mg);
-	}
+
 
 	// create group graph
-	public void makeArcI(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+	private void makeArcI(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
 		for (Mark src: srcMarkGroup.getMarkSet()) {
 			for (Arc arc: src.getOutArc()) {
 				Mark dest = (Mark) arc.getDest();
@@ -126,7 +114,7 @@ public class MarkingMatrix {
 	}
 
 	// create group graph
-	public void makeArcE(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+	private void makeArcE(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
 		for (Mark src: srcMarkGroup.getMarkSet()) {
 			for (Arc arc: src.getOutArc()) {
 				Mark dest = (Mark) arc.getDest();
@@ -142,7 +130,7 @@ public class MarkingMatrix {
 	}
 
 	// create group graph
-	public void makeArcG(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+	private void makeArcG(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
 		Set<Trans> mm = new HashSet<Trans>();
 		for (Mark src: srcMarkGroup.getMarkSet()) {
 			for (Arc arc: src.getOutArc()) {
@@ -160,7 +148,27 @@ public class MarkingMatrix {
 		}
 	}
 
-	public List<List<Object>> getMatrixI(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+	protected MarkingGraph getMarkingGraph() {
+		return mp;
+	}
+	
+	protected Map<GenVec,MarkGroup> getImmGroup() {
+		return immGroup;
+	}
+
+	protected Map<GenVec,MarkGroup> getGenGroup() {
+		return genGroup;
+	}
+
+	protected List<GenVec> getSortedAllGenVec() {
+		return this.sortedAllGenVec;
+	}
+	
+	protected String getGroupLabel(MarkGroup mg) {
+		return revMarkGroupIndex.get(mg);
+	}
+
+	protected List<List<Object>> getMatrixI(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
 		List< List<Object>> result = new ArrayList< List<Object> >();
 		for (Mark src: srcMarkGroup.getMarkSet()) {
 			net.setCurrentMark(src);
@@ -175,7 +183,7 @@ public class MarkingMatrix {
 						ImmTrans tr = (ImmTrans) markingArc.getTrans();
 						try {
 							elem.add(tr.getWeight().eval(net));
-						} catch (ASTException e) {
+						} catch (JSPNException e) {
 							System.err.println("Fail to get weight: " + tr.getLabel());
 						}
 						result.add(elem);
@@ -186,7 +194,7 @@ public class MarkingMatrix {
 		return result;
 	}
 
-	public Map<Trans,List<List<Object>>> getMatrixG(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+	protected Map<Trans,List<List<Object>>> getMatrixG(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
 		Map<Trans,List<List<Object>>> result = new HashMap<Trans,List<List<Object>>>();
 		List<List<Object>> resultE = new ArrayList<List<Object>>();
 		result.put(null, resultE);
@@ -203,7 +211,7 @@ public class MarkingMatrix {
 						ExpTrans tr = (ExpTrans) markingArc.getTrans();
 						try {
 							elem.add(tr.getRate().eval(net));
-						} catch (ASTException e) {
+						} catch (JSPNException e) {
 							System.err.println("Fail to get rate: " + tr.getLabel());
 						}
 						resultE.add(elem);
@@ -213,7 +221,7 @@ public class MarkingMatrix {
 						GenTrans tr = (GenTrans) markingArc.getTrans();
 						try {
 							elem.add(tr.getDist().eval(net));
-						} catch (ASTException e) {
+						} catch (JSPNException e) {
 							System.err.println("Fail to get dist: " + tr.getLabel());
 						}
 						if (!result.containsKey(tr)) {
@@ -227,7 +235,7 @@ public class MarkingMatrix {
 		return result;
 	}
 
-	public List<List<Object>> getDiagVecI(Net net, MarkGroup srcMarkGroup) {
+	protected List<List<Object>> getSumVecI(Net net, MarkGroup srcMarkGroup) {
 		List<List<Object>> result = new ArrayList<List<Object>>();
 		for (Mark src: srcMarkGroup.getMarkSet()) {
 			AST d = null;
@@ -255,7 +263,7 @@ public class MarkingMatrix {
 		return result;
 	}
 
-	public Map<Trans,List<List<Object>>> getDiagVecG(Net net, MarkGroup mg) {
+	protected Map<Trans,List<List<Object>>> getSumVecG(Net net, MarkGroup mg) {
 		Map<Trans,List<List<Object>>> result = new HashMap<Trans,List<List<Object>>>();
 		List<List<Object>> resultE = new ArrayList<List<Object>>();
 		result.put(null, resultE);
@@ -302,24 +310,7 @@ public class MarkingMatrix {
 		return result;
 	}
 
-//	public List<List<Object>> sreward(Net net, String reward, MarkGroup ms) throws ASTException {
-//		return sreward(net, reward, ms.getMarkSet());
-//	}
-//	
-//	public List< List<Object>> sreward(Net net, String reward, Set<Mark> ms) throws ASTException {
-//		net.setReward(reward);
-//		List< List<Object> > result = new ArrayList< List<Object> >();
-//		for (Mark m: ms) {
-//			net.setCurrentMark(m);
-//			List<Object> tmp = new ArrayList<Object>();
-//			tmp.add(revMarkIndex.get(m));
-//			tmp.add(net.getReward());
-//			result.add(tmp);
-//		}
-//		return result;
-//	}
-//	
-	public List<List<Object>> getMakingSet(MarkGroup markGroup) {
+	protected List<List<Object>> getMakingSet(MarkGroup markGroup) {
 		List<List<Object>> result = new ArrayList<List<Object>>();
 		for (Mark m: markGroup.getMarkSet()) {
 			List<Object> elem = new ArrayList<Object>();

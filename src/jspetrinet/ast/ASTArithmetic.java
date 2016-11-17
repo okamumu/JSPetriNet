@@ -13,7 +13,7 @@ public final class ASTArithmetic extends ASTBinary {
 		this.op = op;
 	}
 
-	private final Object plus() throws ASTException {
+	private final Object plus() throws JSPNException {
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return (Integer) lhs + (Integer) rhs;
 		} else if (lhs instanceof Integer && rhs instanceof Double) {
@@ -27,7 +27,7 @@ public final class ASTArithmetic extends ASTBinary {
 		}
 	}
 
-	private final Object minus() throws ASTException {
+	private final Object minus() throws JSPNException {
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return (Integer) lhs - (Integer) rhs;
 		} else if (lhs instanceof Integer && rhs instanceof Double) {
@@ -41,7 +41,7 @@ public final class ASTArithmetic extends ASTBinary {
 		}
 	}
 
-	private final Object multi() throws ASTException {
+	private final Object multi() throws JSPNException {
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return (Integer) lhs * (Integer) rhs;
 		} else if (lhs instanceof Integer && rhs instanceof Double) {
@@ -55,7 +55,7 @@ public final class ASTArithmetic extends ASTBinary {
 		}
 	}
 
-	private final Object divide() throws ASTException {
+	private final Object divide() throws JSPNException {
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return ((Integer) lhs).doubleValue() / (Integer) rhs;
 		} else if (lhs instanceof Integer && rhs instanceof Double) {
@@ -69,7 +69,7 @@ public final class ASTArithmetic extends ASTBinary {
 		}
 	}
 
-	private final Object mod() throws ASTException {
+	private final Object mod() throws JSPNException {
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return (Integer) lhs / (Integer) rhs;
 		} else {
@@ -78,7 +78,7 @@ public final class ASTArithmetic extends ASTBinary {
 	}
 
 	@Override
-	public final Object eval(ASTEnv m) throws ASTException {
+	public final Object eval(ASTEnv m) throws JSPNException {
 		lhs = this.getLeft().eval(m);
 		rhs = this.getRight().eval(m);
 		

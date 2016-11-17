@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import jspetrinet.JSPetriNet;
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.PriorityComparator;
 import jspetrinet.petri.Trans;
@@ -28,7 +28,7 @@ public class CreateMarkingBFS implements CreateMarking {
 	}
 
 	@Override
-	public Mark create(Mark init, Net net) throws ASTException {
+	public Mark create(Mark init, Net net) throws JSPNException {
 		this.depth = 0;
 		createdMarks = new HashMap<Mark,Mark>();
 		markDepth = new HashMap<Mark,Integer>();
@@ -44,7 +44,7 @@ public class CreateMarkingBFS implements CreateMarking {
 		return init;
 	}
 
-	private void createMarking(LinkedList<Mark> novisited, Net net) throws ASTException {
+	private void createMarking(LinkedList<Mark> novisited, Net net) throws JSPNException {
 		while (!novisited.isEmpty()) {
 			Mark m = novisited.poll();
 			if (markDepth.get(m) > this.maxdepth) {

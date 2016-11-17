@@ -2,7 +2,7 @@ package jspetrinet.dist;
 
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.AST;
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
 import jspetrinet.sim.Random;
 import jspetrinet.sim.Utility;
 
@@ -29,12 +29,12 @@ public class ConstDist extends Dist {
 	}
 
 	@Override
-	public void updateObj(ASTEnv env) throws ASTException {
+	public void updateObj(ASTEnv env) throws JSPNException {
 		constValueObj = constValue.eval(env);
 	}
 
 	@Override
-	public double nextImpl(Random rnd) throws ASTException {
+	public double nextImpl(Random rnd) throws JSPNException {
 		return Utility.convertObjctToDouble(constValueObj);
 	}
 }

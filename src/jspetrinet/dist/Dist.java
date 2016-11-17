@@ -2,23 +2,23 @@ package jspetrinet.dist;
 
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.AST;
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
 import jspetrinet.sim.Random;
 
 abstract public class Dist extends AST {
 	
 	@Override
-	public final Object eval(ASTEnv env) throws ASTException {
+	public final Object eval(ASTEnv env) throws JSPNException {
 		updateObj(env);
 		return this;
 	}
 
-	public final double next(ASTEnv env, Random rnd) throws ASTException {
+	public final double next(ASTEnv env, Random rnd) throws JSPNException {
 		this.eval(env);
 		return nextImpl(rnd);
 	}
 
-	abstract public void updateObj(ASTEnv env) throws ASTException;
-	abstract public double nextImpl(Random rnd) throws ASTException;
+	abstract public void updateObj(ASTEnv env) throws JSPNException;
+	abstract public double nextImpl(Random rnd) throws JSPNException;
 
 }

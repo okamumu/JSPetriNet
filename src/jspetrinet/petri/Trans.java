@@ -2,7 +2,8 @@ package jspetrinet.petri;
 
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.AST;
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
+import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.exception.TypeMismatch;
 import jspetrinet.graph.LabeledNode;
 
@@ -49,19 +50,19 @@ abstract public class Trans extends LabeledNode {
 		this.guard = guard;
 	}
 
-	public final String toGuardString(ASTEnv m) throws ASTException {
+	public final String toGuardString(ASTEnv m) throws JSPNException {
 		if (guard == null) {
-			throw new ASTException("");
+			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Cannot covert Guard to String in " + this.getLabel());
 		}
 		Object result = guard.eval(m);
 		if (result instanceof Boolean) {
-			throw new ASTException("");
+			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "The guard of " + this.getLabel() + " is set as a boolean TRUE/FALSE");
 		} else {
 			return result.toString();
 		}
 	}
 
-	public final Boolean guardEval(ASTEnv m) throws ASTException {
+	public final Boolean guardEval(ASTEnv m) throws JSPNException {
 		if (guard == null) {
 			return true;
 		}

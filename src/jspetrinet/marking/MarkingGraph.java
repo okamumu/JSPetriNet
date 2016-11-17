@@ -72,7 +72,7 @@ public class MarkingGraph {
 		markSet.put(m, m);
 	}
 
-	public Mark create(Mark init, Net net) throws ASTException {
+	public Mark create(Mark init, Net net) throws JSPNException {
 		this.net = net;
 		markSet.clear();
 		numOfGenTrans = net.getNumOfGenTrans();

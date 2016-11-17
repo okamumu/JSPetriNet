@@ -15,7 +15,7 @@ public class ASTVariable extends AST {
 	}
 
 	@Override
-	public Object eval(ASTEnv env) throws ASTException {
+	public Object eval(ASTEnv env) throws JSPNException {
 		Object v;
 		try {
 			v = env.get(label);

@@ -2,7 +2,8 @@ package jspetrinet.marking;
 
 import jspetrinet.JSPetriNet;
 import jspetrinet.ast.ASTEnv;
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
+import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.graph.Arc;
 import jspetrinet.petri.ArcBase;
 import jspetrinet.petri.GenTrans;
@@ -14,7 +15,7 @@ import jspetrinet.petri.Trans;
 
 public final class PetriAnalysis {
 	
-	public final static TransStatus isEnable(ASTEnv env, Trans tr) throws ASTException {
+	public final static TransStatus isEnable(ASTEnv env, Trans tr) throws JSPNException {
 		Mark m = env.getCurrentMark();
 		if (!tr.guardEval(env)) {
 			return TransStatus.DISABLE;
@@ -36,7 +37,7 @@ public final class PetriAnalysis {
 		return TransStatus.ENABLE;
 	}
 
-	public final static TransStatus isEnableGenTrans(ASTEnv env, Trans tr) throws ASTException {
+	public final static TransStatus isEnableGenTrans(ASTEnv env, Trans tr) throws JSPNException {
 		Boolean maybePreemption = false;
 		Mark m = env.getCurrentMark();
 		if (!tr.guardEval(env)) {
@@ -67,14 +68,14 @@ public final class PetriAnalysis {
 		}
 	}
 
-	public final static Mark doFiring(Net net, Trans tr) throws ASTException {
+	public final static Mark doFiring(Net net, Trans tr) throws JSPNException {
 		Mark nextMark = new Mark(net.getCurrentMark());
 		for (Arc arc : tr.getInArc()) {
 			Place place = (Place) arc.getSrc();
 			ArcBase arcBase = (ArcBase) arc;
 			nextMark.set(place.getIndex(), nextMark.get(place.getIndex()) - arcBase.firing(net));
 			if (nextMark.get(place.getIndex()) < 0) {
-				throw new ASTException("Error: #" + place.getLabel() + " becomes negative by firing "
+				throw new JSPNException(JSPNExceptionType.MARKING_ERROR, "Error: #" + place.getLabel() + " becomes negative by firing "
 						+ tr.getLabel() + " at " + JSPetriNet.markToString(net, net.getCurrentMark()));
 			}
 		}
@@ -83,7 +84,7 @@ public final class PetriAnalysis {
 			ArcBase arcBase = (ArcBase) arc;
 			nextMark.set(place.getIndex(), nextMark.get(place.getIndex()) + arcBase.firing(net));
 			if (nextMark.get(place.getIndex()) > place.getMax()) {
-				throw new ASTException("Error: #" + place.getLabel() + " exceeds MAX by firing "
+				throw new JSPNException(JSPNExceptionType.MARKING_ERROR, "Error: #" + place.getLabel() + " exceeds MAX by firing "
 						+ tr.getLabel() + " at " + JSPetriNet.markToString(net, net.getCurrentMark()));
 			}
 		}

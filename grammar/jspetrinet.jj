@@ -81,30 +81,30 @@ TOKEN: {
 	| <SEND: ";">
 }
 
-void makeNet() throws ASTException: {
+void makeNet() throws JSPNException: {
 } {
 	((Statement())? (<COMMENT>)? (<SEND>|<NL>))*
 }
 
-void Statement() throws ASTException: {} {
+void Statement() throws JSPNException: {} {
 	 block()
 	| Declaration()
 	| Expression()
 }
 
-void block() throws ASTException: {} {
+void block() throws JSPNException: {} {
 	bbegin() makeNet() bend()
 }
 
-void bbegin() throws ASTException: {} {
+void bbegin() throws JSPNException: {} {
 	<BEGIN> (Statement())? (<COMMENT>)? (<SEND>|<NL>)
 }
 
-void bend() throws ASTException: {} {
+void bend() throws JSPNException: {} {
 	<END> (<SEND>|<NL>)
 }
 
-void Declaration() throws ASTException: {} {
+void Declaration() throws JSPNException: {} {
 	NetDeclaration()
 	| PlaceDeclaration()
 	| ExpTransDeclaration()
@@ -118,7 +118,7 @@ void Declaration() throws ASTException: {} {
 	| HArcDeclaration()
 }
 
-void NetDeclaration() throws ASTException: {
+void NetDeclaration() throws JSPNException: {
 	Token token;
 } {
 	<NET> token = <IDENTIFIER> {
@@ -136,7 +136,7 @@ void NetDeclaration() throws ASTException: {
 	}
 }
 
-void PlaceDeclaration() throws ASTException: {
+void PlaceDeclaration() throws JSPNException: {
 	Token token;
 	PairValueList optlist;
 	Place p;
@@ -153,7 +153,7 @@ void PlaceDeclaration() throws ASTException: {
 				if (value instanceof Integer) {
 					pmax = (Integer) value;
 				} else {
-					throw new ASTException("The max attribute should be an integer");
+					throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error in the definition of place " + token.image + ". The max attribute should be an integer");
 				}
 			} else {
 				throw new UnknownOption(label);
@@ -165,7 +165,7 @@ void PlaceDeclaration() throws ASTException: {
 	}
 }
 
-void ExpTransDeclaration() throws ASTException: {
+void ExpTransDeclaration() throws JSPNException: {
 	Token token;
 	PairValueList optlist;
 	ExpTrans tr;
@@ -192,7 +192,7 @@ void ExpTransDeclaration() throws ASTException: {
 	")")?
 }
 
-void ImmTransDeclaration() throws ASTException: {
+void ImmTransDeclaration() throws JSPNException: {
 	Token token;
 	PairValueList optlist;
 	ImmTrans tr;
@@ -217,14 +217,14 @@ void ImmTransDeclaration() throws ASTException: {
         if (obj instanceof Integer) {
           tr.setPriority((Integer) obj);
         } else {
-          throw new ASTException("The priority attribute should be an integer.");
+          throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error in the definition of imm " + token.image + ". The priority attribute should be an integer.");
         }
       } else if (label.equals("vanishing")) {
         Object obj = value.eval(current);
         if (obj instanceof Boolean) {
           tr.setVanishable((Boolean) obj);
         } else {
-          throw new ASTException("The vanishing attribute should be a boolean.");
+          throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error in the definition of imm " + token.image + ". The vanishing attribute should be a boolean.");
         }
       } else {
 				throw new UnknownOption(label);
@@ -234,7 +234,7 @@ void ImmTransDeclaration() throws ASTException: {
 	")")?
 }
 
-void GenTransDeclaration() throws ASTException: {
+void GenTransDeclaration() throws JSPNException: {
 	Token token;
 	PairValueList optlist;
 } {
@@ -272,7 +272,7 @@ void GenTransDeclaration() throws ASTException: {
 	")")?
 }
 
-void GenConstTransDeclaration() throws ASTException: {
+void GenConstTransDeclaration() throws JSPNException: {
 	Token token;
 	PairValueList optlist;
 } {
@@ -311,7 +311,7 @@ void GenConstTransDeclaration() throws ASTException: {
 	")")?
 }
 
-void GenUnifTransDeclaration() throws ASTException: {
+void GenUnifTransDeclaration() throws JSPNException: {
 	Token token;
 	PairValueList optlist;
 } {
@@ -352,7 +352,7 @@ void GenUnifTransDeclaration() throws ASTException: {
 	")")?
 }
 
-void ArcDeclaration() throws ASTException: {
+void ArcDeclaration() throws JSPNException: {
 	Token src;
 	Token dest;
 	PairValueList optlist;
@@ -372,7 +372,7 @@ void ArcDeclaration() throws ASTException: {
 			} else if (s instanceof Trans && d instanceof Place) {
 				a = current.createNormalOutArc((Trans) s, (Place) d, new ASTValue(1));
 			} else {
-				throw new ASTException("Error: An arc should be Place to Trans or Trans to Place " + src.image + " -> " + dest.image);
+				throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error in the definition of arc: An arc should be Place to Trans or Trans to Place " + src.image + " -> " + dest.image);
 			}
 		} catch (AlreadyExistException e3) {
 			throw new AlreadyExistException("Already exist the arc " + src.image + " -> " + dest.image);
@@ -393,7 +393,7 @@ void ArcDeclaration() throws ASTException: {
 	")")?
 }
 
-void IArcDeclaration() throws ASTException: {
+void IArcDeclaration() throws JSPNException: {
 	Token src;
 	Token dest;
 	PairValueList optlist;
@@ -419,7 +419,7 @@ void IArcDeclaration() throws ASTException: {
 	")")?
 }
 
-void OArcDeclaration() throws ASTException: {
+void OArcDeclaration() throws JSPNException: {
 	Token src;
 	Token dest;
 	PairValueList optlist;
@@ -445,7 +445,7 @@ void OArcDeclaration() throws ASTException: {
 	")")?
 }
 
-void HArcDeclaration() throws ASTException: {
+void HArcDeclaration() throws JSPNException: {
 	Token src;
 	Token dest;
 	PairValueList optlist;
@@ -469,7 +469,7 @@ void HArcDeclaration() throws ASTException: {
 	")")?
 }
 
-PairValueList OptionList() throws ASTException: {
+PairValueList OptionList() throws JSPNException: {
 	PairValueList optlist;
 	PairValue val;
 } {
@@ -483,7 +483,7 @@ PairValueList OptionList() throws ASTException: {
 	}
 }
 
-PairValue OptionValue() throws ASTException: {
+PairValue OptionValue() throws JSPNException: {
 	Token token;
 	AST val;
 }{
@@ -494,7 +494,7 @@ PairValue OptionValue() throws ASTException: {
 	}
 }
 
-AST getAST() throws ASTException: {
+AST getAST() throws JSPNException: {
 	AST val;
 } {
 	val = Expression() (<SEND> | <EOF>) {
@@ -502,7 +502,7 @@ AST getAST() throws ASTException: {
 	}
 }
 
-void getASTTest() throws ASTException: {
+void getASTTest() throws JSPNException: {
 	AST val;
 } {
 	(val = Expression() {
@@ -511,7 +511,7 @@ void getASTTest() throws ASTException: {
 }
 
 /////
-AST Expression() throws ASTException: {
+AST Expression() throws JSPNException: {
 	AST val;
 } {
 	(LOOKAHEAD(2) val = AssignExpression()
@@ -520,7 +520,7 @@ AST Expression() throws ASTException: {
 	}
 }
 
-AST AssignExpression() throws ASTException: {
+AST AssignExpression() throws JSPNException: {
 	Token token;
 	AST val;
 } {
@@ -545,7 +545,7 @@ AST AssignExpression() throws ASTException: {
 	}
 }
 
-AST OrExpression() throws ASTException: {
+AST OrExpression() throws JSPNException: {
 	AST val1;
 	AST val2;
 } {
@@ -558,7 +558,7 @@ AST OrExpression() throws ASTException: {
 	}
 }
 
-AST AndExpression() throws ASTException: {
+AST AndExpression() throws JSPNException: {
 	AST val1;
 	AST val2;
 } {
@@ -571,7 +571,7 @@ AST AndExpression() throws ASTException: {
 	}
 }
 
-AST EqExpression() throws ASTException: {
+AST EqExpression() throws JSPNException: {
 	AST val1;
 	AST val2;
 } {
@@ -587,7 +587,7 @@ AST EqExpression() throws ASTException: {
 	}
 }
 
-AST CompareExpression() throws ASTException: {
+AST CompareExpression() throws JSPNException: {
 	AST val1;
 	AST val2;
 } {
@@ -609,7 +609,7 @@ AST CompareExpression() throws ASTException: {
 	}
 }
 
-AST TermExpression() throws ASTException: {
+AST TermExpression() throws JSPNException: {
 	AST val1;
 	AST val2;
 } {
@@ -625,7 +625,7 @@ AST TermExpression() throws ASTException: {
 	}
 }
 
-AST MultiplyExpression() throws ASTException: {
+AST MultiplyExpression() throws JSPNException: {
 	AST val1;
 	AST val2;
 } {
@@ -644,7 +644,7 @@ AST MultiplyExpression() throws ASTException: {
 	}
 }
 
-AST Factor() throws ASTException: {
+AST Factor() throws JSPNException: {
 	AST val1;
 } {
 	val1 = PrimaryExpression() {
@@ -661,7 +661,7 @@ AST Factor() throws ASTException: {
 	}
 }
 
-AST PrimaryExpression() throws ASTException: {
+AST PrimaryExpression() throws JSPNException: {
 	AST val1, val2, val3;
 	Token token;
 } {

@@ -1,14 +1,9 @@
 package jspetrinet.exception;
 
-public class NotFindObjectException extends ASTException {
+public class NotFindObjectException extends JSPNException {
 
 	public NotFindObjectException(String msg) {
-		super(msg);
+		super(JSPNExceptionType.NOT_FIND, msg);
 	}
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -8747024145372833066L;
 
 }

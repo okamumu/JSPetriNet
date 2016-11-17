@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import jspetrinet.JSPetriNet;
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.PriorityComparator;
 import jspetrinet.petri.Trans;
@@ -30,7 +30,7 @@ public class CreateMarkingDFS implements CreateMarking {
 	}
 	
 	@Override
-	public Mark create(Mark init, Net net) throws ASTException {
+	public Mark create(Mark init, Net net) throws JSPNException {
 		createdMarks = new HashMap<Mark,Mark>();
 
 		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
@@ -43,7 +43,7 @@ public class CreateMarkingDFS implements CreateMarking {
 		return init;
 	}
 
-	private void createMarking(LinkedList<Mark> novisited, Net net) throws ASTException {
+	private void createMarking(LinkedList<Mark> novisited, Net net) throws JSPNException {
 		while (!novisited.isEmpty()) {
 			Mark m = novisited.pop();
 			net.setCurrentMark(m);

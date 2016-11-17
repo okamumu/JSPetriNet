@@ -1,6 +1,6 @@
 package jspetrinet.ast;
 
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.TypeMismatch;
 
 public final class ASTTernary extends AST {
@@ -30,7 +30,7 @@ public final class ASTTernary extends AST {
 //		return third;
 //	}
 
-	private final Object ite(ASTEnv m) throws ASTException {
+	private final Object ite(ASTEnv m) throws JSPNException {
 		Object f = this.first.eval(m);
 		if (f instanceof Boolean) {
 			if ((Boolean) f) {
@@ -44,7 +44,7 @@ public final class ASTTernary extends AST {
 	}
 
 	@Override
-	public Object eval(ASTEnv m) throws ASTException {
+	public Object eval(ASTEnv m) throws JSPNException {
 		switch (op) {
 		case "ite":
 			return ite(m);

@@ -49,7 +49,6 @@ class Mat
 		@j = Array.new(nnz)
 		@v = Array.new(nnz)
 		@k = 0
-		# @diag = Array.new(x, 0.0)
 	end
 
 	def name
@@ -69,26 +68,6 @@ class Mat
 		@j[@k] = j
 		@v[@k] = v
 		@k += 1
-		# @diag[i.to_i-1] += v.to_f
-	end
-
-	def printMat
-		print "i <- c("
-		print @i.join(",")
-		print ","
-		print (1..@x).to_a.join(",")
-		print ")\n"
-		print "j <- c("
-		print @j.join(",")
-		print ","
-		print (1..@x).to_a.join(",")
-		print ")\n"
-		print "x <- c("
-		print @v.join(",")
-		print ","
-		print @diag.join(",")
-		print ")\n"
-		print "#{@name} <- sparseMatrix(i=i, j=j, x=x, dims=c(#{@x}, #{@y}))\n"
 	end
 
 	def printMat2(f)
@@ -96,66 +75,21 @@ class Mat
 		[@i,@j,@v].transpose.each do |x|
 			f.print "#{x[0]} #{x[1]} #{x[2]}\n"
 		end
-# 		@diag.each_with_index do |x,i|
-# #			f2.print "#{i+1} #{x}\n"
-# 			f2.print "#{x}\n"
-# 		end
 	end
 end
 
 class Vecs
 
-	def initialize(name)
+	def initialize(name, mat, col)
 		@name = name
 		@res = []
+		@col = col
+		@mat = mat
 	end
 
-	def readInit
-		f = open(@name + ".init")
-		while line = f.gets do
-			if line =~ /^#/
-				a = line.split(/\s+/)
-				name = a[1]
-				line = f.gets
-				a = line.split(/\s+/)
-				size = a[2].to_i
-				vecsize = a[3].to_i
-				@vecsize = vecsize
-				print "\# create vector #{@name + name} #{size} #{vecsize}\n"
-				m = Vec.new(name, size, vecsize)
-				@res << m
-			else
-				a = line.split(/\s+/)
-				m.add(a[1], a[2..(2+vecsize-1)])
-			end
-		end
-		f.close
-	end
-
-	def readReward
-		f = open(@name + ".reward")
-		while line = f.gets do
-			if line =~ /^#/
-				a = line.split(/\s+/)
-				name = a[1]
-				line = f.gets
-				a = line.split(/\s+/)
-				size = a[2].to_i
-				vecsize = a[3].to_i
-				@vecsize = vecsize
-				print "\# create vector #{@name + name} #{size} #{vecsize}\n"
-				m = Vec.new(name, size, vecsize)
-				@res << m
-			else
-				a = line.split(/\s+/)
-				m.add(a[1], a[2..(2+vecsize-1)])
-			end
-		end
-		f.close
-	end
-
-	def readDiag
-		f = open(@name + ".diag")
+	def read(suffix)
+		@suffix = suffix
+		f = open(@name + "." + suffix)
 		while line = f.gets do
 			if line =~ /^#/
 				a = line.split(/\s+/)
@@ -187,7 +121,15 @@ class Vecs
 	def writeR
 		@res.each do |x|
 			print "dat <- scan(file=\"#{@name + x.name + ".dat"}\")\n"
-			print "#{@name + x.name} <- matrix(dat, ncol=#{@vecsize}, byrow=TRUE)\n"
+			if @mat == true
+				if @col == true
+					print "#{@name + x.name} <- matrix(dat, ncol=#{@vecsize}, byrow=TRUE)\n"
+				else
+					print "#{@name + x.name} <- matrix(dat, nrow=#{@vecsize}, byrow=TRUE)\n"
+				end
+			else
+				print "#{@name + x.name} <- dat\n"
+			end
 		end
 	end
 end
@@ -224,10 +166,8 @@ class Mats
 	def writeMatFiles
 		@res.each do |x|
 			f=open(@name + x.name + ".dat", "w")
-			# f2=open(@name + x.name + "diag.dat", "w")
 			x.printMat2(f)
 			f.close
-			# f2.close
 		end
 	end
 
@@ -235,7 +175,6 @@ class Mats
 		@res.each do |x|
 			print "dat <- scan(file=\"#{@name + x.name + ".dat"}\", list(i=0, j=0, x=0))\n"
 			print "#{@name + x.name} <- sparseMatrix(i=dat$i, j=dat$j, x=dat$x, dims=c(#{x.row},#{x.col}))\n"
-			# print "#{@name + x.name}.diag <- scan(file=\"#{@name + x.name + "diag.dat"}\")\n"
 		end
 	end
 end
@@ -247,19 +186,19 @@ m.read
 m.writeMatFiles
 m.writeR
 
-v = Vecs.new(name)
-v.readInit
+v = Vecs.new(name, false, false)
+v.read("init")
 v.writeVecFiles
 v.writeR
 
-v = Vecs.new(name)
-v.readDiag
+v = Vecs.new(name, false, false)
+v.read("sum")
 v.writeVecFiles
 v.writeR
 
 if File.exist?(name + ".reward")
-	v = Vecs.new(name)
-	v.readReward
+	v = Vecs.new(name, true, true)
+	v.read("reward")
 	v.writeVecFiles
 	v.writeR
 end

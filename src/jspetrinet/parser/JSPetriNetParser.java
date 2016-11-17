@@ -15,7 +15,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
                 this.current = global;
         }
 
-  final public void makeNet() throws ParseException, ASTException {
+  final public void makeNet() throws ParseException, JSPNException {
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -113,7 +113,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
     }
   }
 
-  final public void Statement() throws ParseException, ASTException {
+  final public void Statement() throws ParseException, JSPNException {
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case BEGIN:{
       block();
@@ -156,13 +156,13 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
     }
   }
 
-  final public void block() throws ParseException, ASTException {
+  final public void block() throws ParseException, JSPNException {
     bbegin();
     makeNet();
     bend();
   }
 
-  final public void bbegin() throws ParseException, ASTException {
+  final public void bbegin() throws ParseException, JSPNException {
     jj_consume_token(BEGIN);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case PLACE:
@@ -222,7 +222,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
     }
   }
 
-  final public void bend() throws ParseException, ASTException {
+  final public void bend() throws ParseException, JSPNException {
     jj_consume_token(END);
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case SEND:{
@@ -240,7 +240,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
     }
   }
 
-  final public void Declaration() throws ParseException, ASTException {
+  final public void Declaration() throws ParseException, JSPNException {
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case NET:{
       NetDeclaration();
@@ -293,7 +293,7 @@ public class JSPetriNetParser implements JSPetriNetParserConstants {
     }
   }
 
-  final public void NetDeclaration() throws ParseException, ASTException {Token token;
+  final public void NetDeclaration() throws ParseException, JSPNException {Token token;
     jj_consume_token(NET);
     token = jj_consume_token(IDENTIFIER);
 if (current.contains(token.image)) {
@@ -315,7 +315,7 @@ if (current.contains(token.image)) {
 current = current.getOuter();
   }
 
-  final public void PlaceDeclaration() throws ParseException, ASTException {Token token;
+  final public void PlaceDeclaration() throws ParseException, JSPNException {Token token;
         PairValueList optlist;
         Place p;
         int pmax;
@@ -335,7 +335,7 @@ for (PairValue pval : optlist.getList()) {
                                 if (value instanceof Integer) {
                                         pmax = (Integer) value;
                                 } else {
-                                        {if (true) throw new ASTException("The max attribute should be an integer");}
+                                        {if (true) throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error in the definition of place " + token.image + ". The max attribute should be an integer");}
                                 }
                         } else {
                                 {if (true) throw new UnknownOption(label);}
@@ -351,7 +351,7 @@ for (PairValue pval : optlist.getList()) {
 p = current.createPlace(token.image, pmax);
   }
 
-  final public void ExpTransDeclaration() throws ParseException, ASTException {Token token;
+  final public void ExpTransDeclaration() throws ParseException, JSPNException {Token token;
         PairValueList optlist;
         ExpTrans tr;
     jj_consume_token(EXPTRANS);
@@ -385,7 +385,7 @@ for (PairValue pval : optlist.getList()) {
     }
   }
 
-  final public void ImmTransDeclaration() throws ParseException, ASTException {Token token;
+  final public void ImmTransDeclaration() throws ParseException, JSPNException {Token token;
         PairValueList optlist;
         ImmTrans tr;
     jj_consume_token(IMMTRANS);
@@ -412,14 +412,14 @@ for (PairValue pval : optlist.getList()) {
         if (obj instanceof Integer) {
           tr.setPriority((Integer) obj);
         } else {
-          {if (true) throw new ASTException("The priority attribute should be an integer.");}
+          {if (true) throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error in the definition of imm " + token.image + ". The priority attribute should be an integer.");}
         }
       } else if (label.equals("vanishing")) {
         Object obj = value.eval(current);
         if (obj instanceof Boolean) {
           tr.setVanishable((Boolean) obj);
         } else {
-          {if (true) throw new ASTException("The vanishing attribute should be a boolean.");}
+          {if (true) throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error in the definition of imm " + token.image + ". The vanishing attribute should be a boolean.");}
         }
       } else {
                                 {if (true) throw new UnknownOption(label);}
@@ -434,7 +434,7 @@ for (PairValue pval : optlist.getList()) {
     }
   }
 
-  final public void GenTransDeclaration() throws ParseException, ASTException {Token token;
+  final public void GenTransDeclaration() throws ParseException, JSPNException {Token token;
         PairValueList optlist;
     jj_consume_token(GENTRANS);
     token = jj_consume_token(IDENTIFIER);
@@ -479,7 +479,7 @@ for (PairValue pval : optlist.getList()) {
     }
   }
 
-  final public void GenConstTransDeclaration() throws ParseException, ASTException {Token token;
+  final public void GenConstTransDeclaration() throws ParseException, JSPNException {Token token;
         PairValueList optlist;
     jj_consume_token(GENCONSTTRANS);
     token = jj_consume_token(IDENTIFIER);
@@ -525,7 +525,7 @@ for (PairValue pval : optlist.getList()) {
     }
   }
 
-  final public void GenUnifTransDeclaration() throws ParseException, ASTException {Token token;
+  final public void GenUnifTransDeclaration() throws ParseException, JSPNException {Token token;
         PairValueList optlist;
     jj_consume_token(GENUNIFTRANS);
     token = jj_consume_token(IDENTIFIER);
@@ -573,7 +573,7 @@ for (PairValue pval : optlist.getList()) {
     }
   }
 
-  final public void ArcDeclaration() throws ParseException, ASTException {Token src;
+  final public void ArcDeclaration() throws ParseException, JSPNException {Token src;
         Token dest;
         PairValueList optlist;
         ArcBase a;
@@ -595,7 +595,7 @@ Object s, d;
                         } else if (s instanceof Trans && d instanceof Place) {
                                 a = current.createNormalOutArc((Trans) s, (Place) d, new ASTValue(1));
                         } else {
-                                {if (true) throw new ASTException("Error: An arc should be Place to Trans or Trans to Place " + src.image + " -> " + dest.image);}
+                                {if (true) throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error in the definition of arc: An arc should be Place to Trans or Trans to Place " + src.image + " -> " + dest.image);}
                         }
                 } catch (AlreadyExistException e3) {
                         {if (true) throw new AlreadyExistException("Already exist the arc " + src.image + " -> " + dest.image);}
@@ -624,7 +624,7 @@ for (PairValue pval : optlist.getList()) {
     }
   }
 
-  final public void IArcDeclaration() throws ParseException, ASTException {Token src;
+  final public void IArcDeclaration() throws ParseException, JSPNException {Token src;
         Token dest;
         PairValueList optlist;
         ArcBase a;
@@ -660,7 +660,7 @@ for (PairValue pval : optlist.getList()) {
     }
   }
 
-  final public void OArcDeclaration() throws ParseException, ASTException {Token src;
+  final public void OArcDeclaration() throws ParseException, JSPNException {Token src;
         Token dest;
         PairValueList optlist;
         ArcBase a;
@@ -696,7 +696,7 @@ for (PairValue pval : optlist.getList()) {
     }
   }
 
-  final public void HArcDeclaration() throws ParseException, ASTException {Token src;
+  final public void HArcDeclaration() throws ParseException, JSPNException {Token src;
         Token dest;
         PairValueList optlist;
         ArcBase a;
@@ -730,7 +730,7 @@ for (PairValue pval : optlist.getList()) {
     }
   }
 
-  final public PairValueList OptionList() throws ParseException, ASTException {PairValueList optlist;
+  final public PairValueList OptionList() throws ParseException, JSPNException {PairValueList optlist;
         PairValue val;
     val = OptionValue();
 optlist = new PairValueList();
@@ -754,7 +754,7 @@ optlist.add(val);
     throw new Error("Missing return statement in function");
   }
 
-  final public PairValue OptionValue() throws ParseException, ASTException {Token token;
+  final public PairValue OptionValue() throws ParseException, JSPNException {Token token;
         AST val;
     token = jj_consume_token(IDENTIFIER);
     jj_consume_token(50);
@@ -763,7 +763,7 @@ optlist.add(val);
     throw new Error("Missing return statement in function");
   }
 
-  final public AST getAST() throws ParseException, ASTException {AST val;
+  final public AST getAST() throws ParseException, JSPNException {AST val;
     val = Expression();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case SEND:{
@@ -783,7 +783,7 @@ optlist.add(val);
     throw new Error("Missing return statement in function");
   }
 
-  final public void getASTTest() throws ParseException, ASTException {AST val;
+  final public void getASTTest() throws ParseException, JSPNException {AST val;
     label_3:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
@@ -832,7 +832,7 @@ System.out.println(val.eval(current));
   }
 
 /////
-  final public AST Expression() throws ParseException, ASTException {AST val;
+  final public AST Expression() throws ParseException, JSPNException {AST val;
     if (jj_2_1(2)) {
       val = AssignExpression();
     } else {
@@ -863,7 +863,7 @@ System.out.println(val.eval(current));
     throw new Error("Missing return statement in function");
   }
 
-  final public AST AssignExpression() throws ParseException, ASTException {Token token;
+  final public AST AssignExpression() throws ParseException, JSPNException {Token token;
         AST val;
     token = jj_consume_token(IDENTIFIER);
 
@@ -890,7 +890,7 @@ current.put(token.image, val);
     throw new Error("Missing return statement in function");
   }
 
-  final public AST OrExpression() throws ParseException, ASTException {AST val1;
+  final public AST OrExpression() throws ParseException, JSPNException {AST val1;
         AST val2;
     val1 = AndExpression();
     label_4:
@@ -912,7 +912,7 @@ val1 = new ASTLogical(val1, val2, "||");
     throw new Error("Missing return statement in function");
   }
 
-  final public AST AndExpression() throws ParseException, ASTException {AST val1;
+  final public AST AndExpression() throws ParseException, JSPNException {AST val1;
         AST val2;
     val1 = EqExpression();
     label_5:
@@ -934,7 +934,7 @@ val1 = new ASTLogical(val1, val2, "&&");
     throw new Error("Missing return statement in function");
   }
 
-  final public AST EqExpression() throws ParseException, ASTException {AST val1;
+  final public AST EqExpression() throws ParseException, JSPNException {AST val1;
         AST val2;
     val1 = CompareExpression();
     label_6:
@@ -972,7 +972,7 @@ val1 = new ASTComparator(val1, val2, "!=");
     throw new Error("Missing return statement in function");
   }
 
-  final public AST CompareExpression() throws ParseException, ASTException {AST val1;
+  final public AST CompareExpression() throws ParseException, JSPNException {AST val1;
         AST val2;
     val1 = TermExpression();
     label_7:
@@ -1024,7 +1024,7 @@ val1 = new ASTComparator(val1, val2, "<=");
     throw new Error("Missing return statement in function");
   }
 
-  final public AST TermExpression() throws ParseException, ASTException {AST val1;
+  final public AST TermExpression() throws ParseException, JSPNException {AST val1;
         AST val2;
     val1 = MultiplyExpression();
     label_8:
@@ -1062,7 +1062,7 @@ val1 = new ASTArithmetic(val1, val2, "-");
     throw new Error("Missing return statement in function");
   }
 
-  final public AST MultiplyExpression() throws ParseException, ASTException {AST val1;
+  final public AST MultiplyExpression() throws ParseException, JSPNException {AST val1;
         AST val2;
     val1 = Factor();
     label_9:
@@ -1107,7 +1107,7 @@ val1 = new ASTArithmetic(val1, val2, "%");
     throw new Error("Missing return statement in function");
   }
 
-  final public AST Factor() throws ParseException, ASTException {AST val1;
+  final public AST Factor() throws ParseException, JSPNException {AST val1;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case IFELSE:
     case REAL:
@@ -1149,7 +1149,7 @@ val1 = new ASTArithmetic(val1, val2, "%");
     throw new Error("Missing return statement in function");
   }
 
-  final public AST PrimaryExpression() throws ParseException, ASTException {AST val1, val2, val3;
+  final public AST PrimaryExpression() throws ParseException, JSPNException {AST val1, val2, val3;
         Token token;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case INTEGER:{

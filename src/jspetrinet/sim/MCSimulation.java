@@ -9,7 +9,8 @@ import java.util.Map;
 import jspetrinet.JSPetriNet;
 import jspetrinet.ast.AST;
 import jspetrinet.dist.Dist;
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
+import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.exception.TypeMismatch;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingArc;
@@ -38,7 +39,7 @@ public class MCSimulation {
 		}
 	}
 
-	private double nextTime(Net net, ExpTrans tr, Random rnd) throws ASTException {
+	private double nextTime(Net net, ExpTrans tr, Random rnd) throws JSPNException {
 		try {
 			double rate = Utility.convertObjctToDouble(tr.getRate().eval(net));
 			return rnd.nextExp(rate);
@@ -48,16 +49,16 @@ public class MCSimulation {
 		}
 	}
 
-	private double nextTime(Net net, GenTrans tr, Random rnd) throws ASTException {
+	private double nextTime(Net net, GenTrans tr, Random rnd) throws JSPNException {
 		Object v = tr.getDist().eval(net);
 		if (v instanceof Dist) {
 			return ((Dist) v).next(net, rnd);
 		} else {
-			throw new ASTException("Gen " + tr.getLabel() + " is not a type of Dist.");
+			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Gen " + tr.getLabel() + " was not set as an object of Dist. Please check the 'dist' attribute of " + tr.getLabel());
 		}
 	}
 
-	private void updateRemainingTime(Trans selTrans, double elapsedTime) throws ASTException{
+	private void updateRemainingTime(Trans selTrans, double elapsedTime) throws JSPNException{
 		for (Trans tr : net.getGenTransSet()) {
 			switch (PetriAnalysis.isEnable(net, tr)) {
 			case ENABLE:
@@ -72,7 +73,7 @@ public class MCSimulation {
 		}
 	}
 
-	public List<EventValue> runSimulation(Mark initMarking, double startTime, double endTime, int limitFiring, Random rnd) throws ASTException {
+	public List<EventValue> runSimulation(Mark initMarking, double startTime, double endTime, int limitFiring, Random rnd) throws JSPNException {
 		List<EventValue> eventValues = new ArrayList<EventValue>();
 		int firingcount = 0;
 		double currentTime = startTime;
@@ -177,7 +178,7 @@ public class MCSimulation {
 		return eventValues;
 	}
 
-	public List<EventValue> runSimulation(Mark initMarking, double startTime, double endTime, AST stopCondition, int limitFiring, Random rnd) throws ASTException {
+	public List<EventValue> runSimulation(Mark initMarking, double startTime, double endTime, AST stopCondition, int limitFiring, Random rnd) throws JSPNException {
 		List<EventValue> eventValues = new ArrayList<EventValue>();
 		int firingcount = 0;
 		double currentTime = startTime;
@@ -284,11 +285,11 @@ public class MCSimulation {
 		return eventValues;
 	}
 
-	private double evalReward(Net net, AST reward) throws ASTException {
+	private double evalReward(Net net, AST reward) throws JSPNException {
 		return Utility.convertObjctToDouble(reward.eval(net));
 	}
 
-	public double resultReward(Net net, List<EventValue> simResult, AST reward, double startTime, double endTime) throws ASTException {
+	public double resultReward(Net net, List<EventValue> simResult, AST reward, double startTime, double endTime) throws JSPNException {
 		double totalReward = 0;
 		for(int i=0;i<simResult.size();i++){
 			net.setCurrentMark(simResult.get(i).getEventMarking());

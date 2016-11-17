@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
 import jspetrinet.graph.Arc;
 import jspetrinet.graph.Component;
 import jspetrinet.graph.Visitor;
@@ -60,7 +60,7 @@ public class VizPrint implements Visitor {
 			try {
 				String g = c.toGuardString(net);
 				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\n[" + g + "] \" width=0.8, height=0.2];");
-			} catch (ASTException e) {
+			} catch (JSPNException e) {
 				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.2];");
 			}
 			hash.add(component);
@@ -76,7 +76,7 @@ public class VizPrint implements Visitor {
 			try {
 				String g = c.toGuardString(net);
 				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\n[" + g + "] \" width=0.8, height=0.02, style=\"filled,dashed\"];");
-			} catch (ASTException e) {
+			} catch (JSPNException e) {
 				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.02, style=\"filled,dashed\"];");
 			}
 			hash.add(component);
@@ -92,7 +92,7 @@ public class VizPrint implements Visitor {
 			try {
 				String g = c.toGuardString(net);
 				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\n[" + g + "] \" width=0.8, height=0.2, style=filled];");
-			} catch (ASTException e) {
+			} catch (JSPNException e) {
 				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.2, style=filled];");
 			}
 			hash.add(component);

@@ -21,11 +21,11 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import jspetrinet.JSPetriNet;
-import jspetrinet.analysis.MRGPAnalysis;
+import jspetrinet.analysis.MRGPMatrixWriter;
 import jspetrinet.analysis.MarkClassAnalysis;
 import jspetrinet.analysis.MarkingMatrix;
 import jspetrinet.ast.AST;
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.TypeMismatch;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingGraph;
@@ -80,7 +80,7 @@ public class CommandLineMain {
 		return result;
 	}
 
-	static private List<AST> parseReward(Net net, String str) throws ASTException {
+	static private List<AST> parseReward(Net net, String str) throws JSPNException {
 		List<AST> result = new ArrayList<AST>();
 		String[] ary = str.split(",", 0);
 		for (String s : ary) {
@@ -94,7 +94,7 @@ public class CommandLineMain {
 		return result;
 	}
 
-	static private List<Trans> parseExpTrans(Net net, String str) throws ASTException {
+	static private List<Trans> parseExpTrans(Net net, String str) throws JSPNException {
 		List<Trans> result = new ArrayList<Trans>();
 		String[] ary = str.split(",", 0);
 		for (String s : ary) {
@@ -115,7 +115,7 @@ public class CommandLineMain {
 			try {
 				in = new FileInputStream(cmd.getOptionValue(Opts.INPETRI));
 			} catch (FileNotFoundException e) {
-				System.err.println("Did not find file: " + cmd.getOptionValue(Opts.INPETRI));
+				System.err.println("Error: Did not find file: " + cmd.getOptionValue(Opts.INPETRI));
 				System.exit(1);
 			}
 		} else {
@@ -129,7 +129,7 @@ public class CommandLineMain {
 		} catch (jspetrinet.parser.ParseException ex) {
 			System.out.println("parse error: " + ex.getMessage());
 			System.exit(1);
-		} catch (ASTException e) {
+		} catch (JSPNException e) {
 			System.out.println("Error: " + e.getMessage());
 			System.exit(1);
 		}
@@ -142,8 +142,8 @@ public class CommandLineMain {
 		if (cmd.hasOption(Opts.INITMARK)) {
 			try {
 				imark = JSPetriNet.mark(net, parseMark(cmd.getOptionValue(Opts.INITMARK)));
-			} catch (ASTException e) {
-				System.err.println(e.getMessage());
+			} catch (JSPNException e) {
+				System.err.println("Error: " + e.getMessage() + " Please check the imark option.");
 				System.exit(1);
 			}
 			System.out.println("Initial marking: " + JSPetriNet.markToString(net, imark));
@@ -231,7 +231,7 @@ public class CommandLineMain {
 		if (cmd.hasOption(Opts.EXP)) {
 			try {
 				expTrans = parseExpTrans(net, cmd.getOptionValue(Opts.EXP));
-			} catch (ASTException e) {
+			} catch (JSPNException e) {
 				System.err.println(e.getMessage());
 				System.exit(1);
 			}
@@ -244,14 +244,13 @@ public class CommandLineMain {
 		MarkingGraph mp;
 		try {
 			mp = JSPetriNet.marking(pw0, net, imark, depth, vanishing, expTrans);
-		} catch (ASTException e1) {
+		} catch (JSPNException e1) {
 			System.err.println(e1.getMessage());
 			return;
 		}
 		pw0.flush();
 
-		MarkingMatrix mat = new MarkingMatrix(mp, true);
-		MRGPAnalysis mrgp = new MRGPAnalysis(mat);
+		MRGPMatrixWriter mrgp = new MRGPMatrixWriter(mp, true);
 
 		PrintWriter pw1, pw2, pw6, pw7;
 		if (cmd.hasOption(Opts.OUT)) {
@@ -259,20 +258,20 @@ public class CommandLineMain {
 				pw1 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".states")));
 				pw2 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".matrix")));
 				pw6 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".init")));
-				pw7 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".diag")));
+				pw7 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".sum")));
 			} catch (FileNotFoundException e) {
-				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
+				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
 				return;
 			} catch (IOException e) {
-				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
+				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
 				return;
 			}
 			mrgp.writeMarkSet(pw1);
 			mrgp.writeMatrix(pw2);
 			mrgp.writeStateVec(pw6, imark);
 			try {
-				mrgp.writeDiagVec(pw7);
-			} catch (ASTException e) {
+				mrgp.writeSumVec(pw7);
+			} catch (JSPNException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -289,8 +288,8 @@ public class CommandLineMain {
 			mrgp.writeMatrix(pw2);
 			mrgp.writeStateVec(pw6, imark);
 			try {
-				mrgp.writeDiagVec(pw7);
-			} catch (ASTException e) {
+				mrgp.writeSumVec(pw7);
+			} catch (JSPNException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -308,15 +307,15 @@ public class CommandLineMain {
 				try {
 					pw5 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".reward")));
 				} catch (FileNotFoundException e) {
-					System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
+					System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
 					return;
 				} catch (IOException e) {
-					System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
+					System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
 					return;
 				}
 				try {
 					mrgp.writeStateRewardVec(pw5, parseReward(net, rewardLabel));
-				} catch (ASTException ex) {
+				} catch (JSPNException ex) {
 					System.err.println(ex.getMessage());
 					return;
 				}
@@ -325,7 +324,7 @@ public class CommandLineMain {
 				pw5 = new PrintWriter(System.out);
 				try {
 					mrgp.writeStateRewardVec(pw5, parseReward(net, rewardLabel));
-				} catch (ASTException ex) {
+				} catch (JSPNException ex) {
 					System.err.println(ex.getMessage());
 					return;
 				}
@@ -338,13 +337,14 @@ public class CommandLineMain {
 			try {
 				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.GROUPGRAPH))));
 			} catch (FileNotFoundException e) {
-				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.GROUPGRAPH));
+				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.GROUPGRAPH));
 				return;
 			} catch (IOException e) {
-				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.GROUPGRAPH));
+				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.GROUPGRAPH));
 				return;
 			}
-			mat.getMarkingGraph().dotMarkGroup(pw);
+//			mat.getMarkingGraph().dotMarkGroup(pw);
+			mp.dotMarkGroup(pw);
 			pw.close();
 		}
 
@@ -353,13 +353,14 @@ public class CommandLineMain {
 			try {
 				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.MARKGRAPH))));
 			} catch (FileNotFoundException e) {
-				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.MARKGRAPH));
+				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.MARKGRAPH));
 				return;
 			} catch (IOException e) {
-				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.MARKGRAPH));
+				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.MARKGRAPH));
 				return;
 			}
-			mat.getMarkingGraph().dotMarking(pw);
+//			mat.getMarkingGraph().dotMarking(pw);
+			mp.dotMarking(pw);
 			pw.close();
 		}
 
@@ -368,10 +369,10 @@ public class CommandLineMain {
 			try {
 				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.SCC))));
 			} catch (FileNotFoundException e) {
-				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.SCC));
+				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.SCC));
 				return;
 			} catch (IOException e) {
-				System.err.println("Fail to write in the file: " + cmd.getOptionValue(Opts.SCC));
+				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.SCC));
 				return;
 			}
 			Collection<Mark> am = mp.getImmGroup().get(mp.getImmGroup().keySet().iterator().next()).getMarkSet();
@@ -425,14 +426,14 @@ public class CommandLineMain {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return;
-			} catch (ASTException e) {
+			} catch (JSPNException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return;
 			}
 			try {
 				endTime = Utility.convertObjctToDouble(((AST) net.get(label)).eval(net));
-			} catch (ASTException e) {
+			} catch (JSPNException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return;
@@ -479,7 +480,7 @@ public class CommandLineMain {
 					System.out.println(rwd.toString());
 					System.out.println(mean + " [" + lcl + "," + ucl + "]");
 				}
-			} catch (ASTException e) {
+			} catch (JSPNException e) {
 				e.printStackTrace();
 			}
 		} else {
@@ -491,7 +492,7 @@ public class CommandLineMain {
 					pw.println("----------");
 				}
 				pw.close();
-			} catch (ASTException e) {
+			} catch (JSPNException e) {
 				System.err.println("Failed: " + e.getMessage());
 				e.printStackTrace();
 				return;

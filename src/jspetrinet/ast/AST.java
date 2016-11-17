@@ -4,6 +4,6 @@ import jspetrinet.exception.*;
 
 abstract public class AST {
 
-	abstract public Object eval(ASTEnv env) throws ASTException;
+	abstract public Object eval(ASTEnv env) throws JSPNException;
 
 }

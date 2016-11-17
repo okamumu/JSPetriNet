@@ -13,7 +13,7 @@ public final class ASTLogical extends ASTBinary {
 		this.op = op;
 	}
 
-	public final Object and() throws ASTException {
+	public final Object and() throws JSPNException {
 		if (lhs instanceof Boolean && rhs instanceof Boolean) {
 			return (Boolean) lhs && (Boolean) rhs;
 		} else {
@@ -21,7 +21,7 @@ public final class ASTLogical extends ASTBinary {
 		}
 	}
 
-	public final Object or() throws ASTException {
+	public final Object or() throws JSPNException {
 		if (lhs instanceof Boolean && rhs instanceof Boolean) {
 			return (Boolean) lhs || (Boolean) rhs;
 		} else {
@@ -30,7 +30,7 @@ public final class ASTLogical extends ASTBinary {
 	}
 
 	@Override
-	public final Object eval(ASTEnv m) throws ASTException {
+	public final Object eval(ASTEnv m) throws JSPNException {
 		lhs = this.getLeft().eval(m);
 		rhs = this.getRight().eval(m);
 		

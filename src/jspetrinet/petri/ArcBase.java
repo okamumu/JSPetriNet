@@ -2,7 +2,7 @@ package jspetrinet.petri;
 
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.AST;
-import jspetrinet.exception.ASTException;
+import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.TypeMismatch;
 import jspetrinet.graph.Arc;
 
@@ -22,7 +22,7 @@ abstract public class ArcBase extends Arc {
 	}
 	
 	// getter
-	public final int getMulti(ASTEnv env) throws ASTException {
+	public final int getMulti(ASTEnv env) throws JSPNException {
 		Object result = multi.eval(env);
 		if (result instanceof Integer) {
 			return (Integer) result;
@@ -45,7 +45,7 @@ abstract public class ArcBase extends Arc {
 		this.firingFunc = firingFunc;
 	}
 
-	public final int firing(ASTEnv env) throws ASTException {
+	public final int firing(ASTEnv env) throws JSPNException {
 		Object result = firingFunc.eval(env);
 		if (result instanceof Integer) {
 			return (Integer) result;
