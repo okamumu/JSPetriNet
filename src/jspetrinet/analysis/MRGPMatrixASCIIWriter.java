@@ -15,12 +15,12 @@ import jspetrinet.marking.MarkingGraph;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.Trans;
 
-public class MRGPMatrixWriter extends MarkingMatrix {
+public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 
 	private final Map<GroupPair,String> matrixName;	
 	private static String colsep = "\t";
 	
-	public MRGPMatrixWriter(MarkingGraph mp, boolean oneBased) {
+	public MRGPMatrixASCIIWriter(MarkingGraph mp, boolean oneBased) {
 		super(mp, oneBased);
 		matrixName = new HashMap<GroupPair,String>();
 	}
@@ -53,6 +53,48 @@ public class MRGPMatrixWriter extends MarkingMatrix {
 		}
 	}
 	
+	public void writeStateVec(PrintWriter pw, Mark imark) {
+		Net net = this.getMarkingGraph().getNet();
+		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
+		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
+		for (GenVec gv : this.getSortedAllGenVec()) {
+			if (immGroup.containsKey(gv)) {
+				MarkGroup mg = immGroup.get(gv);
+				String glabel = JSPetriNet.genvecToString(net, gv);
+				pw.println("# " + this.getGroupLabel(mg) + "init" + " " + glabel);
+				pw.println("# size " + mg.size() + " 1");
+				List<List<Object>> s = this.getMakingSet(mg);
+				for (List<Object> e: s) {
+					Mark m = (Mark) e.get(1);
+					int value;
+					if (m == imark) {
+						value = 1;
+					} else {
+						value = 0;
+					}
+					pw.println(this.getGroupLabel(mg) + "init" + colsep + e.get(0) + colsep + value);
+				}
+			}
+			if (genGroup.containsKey(gv)) {
+				MarkGroup mg = genGroup.get(gv);
+				String glabel = JSPetriNet.genvecToString(net, gv);
+				pw.println("# " + this.getGroupLabel(mg) + "init" + " " + glabel);
+				pw.println("# size " + mg.size() + " 1");
+				List<List<Object>> s = this.getMakingSet(mg);
+				for (List<Object> e: s) {
+					Mark m = (Mark) e.get(1);
+					int value;
+					if (m == imark) {
+						value = 1;
+					} else {
+						value = 0;
+					}
+					pw.println(this.getGroupLabel(mg) + "init" + colsep + e.get(0) + colsep + value);
+				}
+			}
+		}
+	}
+
 	public void writeStateRewardVec(PrintWriter pw, List<AST> reward) throws JSPNException {
 		Net net = this.getMarkingGraph().getNet();
 		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
@@ -128,48 +170,6 @@ public class MRGPMatrixWriter extends MarkingMatrix {
 							pw.println();
 						}
 					}
-				}
-			}
-		}
-	}
-
-	public void writeStateVec(PrintWriter pw, Mark imark) {
-		Net net = this.getMarkingGraph().getNet();
-		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
-		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
-		for (GenVec gv : this.getSortedAllGenVec()) {
-			if (immGroup.containsKey(gv)) {
-				MarkGroup mg = immGroup.get(gv);
-				String glabel = JSPetriNet.genvecToString(net, gv);
-				pw.println("# " + this.getGroupLabel(mg) + "init" + " " + glabel);
-				pw.println("# size " + mg.size() + " 1");
-				List<List<Object>> s = this.getMakingSet(mg);
-				for (List<Object> e: s) {
-					Mark m = (Mark) e.get(1);
-					int value;
-					if (m == imark) {
-						value = 1;
-					} else {
-						value = 0;
-					}
-					pw.println(this.getGroupLabel(mg) + "init" + colsep + e.get(0) + colsep + value);
-				}
-			}
-			if (genGroup.containsKey(gv)) {
-				MarkGroup mg = genGroup.get(gv);
-				String glabel = JSPetriNet.genvecToString(net, gv);
-				pw.println("# " + this.getGroupLabel(mg) + "init" + " " + glabel);
-				pw.println("# size " + mg.size() + " 1");
-				List<List<Object>> s = this.getMakingSet(mg);
-				for (List<Object> e: s) {
-					Mark m = (Mark) e.get(1);
-					int value;
-					if (m == imark) {
-						value = 1;
-					} else {
-						value = 0;
-					}
-					pw.println(this.getGroupLabel(mg) + "init" + colsep + e.get(0) + colsep + value);
 				}
 			}
 		}
