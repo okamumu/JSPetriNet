@@ -1,9 +1,7 @@
-package jspetrinet.analysis;
+package jmatout;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-
-import jmatout.MATLABDoubleSparseMatrix;
 
 public class SparseMatrixCSC {
 	

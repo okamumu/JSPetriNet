@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import jmatout.MATLABDoubleMatrix;
+import jmatout.SparseMatrixCSC;
 import jspetrinet.JSPetriNet;
 import jspetrinet.ast.AST;
 import jspetrinet.exception.JSPNException;
