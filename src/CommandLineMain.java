@@ -1,6 +1,9 @@
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,10 +23,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import com.jmatio.io.MatFileIncrementalWriter;
-import com.jmatio.io.MatFileWriter;
-import com.jmatio.types.MLArray;
-
+import jmatout.MATLABHeader;
 import jspetrinet.JSPetriNet;
 import jspetrinet.analysis.MRGPMatrixASCIIWriter;
 import jspetrinet.analysis.MRGPMatrixMATLABWriter;
@@ -58,6 +58,7 @@ class Opts {
 	public static String VANISHING="tangible";
 	public static String FIRINGLIMIT="limit";
 	public static String EXP="exp";
+	public static String MATLAB="matlab";
 
 	public static String GROUPGRAPH="ggraph";
 	public static String MARKGRAPH="mgraph";
@@ -217,6 +218,7 @@ public class CommandLineMain {
 		options.addOption(Opts.MARKGRAPH, true, "marking graph (output)");
 		options.addOption(Opts.REWARD, true, "reward");
 		options.addOption(Opts.EXP, true, "exp trans");
+		options.addOption(Opts.MATLAB, false, "MATLAB mat file");
 		options.addOption(Opts.SCC, true, "scc");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
@@ -259,55 +261,59 @@ public class CommandLineMain {
 		MRGPMatrixMATLABWriter matlab = new MRGPMatrixMATLABWriter(mp);
 
 		if (cmd.hasOption(Opts.OUT)) {
-			try {
-				PrintWriter pw1, pw2, pw6, pw7;
-				pw1 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".states")));
-				pw2 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".matrix")));
-				pw6 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".init")));
-				pw7 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".sum")));
-				mrgp.writeMarkSet(pw1);
-				mrgp.writeMatrix(pw2);
-				mrgp.writeStateVec(pw6, imark);
-				mrgp.writeSumVec(pw7);
-				pw1.close();
-				pw2.close();
-				pw6.close();
-				pw7.close();
-				if (cmd.hasOption(Opts.REWARD)) {
-					String rewardLabel = cmd.getOptionValue(Opts.REWARD);
-					PrintWriter pw5 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".reward")));
-					mrgp.writeStateRewardVec(pw5, parseReward(net, rewardLabel));
-					pw5.close();
+			if (cmd.hasOption(Opts.MATLAB)) {
+				try {
+					PrintWriter pw = new PrintWriter(System.out);
+					DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(cmd.getOptionValue(Opts.OUT) + ".mat")));
+					MATLABHeader header = new MATLABHeader();
+					header.write(dos);
+					matlab.writeMatrix(dos, pw);
+					matlab.writeStateVec(dos, pw, imark);
+					matlab.writeSumVec(dos, pw);
+					if (cmd.hasOption(Opts.REWARD)) {
+						String rewardLabel = cmd.getOptionValue(Opts.REWARD);
+						matlab.writeStateRewardVec(dos, pw, parseReward(net, rewardLabel));
+					}
+					dos.close();
+					pw.flush();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				} catch (JSPNException e) {
+					System.err.println(e.getMessage());
+					System.exit(1);
 				}
-			} catch (FileNotFoundException e) {
-				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
-				return;
-			} catch (IOException e) {
-				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
-				return;
-			} catch (JSPNException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} else {
+				try {
+					PrintWriter pw1, pw2, pw6, pw7;
+					pw1 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".states")));
+					pw2 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".matrix")));
+					pw6 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".init")));
+					pw7 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".sum")));
+					mrgp.writeMarkSet(pw1);
+					mrgp.writeMatrix(pw2);
+					mrgp.writeStateVec(pw6, imark);
+					mrgp.writeSumVec(pw7);
+					pw1.close();
+					pw2.close();
+					pw6.close();
+					pw7.close();
+					if (cmd.hasOption(Opts.REWARD)) {
+						String rewardLabel = cmd.getOptionValue(Opts.REWARD);
+						PrintWriter pw5 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(Opts.OUT) + ".reward")));
+						mrgp.writeStateRewardVec(pw5, parseReward(net, rewardLabel));
+						pw5.close();
+					}
+				} catch (FileNotFoundException e) {
+					System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
+					return;
+				} catch (IOException e) {
+					System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(Opts.OUT));
+					return;
+				} catch (JSPNException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
-
-//			try {
-//				PrintWriter pw = new PrintWriter(System.out);
-//				MatFileIncrementalWriter mwriter = new MatFileIncrementalWriter(cmd.getOptionValue(Opts.OUT) + ".mat");
-//				matlab.writeMatrix(mwriter, pw);
-//				matlab.writeStateVec(mwriter, pw, imark);
-//				matlab.writeSumVec(mwriter, pw);
-//				if (cmd.hasOption(Opts.REWARD)) {
-//					String rewardLabel = cmd.getOptionValue(Opts.REWARD);
-//					matlab.writeStateRewardVec(mwriter, pw, parseReward(net, rewardLabel));
-//				}
-//				mwriter.close();
-//				pw.flush();
-//			} catch (IOException e1) {
-//				e1.printStackTrace();
-//			} catch (JSPNException e) {
-//				System.err.println(e.getMessage());
-//				System.exit(1);
-//			}
 		} else {
 			PrintWriter pw1, pw2, pw6, pw7;
 			pw1 = new PrintWriter(System.out);

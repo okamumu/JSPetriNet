@@ -190,6 +190,7 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 			return;
 		}
 		List< List<Object> > s = this.getMatrixI(net, src, dest);
+//		s.sort(new CSCComparator());
 		if (s.size() == 0) {
 			return;
 		}
@@ -208,6 +209,7 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 		}
 		Map<Trans,List<List<Object>>> elem = this.getMatrixG(net, src, dest);
 		List<List<Object>> s = elem.get(null); // get EXP
+	//	s.sort(new CSCComparator());
 		if (s.size() != 0 || src == dest) {
 			String matname = this.getGroupLabel(src) + this.getGroupLabel(dest) + "E";
 			this.defineMatrix(pw, matname, src, dest, s);
@@ -219,6 +221,7 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 		for (Map.Entry<Trans, List<List<Object>>> entry: elem.entrySet()) {
 			if (entry.getKey() != null) {
 				s = entry.getValue();
+//				s.sort(new CSCComparator());
 				if (s.size() != 0) {
 					String matname = this.getGroupLabel(src) + this.getGroupLabel(dest)
 						+ "P" + entry.getKey().getIndex();
