@@ -68,7 +68,7 @@
 		   <fileset dir="bin" includes="**/*.class"/>
    		</delete>
    		<delete verbose="true">
-   			<fileset dir="src/jspetrinet/parser" excludes="**/PairValue*.java"/>
+   			<fileset dir="src/jspetrinet/parser" excludes="**/JSPetriNetParser.java"/>
    		</delete>
 		<delete file="${ant.project.name}-${version}.jar" verbose="true"/>
  	</target>
