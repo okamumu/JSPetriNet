@@ -8,6 +8,8 @@ import jspetrinet.sim.Utility;
 
 public class UnifDist extends Dist {
 	
+	public static final String dname = "dist.unif";
+
 	private AST lower;
 	private AST upper;
 	private Object lowerObj;
@@ -42,7 +44,7 @@ public class UnifDist extends Dist {
 
 	@Override
 	public String toString() {
-		return "UnifDist(" + lowerObj + "," + upperObj + ")";
+		return dname + "(" + lowerObj + "," + upperObj + ")";
 	}
 
 	@Override

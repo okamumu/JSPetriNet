@@ -8,7 +8,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,13 +27,11 @@ import jspetrinet.JSPetriNet;
 import jspetrinet.analysis.MRGPMatrixASCIIWriter;
 import jspetrinet.analysis.MRGPMatrixMATLABWriter;
 import jspetrinet.analysis.MarkClassAnalysis;
-import jspetrinet.analysis.MarkingMatrix;
 import jspetrinet.ast.AST;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.TypeMismatch;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingGraph;
-import jspetrinet.parser.TokenMgrError;
 import jspetrinet.petri.ExpTrans;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.Trans;
@@ -129,14 +126,12 @@ public class CommandLineMain {
 		}
 		try {
 			net = JSPetriNet.load(net, in);
-		} catch (TokenMgrError ex) {
-			System.out.println("token error: " + ex.getMessage());
-			System.exit(1);
-		} catch (jspetrinet.parser.ParseException ex) {
-			System.out.println("parse error: " + ex.getMessage());
-			System.exit(1);
 		} catch (JSPNException e) {
 			System.out.println("Error: " + e.getMessage());
+			System.exit(1);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 			System.exit(1);
 		}
 		net.setIndex();
@@ -431,14 +426,6 @@ public class CommandLineMain {
 			String label = "simtime" + System.currentTimeMillis();
 			try {
 				JSPetriNet.eval(net, label + " = " + cmd.getOptionValue(Opts.SIMTIME) + ";");
-			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return;
-			} catch (jspetrinet.parser.ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return;
 			} catch (JSPNException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
