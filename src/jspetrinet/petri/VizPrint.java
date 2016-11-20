@@ -105,14 +105,46 @@ public class VizPrint implements Visitor {
 			}
 		} else if (component instanceof InArc) {
 			InArc ac = (InArc) component;
-			bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\";");
+			int multi;
+			Object obj;
+			try {
+				multi = ac.getMulti(net);
+				obj = ac.getFiring().eval(net);
+			} catch (JSPNException e1) {
+				multi = 0;
+				obj = "Error";
+			}
+			try {
+				int firing = (Integer) obj;
+				if (multi != 1 || firing != 1) {
+					bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + multi + "(" + firing + ")\"];");
+				} else {
+					bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\";");					
+				}
+			} catch (Exception e) {
+				bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + multi + "(" + obj + ")\"];");
+			}
 			hash.add(component);
 			ac.getSrc().accept(this);
 			ac.getDest().accept(this);
 		} else if (component instanceof OutArc) {
 			OutArc ac = (OutArc) component;
-//			bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [color=red];");
-			bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\";");
+			Object obj;
+			try {
+				obj = ac.getFiring().eval(net);
+			} catch (JSPNException e1) {
+				obj = "Error";
+			}
+			try {
+				int firing = (Integer) obj;
+				if (firing != 1) {
+					bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + firing + "\"];");
+				} else {
+					bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\";");					
+				}
+			} catch (Exception e) {
+				bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + obj + "\"];");
+			}
 			hash.add(component);
 			ac.getSrc().accept(this);
 			ac.getDest().accept(this);
