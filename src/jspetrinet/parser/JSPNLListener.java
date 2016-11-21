@@ -159,4 +159,24 @@ public interface JSPNLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitLiteral_expression(JSPNLParser.Literal_expressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JSPNLParser#place_list}.
+	 * @param ctx the parse tree
+	 */
+	void enterPlace_list(JSPNLParser.Place_listContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JSPNLParser#place_list}.
+	 * @param ctx the parse tree
+	 */
+	void exitPlace_list(JSPNLParser.Place_listContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JSPNLParser#place_value}.
+	 * @param ctx the parse tree
+	 */
+	void enterPlace_value(JSPNLParser.Place_valueContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JSPNLParser#place_value}.
+	 * @param ctx the parse tree
+	 */
+	void exitPlace_value(JSPNLParser.Place_valueContext ctx);
 }

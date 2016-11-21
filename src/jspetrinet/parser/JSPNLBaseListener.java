@@ -193,6 +193,30 @@ public class JSPNLBaseListener implements JSPNLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitLiteral_expression(JSPNLParser.Literal_expressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPlace_list(JSPNLParser.Place_listContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPlace_list(JSPNLParser.Place_listContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPlace_value(JSPNLParser.Place_valueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPlace_value(JSPNLParser.Place_valueContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

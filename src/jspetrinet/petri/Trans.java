@@ -1,6 +1,9 @@
 package jspetrinet.petri;
 
 import jspetrinet.ast.ASTEnv;
+
+import java.util.Map;
+
 import jspetrinet.ast.AST;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.JSPNExceptionType;
@@ -11,6 +14,7 @@ abstract public class Trans extends LabeledNode {
 
 	private int index;
 	private AST guard;
+	private Map<Place,AST> update;
 
 	private int priority;
 	private boolean vanishable;
@@ -20,6 +24,7 @@ abstract public class Trans extends LabeledNode {
 		guard = null;
 		index = 0;
 		priority = 0;
+		update = null;
 	}
 
 	public final int getIndex() {
@@ -71,6 +76,32 @@ abstract public class Trans extends LabeledNode {
 			return (Boolean) result;
 		} else {
 			throw new TypeMismatch();
+		}
+	}
+
+	public final void setUpdate(Map<Place,AST> update) {
+		this.update = update;
+	}
+	
+	public final Map<Place,AST> getUpdate() {
+		return update;
+	}
+
+	public final String toUpdateString(ASTEnv m) throws JSPNException {
+		if (update == null) {
+			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Cannot covert Update to String in " + this.getLabel());
+		} else {
+			String ret = "";
+			boolean firstloop = true;
+			for (Map.Entry<Place,AST> entry : update.entrySet()) {
+				if (firstloop) {
+					ret += "#" + entry.getKey().getLabel() + "<-" + entry.getValue().eval(m);
+					firstloop = false;
+				} else {
+					ret += "," + entry.getKey().getLabel() + "<-" + entry.getValue().eval(m);
+				}
+			}
+			return ret;
 		}
 	}
 

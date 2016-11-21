@@ -1,6 +1,9 @@
 package jspetrinet.marking;
 
+import java.util.Map;
+
 import jspetrinet.JSPetriNet;
+import jspetrinet.ast.AST;
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.JSPNExceptionType;
@@ -86,6 +89,14 @@ public final class PetriAnalysis {
 			if (nextMark.get(place.getIndex()) > place.getMax()) {
 				throw new JSPNException(JSPNExceptionType.MARKING_ERROR, "Error: #" + place.getLabel() + " exceeds MAX by firing "
 						+ tr.getLabel() + " at " + JSPetriNet.markToString(net, net.getCurrentMark()));
+			}
+		}
+		// update
+		Map<Place,AST> u = tr.getUpdate();
+		if (tr.getUpdate() != null) {
+			for (Map.Entry<Place,AST> entry : u.entrySet()) {
+				int v = (Integer) entry.getValue().eval(net);
+				nextMark.set(entry.getKey().getIndex(), v);
 			}
 		}
 		return nextMark;

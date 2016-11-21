@@ -3,6 +3,7 @@ package jspetrinet.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,9 +26,10 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 	private final LinkedList<Exception> errorStack;
 	
 	private Net currentEnv;
-	private Net optionEnv;
+	private Net options;
 	
 	private List<AST> args;
+	private Map<Place,AST> placelist;
 
 	private final JSPNLLexer lexer;
 	private final JSPNLParser parser;
@@ -148,7 +150,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 	
 	private void definePlace(String name) throws JSPNException {
 		int pmax = Place.DefaultMax;
-		for (Map.Entry<String,Object> entry : optionEnv.entrySet()) {
+		for (Map.Entry<String,Object> entry : options.entrySet()) {
 			switch (entry.getKey()) {
 			case "max":
 				Object obj = ((AST) entry.getValue()).eval(currentEnv);
@@ -171,7 +173,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		currentEnv.put(name + ".guard", new ASTValue(true));
 		tr.setPriority(0);
 		tr.setVanishable(true);
-		for (Map.Entry<String,Object> entry : optionEnv.entrySet()) {
+		for (Map.Entry<String,Object> entry : options.entrySet()) {
 			switch (entry.getKey()) {
 			case "weight":
 				currentEnv.put(name + ".weight", entry.getValue());
@@ -197,6 +199,9 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 				}
 				break;
 			}
+			case "update":
+				tr.setUpdate(placelist);
+				break;
 			default:
 				throw new UnknownOption(entry.getKey());
 			}
@@ -207,13 +212,16 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		ExpTrans tr = currentEnv.createExpTrans(name, new ASTVariable(name + ".rate"));
 		tr.setGuard(new ASTVariable(name + ".guard"));
 		currentEnv.put(name + ".guard", new ASTValue(true));
-		for (Map.Entry<String,Object> entry : optionEnv.entrySet()) {
+		for (Map.Entry<String,Object> entry : options.entrySet()) {
 			switch (entry.getKey()) {
 			case "rate":
 				currentEnv.put(name + ".rate", entry.getValue());
 				break;
 			case "guard":
 				currentEnv.put(name + ".guard", entry.getValue());
+				break;
+			case "update":
+				tr.setUpdate(placelist);
 				break;
 			default:
 				throw new UnknownOption(entry.getKey());
@@ -225,13 +233,16 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		GenTrans tr = currentEnv.createGenTrans(name, new ASTVariable(name + ".dist"), GenTrans.DefaultPolicy);
 		tr.setGuard(new ASTVariable(name + ".guard"));
 		currentEnv.put(name + ".guard", new ASTValue(true));
-		for (Map.Entry<String,Object> entry : optionEnv.entrySet()) {
+		for (Map.Entry<String,Object> entry : options.entrySet()) {
 			switch (entry.getKey()) {
 			case "dist":
 				currentEnv.put(name + ".dist", entry.getValue());
 				break;
 			case "guard":
 				currentEnv.put(name + ".guard", entry.getValue());
+				break;
+			case "update":
+				tr.setUpdate(placelist);
 				break;
 			default:
 				throw new UnknownOption(entry.getKey());
@@ -240,7 +251,8 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 	}
 
 	@Override public void enterNode_declaration(JSPNLParser.Node_declarationContext ctx) {
-		this.optionEnv = new Net("options");
+		this.options = new Net("options");
+		this.placelist = new HashMap<Place,AST>();
 	}
 
 	@Override
@@ -269,7 +281,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 	}
 
 	@Override public void enterArc_declaration(JSPNLParser.Arc_declarationContext ctx) {
-		this.optionEnv = new Net("options");
+		this.options = new Net("options");
 	}
 
 	@Override
@@ -285,9 +297,9 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		}
 
 		AST multi;
-		if (optionEnv.contains("multi")) {
+		if (options.contains("multi")) {
 			try {
-				multi = (AST) optionEnv.get("multi");
+				multi = (AST) options.get("multi");
 			} catch (Exception e) {
 				System.err.println("Wrong definition of multi attribute" + e.getMessage());
 				return;
@@ -297,9 +309,9 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		}
 
 		AST firing = null;
-		if (optionEnv.contains("firing")) {
+		if (options.contains("firing")) {
 			try {
-				firing = (AST) optionEnv.get("firing");
+				firing = (AST) options.get("firing");
 			} catch (Exception e) {
 				System.err.println("Wrong definition of firing attribute" + e.getMessage());
 				return;
@@ -337,7 +349,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 
 	@Override
 	public void enterOption_list(JSPNLParser.Option_listContext ctx) {
-		currentEnv = optionEnv;
+		currentEnv = options;
 	}
 
 	@Override
@@ -400,6 +412,8 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		case 10:
 		case 11:
 		case 13:
+		case 14:
+		case 15:
 			// nop
 			break;
 		default:
@@ -467,6 +481,20 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 	@Override
 	public void exitArg_value(JSPNLParser.Arg_valueContext ctx) {
 		args.add(stack.pop());
+	}
+
+	@Override
+	public void exitPlace_value(JSPNLParser.Place_valueContext ctx) {
+		try {
+			AST val = stack.pop();
+			ASTNumOfToken id = (ASTNumOfToken) stack.pop();
+			Place p = id.getPlace();
+			placelist.put(p, val);
+			stack.push(new ASTValue("placeList"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	@Override

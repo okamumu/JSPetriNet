@@ -64,6 +64,7 @@ expression returns [int type]
     | literal_expression { $type = 11; }
     | id=ID { $type = 12; }
     |	'(' expression ')' { $type = 13; }
+    | place_list { $type = 15; }
     ;
 
 // function_expression
@@ -102,6 +103,16 @@ literal_expression returns [int type]
     | val=LOGICAL  { $type = 3; }
     | val=STRING   { $type = 4; }
     ;
+
+// place list
+
+place_list
+  : place_value (',' place_list)*
+  ;
+
+place_value
+  : ntoken_expression '<-' expression
+  ;
 
 // TOKENS
 

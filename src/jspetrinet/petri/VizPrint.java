@@ -57,12 +57,15 @@ public class VizPrint implements Visitor {
 			}
 		} else if (component instanceof ExpTrans) {
 			ExpTrans c =  (ExpTrans) component;
+			String label = "\"" + c + "\" [shape = box, label = \"" + c.getLabel();
 			try {
-				String g = c.toGuardString(net);
-				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\n[" + g + "] \" width=0.8, height=0.2];");
-			} catch (JSPNException e) {
-				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.2];");
-			}
+				label += "\n[" + c.toGuardString(net) + "]";
+			} catch (JSPNException e1) { }
+			try {
+				label += "\n{" + c.toUpdateString(net) + "}";
+			} catch (JSPNException e1) { }
+			label += "\" width=0.8, height=0.2];";
+			bw.println(label);
 			hash.add(component);
 			allnodes.remove(component);
 			for (Arc a : c.getInArc()) {
@@ -73,12 +76,15 @@ public class VizPrint implements Visitor {
 			}
 		} else if (component instanceof ImmTrans) {
 			ImmTrans c =  (ImmTrans) component;
+			String label = "\"" + c + "\" [shape = box, label = \"" + c.getLabel();
 			try {
-				String g = c.toGuardString(net);
-				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\n[" + g + "] \" width=0.8, height=0.02, style=\"filled,dashed\"];");
-			} catch (JSPNException e) {
-				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.02, style=\"filled,dashed\"];");
-			}
+				label += "\n[" + c.toGuardString(net) + "]";
+			} catch (JSPNException e1) { }
+			try {
+				label += "\n{" + c.toUpdateString(net) + "}";
+			} catch (JSPNException e1) { }
+			label += "\" width=0.8, height=0.02, style=\"filled,dashed\"];";
+			bw.println(label);
 			hash.add(component);
 			allnodes.remove(component);
 			for (Arc a : c.getInArc()) {
@@ -89,12 +95,15 @@ public class VizPrint implements Visitor {
 			}
 		} else if (component instanceof GenTrans) {
 			GenTrans c =  (GenTrans) component;
+			String label = "\"" + c + "\" [shape = box, label = \"" + c.getLabel();
 			try {
-				String g = c.toGuardString(net);
-				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\n[" + g + "] \" width=0.8, height=0.2, style=filled];");
-			} catch (JSPNException e) {
-				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.2, style=filled];");
-			}
+				label += "\n[" + c.toGuardString(net) + "]";
+			} catch (JSPNException e1) { }
+			try {
+				label += "\n{" + c.toUpdateString(net) + "}";
+			} catch (JSPNException e1) { }
+			label += "\" width=0.8, height=0.2, style=filled];";
+			bw.println(label);
 			hash.add(component);
 			allnodes.remove(component);
 			for (Arc a : c.getInArc()) {
