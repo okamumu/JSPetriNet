@@ -155,5 +155,9 @@ java -jar JSPetriNet-xxx.jar mark -i example.spn -imark "Ph:3,Pw:3,Pc:3" -reward
 
 上記の結果から，Matlab などで行列を定義し，マルコフ連鎖などの解析をします．
 
+詳しい使い方を知りたい場合は
 
+okamu [at] rel.hiroshima-u.ac.jp
+
+まで
 
