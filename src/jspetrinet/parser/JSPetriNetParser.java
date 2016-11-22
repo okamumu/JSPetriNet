@@ -408,14 +408,13 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 			}
 			// get AST
 			break;
-		case 9:
-		case 10:
-		case 11:
-		case 13:
-		case 14:
-		case 15:
-			// nop
-			break;
+//		case 9:
+//		case 10:
+//		case 11:
+//		case 13:
+//		case 14:
+//			// nop
+//			break;
 		default:
 		}
 	}
@@ -483,19 +482,19 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		args.add(stack.pop());
 	}
 
-	@Override
-	public void exitPlace_value(JSPNLParser.Place_valueContext ctx) {
-		try {
-			AST val = stack.pop();
-			ASTNumOfToken id = (ASTNumOfToken) stack.pop();
-			Place p = id.getPlace();
-			placelist.put(p, val);
-			stack.push(new ASTValue("placeList"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
+//	@Override
+//	public void exitPlace_value(JSPNLParser.Place_valueContext ctx) {
+//		try {
+//			AST val = stack.pop();
+//			ASTNumOfToken id = (ASTNumOfToken) stack.pop();
+//			Place p = id.getPlace();
+//			placelist.put(p, val);
+//			stack.push(new ASTValue("placeList"));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			System.exit(1);
+//		}
+//	}
 
 	@Override
 	public void exitNtoken_expression(JSPNLParser.Ntoken_expressionContext ctx) {

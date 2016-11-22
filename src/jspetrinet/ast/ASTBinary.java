@@ -1,6 +1,6 @@
 package jspetrinet.ast;
 
-abstract public class ASTBinary extends AST {
+abstract public class ASTBinary implements AST {
 
 	private final AST lhs;
 	private final AST rhs;

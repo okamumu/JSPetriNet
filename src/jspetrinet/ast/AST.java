@@ -2,8 +2,8 @@ package jspetrinet.ast;
 
 import jspetrinet.exception.*;
 
-abstract public class AST {
+public interface AST {
 
-	abstract public Object eval(ASTEnv env) throws JSPNException;
+	Object eval(ASTEnv env) throws JSPNException;
 
 }

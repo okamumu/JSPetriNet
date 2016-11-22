@@ -3,7 +3,7 @@ package jspetrinet.ast;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.TypeMismatch;
 
-public final class ASTUnary extends AST {
+public final class ASTUnary implements AST {
 
 	private final AST child;
 	private final String op;

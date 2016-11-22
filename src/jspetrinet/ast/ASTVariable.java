@@ -2,7 +2,7 @@ package jspetrinet.ast;
 
 import jspetrinet.exception.*;
 
-public class ASTVariable extends AST {
+public class ASTVariable implements AST {
 
 	private final String label;
 

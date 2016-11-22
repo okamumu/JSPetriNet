@@ -2,7 +2,7 @@ package jspetrinet.ast;
 
 import jspetrinet.petri.Place;
 
-public class ASTNumOfToken extends AST {
+public class ASTNumOfToken implements AST {
 
 	private final Place place;
 
