@@ -2,6 +2,18 @@
 
 MRSPN 解析が行えるツールです．
 
+## コンパイル
+
+build.xml があるディレクトリで
+
+```
+ant jar
+```
+
+を実行すると，JSPetriNet-xxx.jar が作成されます．
+
+## PNの定義
+
 例：以下を example.spn ファイルとして保存
 
 ```
@@ -108,5 +120,40 @@ g5 := #Pfc + #Pbc_d + #Pbc_dd > 0
 
 reward1 := ifelse(#Ph >= 1, 1.0, 0.0)
 ```
+
+## view モード
+
+PN を描画します．
+
+```
+java -jar JSPetriNet-xxx.jar view -i example.spn -o example.dot
+```
+
+Graphviz の dot ファイルを生成するので
+
+```
+dot -Tpdf -o example.pdf example.dot
+```
+
+のようにして作成してください．
+
+## mark モード
+
+マーキングの解析を行います
+
+```
+java -jar JSPetriNet-xxx.jar mark -i example.spn -imark "Ph:3,Pw:3,Pc:3" -reward "reward1" -o result
+```
+
+とすると，初期マーキング imark Ph = 3, Pw = 3, Pc = 3 からマーキングを生成し，以下のファイルを生成します．
+
+* result.states: 状態（インデックス番号とマーキング）
+* result.matrix: 推移率行列（行インデックス，列インデックス，値）
+* result.reward: 報酬ベクトル（この例では Ph >= 1 となっているマーキングに対応したインデックスは 1 そうでなければ 0）
+* result.init: imark の状態を表すベクトル
+* result.sum: result.matrix の各行列の行の和
+
+上記の結果から，Matlab などで行列を定義し，マルコフ連鎖などの解析をします．
+
 
 
