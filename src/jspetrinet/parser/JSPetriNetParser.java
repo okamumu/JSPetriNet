@@ -29,11 +29,12 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 	private Net options;
 	
 	private List<AST> args;
-	private Map<Place,AST> placelist;
+	private boolean hasBlock;
 
 	private final JSPNLLexer lexer;
 	private final JSPNLParser parser;
 	private final ANTLRInputStream is;
+	
 
 	public JSPetriNetParser(InputStream in) throws IOException {
 		stack = new LinkedList<AST>();
@@ -111,31 +112,21 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		stack.push(new ASTTernary(expr1, expr2, expr3, "ite"));
 	}
 		
-	private void defineIArc(Place src, Trans dest, AST multi, AST firing) {
-		ArcBase a;
+	private void defineIArc(Place src, Trans dest, AST multi) {
 		try {
-			a = env.createNormalInArc(src, dest, multi);
+			env.createNormalInArc(src, dest, multi);
 		} catch (JSPNException e) {
 			System.err.println("Arc already exist" + e.getMessage());
 			return;
-		}
-		
-		if (firing != null) {
-			a.setFiring(firing);
 		}
 	}
 
-	private void defineOArc(Trans src, Place dest, AST multi, AST firing) {
-		ArcBase a;
+	private void defineOArc(Trans src, Place dest, AST multi) {
 		try {
-			a = env.createNormalOutArc(src, dest, multi);
+			env.createNormalOutArc(src, dest, multi);
 		} catch (JSPNException e) {
 			System.err.println("Arc already exist" + e.getMessage());
 			return;
-		}
-		
-		if (firing != null) {
-			a.setFiring(firing);
 		}
 	}
 
@@ -173,6 +164,17 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		currentEnv.put(name + ".guard", new ASTValue(true));
 		tr.setPriority(0);
 		tr.setVanishable(true);
+
+		if (hasBlock) {
+			AST a = stack.pop();
+			if (a instanceof ASTList) {
+				tr.setUpdate(a);				
+			} else {
+				System.err.println("Error in update of " + tr.getLabel());
+			}
+			hasBlock = false;
+		}
+
 		for (Map.Entry<String,Object> entry : options.entrySet()) {
 			switch (entry.getKey()) {
 			case "weight":
@@ -199,19 +201,27 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 				}
 				break;
 			}
-			case "update":
-				tr.setUpdate(placelist);
-				break;
 			default:
 				throw new UnknownOption(entry.getKey());
 			}
-		}
+		}		
 	}
 
 	private void defineExpTrans(String name) throws JSPNException {
 		ExpTrans tr = currentEnv.createExpTrans(name, new ASTVariable(name + ".rate"));
 		tr.setGuard(new ASTVariable(name + ".guard"));
 		currentEnv.put(name + ".guard", new ASTValue(true));
+
+		if (hasBlock) {
+			AST a = stack.pop();
+			if (a instanceof ASTList) {
+				tr.setUpdate(a);				
+			} else {
+				System.err.println("Error in update of " + tr.getLabel());
+			}
+			hasBlock = false;
+		}
+
 		for (Map.Entry<String,Object> entry : options.entrySet()) {
 			switch (entry.getKey()) {
 			case "rate":
@@ -219,9 +229,6 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 				break;
 			case "guard":
 				currentEnv.put(name + ".guard", entry.getValue());
-				break;
-			case "update":
-				tr.setUpdate(placelist);
 				break;
 			default:
 				throw new UnknownOption(entry.getKey());
@@ -233,6 +240,17 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		GenTrans tr = currentEnv.createGenTrans(name, new ASTVariable(name + ".dist"), GenTrans.DefaultPolicy);
 		tr.setGuard(new ASTVariable(name + ".guard"));
 		currentEnv.put(name + ".guard", new ASTValue(true));
+
+		if (hasBlock) {
+			AST a = stack.pop();
+			if (a instanceof ASTList) {
+				tr.setUpdate(a);				
+			} else {
+				System.err.println("Error in update of " + tr.getLabel());
+			}
+			hasBlock = false;
+		}
+
 		for (Map.Entry<String,Object> entry : options.entrySet()) {
 			switch (entry.getKey()) {
 			case "dist":
@@ -240,9 +258,6 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 				break;
 			case "guard":
 				currentEnv.put(name + ".guard", entry.getValue());
-				break;
-			case "update":
-				tr.setUpdate(placelist);
 				break;
 			default:
 				throw new UnknownOption(entry.getKey());
@@ -252,7 +267,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 
 	@Override public void enterNode_declaration(JSPNLParser.Node_declarationContext ctx) {
 		this.options = new Net("options");
-		this.placelist = new HashMap<Place,AST>();
+		hasBlock = false;
 	}
 
 	@Override
@@ -296,25 +311,19 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 			return;
 		}
 
-		AST multi;
-		if (options.contains("multi")) {
-			try {
-				multi = (AST) options.get("multi");
-			} catch (Exception e) {
-				System.err.println("Wrong definition of multi attribute" + e.getMessage());
-				return;
-			}
-		} else {
-			multi = new ASTValue(1);
-		}
-
-		AST firing = null;
-		if (options.contains("firing")) {
-			try {
-				firing = (AST) options.get("firing");
-			} catch (Exception e) {
-				System.err.println("Wrong definition of firing attribute" + e.getMessage());
-				return;
+		AST multi = new ASTValue(1);
+		for (Map.Entry<String,Object> entry : options.entrySet()) {
+			switch (entry.getKey()) {
+			case "multi":
+				try {
+					multi = (AST) options.get("multi");
+				} catch (Exception e) {
+					System.err.println("Wrong definition of multi attribute" + e.getMessage());
+				}
+				break;
+			default:
+				System.err.println("Unknown option: " + entry.getKey() + " in the definition of arc");
+				return;				
 			}
 		}
 
@@ -322,18 +331,18 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 			switch (ctx.type.getText()) {
 			case "arc":
 				if (src instanceof Place && dest instanceof Trans) {
-					this.defineIArc((Place) src, (Trans) dest, multi, firing);					
+					this.defineIArc((Place) src, (Trans) dest, multi);
 				} else if (src instanceof Trans && dest instanceof Place) {
-					this.defineOArc((Trans) src, (Place) dest, multi, firing);					
+					this.defineOArc((Trans) src, (Place) dest, multi);					
 				} else {
 					throw new Exception();
 				}
 				break;
 			case "iarc":
-				this.defineIArc((Place) src, (Trans) dest, multi, firing);
+				this.defineIArc((Place) src, (Trans) dest, multi);
 				break;
 			case "oarc":
-				this.defineOArc((Trans) src, (Place) dest, multi, firing);
+				this.defineOArc((Trans) src, (Place) dest, multi);
 				break;
 			case "harc":
 				this.defineHArc((Place) src, (Trans) dest, multi);
@@ -345,6 +354,22 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 			e.printStackTrace();
 			return;
 		}
+	}
+
+	@Override
+	public void enterSimple_block(JSPNLParser.Simple_blockContext ctx) {
+		hasBlock = true;
+		stack.push(null);
+	}
+
+	@Override public void exitSimple_block(JSPNLParser.Simple_blockContext ctx) {
+		ASTList list = new ASTList();
+		AST a = stack.pop();
+		while (a != null) {
+			list.add(a);
+			a = stack.pop();
+		}
+		stack.push(list);
 	}
 
 	@Override
@@ -365,6 +390,9 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		case 2:
 			currentEnv.put(ctx.id.getText(), right);
 			break;
+		case 3:
+			ASTNToken ntoken = (ASTNToken) stack.pop();
+			stack.push(new ASTAssignNToken(ntoken.getPlace(), right));
 		default:
 		}
 	}
@@ -500,7 +528,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 	public void exitNtoken_expression(JSPNLParser.Ntoken_expressionContext ctx) {
 		try {
 			Place p = (Place) env.get(ctx.id.getText());
-			stack.push(new ASTNumOfToken(p));
+			stack.push(new ASTNToken(p));
 		} catch (JSPNException e) {
 			errorStack.push(e);
 			System.err.println("Error: " + e.getMessage());

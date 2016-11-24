@@ -37,9 +37,9 @@ abstract public class ArcBase extends Arc {
 		this.multi = multi;
 	}
 	
-	public final AST getFiring() {
-		return firingFunc;
-	}
+//	public final AST getFiring() {
+//		return firingFunc;
+//	}
 
 	public final void setFiring(AST firingFunc) {
 		this.firingFunc = firingFunc;

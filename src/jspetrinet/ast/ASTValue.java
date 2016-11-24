@@ -24,5 +24,9 @@ public class ASTValue implements AST {
 	public Object eval(ASTEnv m) {
 		return value;
 	}
-
+	
+	@Override
+	public String toString() {
+		return value.toString();
+	}
 }

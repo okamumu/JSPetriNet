@@ -61,5 +61,10 @@ public final class ASTUnary implements AST {
 			throw new TypeMismatch();
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return "(" + op + this.child.toString() + ")";
+	}
 }
 

@@ -28,4 +28,9 @@ public class ASTVariable implements AST {
 			return v;
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return label;
+	}
 }

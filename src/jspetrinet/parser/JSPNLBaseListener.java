@@ -42,6 +42,18 @@ public class JSPNLBaseListener implements JSPNLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterSimple_block(JSPNLParser.Simple_blockContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSimple_block(JSPNLParser.Simple_blockContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterDeclaration(JSPNLParser.DeclarationContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -97,6 +109,18 @@ public class JSPNLBaseListener implements JSPNLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitOption_value(JSPNLParser.Option_valueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSimple(JSPNLParser.SimpleContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSimple(JSPNLParser.SimpleContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

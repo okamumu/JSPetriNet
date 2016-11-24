@@ -4,13 +4,11 @@ import jspetrinet.exception.*;
 
 public final class ASTLogical extends ASTBinary {
 	
-	private final String op;
 	private Object lhs;
 	private Object rhs;
 
 	public ASTLogical(AST left, AST right, String op) {
-		super(left, right);
-		this.op = op;
+		super(left, right, op);
 	}
 
 	public final Object and() throws JSPNException {

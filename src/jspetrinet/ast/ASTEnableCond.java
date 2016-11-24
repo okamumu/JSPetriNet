@@ -26,4 +26,9 @@ public class ASTEnableCond implements AST {
 			return false;
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return "(?" + trans.getLabel() + ")";
+	}
 }

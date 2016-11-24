@@ -115,44 +115,44 @@ public class VizPrint implements Visitor {
 		} else if (component instanceof InArc) {
 			InArc ac = (InArc) component;
 			int multi;
-			Object obj;
+//			Object obj;
 			try {
 				multi = ac.getMulti(net);
-				obj = ac.getFiring().eval(net);
+//				obj = ac.getFiring().eval(net);
 			} catch (JSPNException e1) {
 				multi = 0;
-				obj = "Error";
+//				obj = "Error";
 			}
 			try {
-				int firing = (Integer) obj;
-				if (multi != 1 || firing != 1) {
-					bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + multi + "(" + firing + ")\"];");
+//				int firing = (Integer) obj;
+				if (multi != 1) {
+					bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + multi + "\"];");
 				} else {
 					bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\";");					
 				}
 			} catch (Exception e) {
-				bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + multi + "(" + obj + ")\"];");
+				bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + multi + "\"];");
 			}
 			hash.add(component);
 			ac.getSrc().accept(this);
 			ac.getDest().accept(this);
 		} else if (component instanceof OutArc) {
 			OutArc ac = (OutArc) component;
-			Object obj;
+//			Object obj;
+//			try {
+//				obj = ac.getFiring().eval(net);
+//			} catch (JSPNException e1) {
+//				obj = "Error";
+//			}
 			try {
-				obj = ac.getFiring().eval(net);
-			} catch (JSPNException e1) {
-				obj = "Error";
-			}
-			try {
-				int firing = (Integer) obj;
+				int firing = ac.getMulti(net);
 				if (firing != 1) {
 					bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + firing + "\"];");
 				} else {
 					bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\";");					
 				}
 			} catch (Exception e) {
-				bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + obj + "\"];");
+				bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"Error\"];");
 			}
 			hash.add(component);
 			ac.getSrc().accept(this);

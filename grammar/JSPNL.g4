@@ -5,14 +5,16 @@ package jspetrinet.parser;
 }
 
 prog
-    :	(statement)*
+    :	((statement)? NEWLINE)*
     ;
 
 statement
-    : declaration NEWLINE
-    | assign_expression NEWLINE
-    | expression NEWLINE
-    | NEWLINE
+    : declaration
+    | simple
+    ;
+
+simple_block
+    : (NEWLINE)* '{' (simple)? (NEWLINE (simple)?)* '}'
     ;
 
 // declaration
@@ -23,7 +25,7 @@ declaration
     ;
 
 node_declaration
-    : type=('place'|'imm'|'exp'|'gen') id=ID ('(' option_list ')')?
+    : type=('place'|'imm'|'exp'|'gen') id=ID ('(' option_list ')')? (simple_block)?
     ;
 
 arc_declaration
@@ -40,11 +42,19 @@ option_value
     : assign_expression
     ;
 
+// simple
+
+simple
+    : assign_expression
+    | expression
+    ;
+
 // assign
 
 assign_expression returns [int type]
-    : id=ID op='=' expression { $type = 1; }
-    | id=ID op=':=' expression { $type = 2; }
+    : id=ID '=' expression { $type = 1; }
+    | id=ID ':=' expression { $type = 2; }
+    | ntoken_expression '=' expression { $type = 3; }
     ;
 
 // expression
@@ -119,7 +129,7 @@ FLOAT
 
 STRING: '"' ('~[\r\n]')* '"' ;
 
-NEWLINE : [\r\n;]+ ;
+NEWLINE : [\r\n;EOF]+ ;
 
 WS      : [ \t]+ -> skip ;
 

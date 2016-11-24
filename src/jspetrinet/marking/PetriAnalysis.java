@@ -1,9 +1,7 @@
 package jspetrinet.marking;
 
-import java.util.Map;
 
 import jspetrinet.JSPetriNet;
-import jspetrinet.ast.AST;
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.JSPNExceptionType;
@@ -91,14 +89,7 @@ public final class PetriAnalysis {
 						+ tr.getLabel() + " at " + JSPetriNet.markToString(net, net.getCurrentMark()));
 			}
 		}
-		// update
-		Map<Place,AST> u = tr.getUpdate();
-		if (tr.getUpdate() != null) {
-			for (Map.Entry<Place,AST> entry : u.entrySet()) {
-				int v = (Integer) entry.getValue().eval(net);
-				nextMark.set(entry.getKey().getIndex(), v);
-			}
-		}
+		tr.updateEval(net);
 		return nextMark;
 	}
 }

@@ -30,6 +30,16 @@ public interface JSPNLListener extends ParseTreeListener {
 	 */
 	void exitStatement(JSPNLParser.StatementContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link JSPNLParser#simple_block}.
+	 * @param ctx the parse tree
+	 */
+	void enterSimple_block(JSPNLParser.Simple_blockContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JSPNLParser#simple_block}.
+	 * @param ctx the parse tree
+	 */
+	void exitSimple_block(JSPNLParser.Simple_blockContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link JSPNLParser#declaration}.
 	 * @param ctx the parse tree
 	 */
@@ -79,6 +89,16 @@ public interface JSPNLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitOption_value(JSPNLParser.Option_valueContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link JSPNLParser#simple}.
+	 * @param ctx the parse tree
+	 */
+	void enterSimple(JSPNLParser.SimpleContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JSPNLParser#simple}.
+	 * @param ctx the parse tree
+	 */
+	void exitSimple(JSPNLParser.SimpleContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link JSPNLParser#assign_expression}.
 	 * @param ctx the parse tree

@@ -4,13 +4,11 @@ import jspetrinet.exception.*;
 
 public final class ASTArithmetic extends ASTBinary {
 	
-	private final String op;
 	private Object lhs;
 	private Object rhs;
 
 	public ASTArithmetic(AST left, AST right, String op) {
-		super(left, right);
-		this.op = op;
+		super(left, right, op);
 	}
 
 	private final Object plus() throws JSPNException {
@@ -101,5 +99,5 @@ public final class ASTArithmetic extends ASTBinary {
 			throw new TypeMismatch();
 		}
 	}
-
+	
 }

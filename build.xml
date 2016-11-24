@@ -18,7 +18,7 @@
 		/>
 	</target> -->
 
-	<target name="javacc">
+	<target name="jspnl">
 		<java jar="lib/${antlr4}" classpath="lib/${antlr4}" dir="grammar" fork="true">
 			<arg value="-o" />
 			<arg value="../src/jspetrinet/parser" />
@@ -26,16 +26,15 @@
 		</java>
 	</target>
 
-	<!-- <target name="javacctest">
-		<java jar="lib/${antlr4}" classpath="lib/${antlr4};bin/jspetrinet/parser" dir="bin" fork="true">
-			<arg value="org.antlr.v4.gui.TestRig" />
-			<arg value="JSPNL" />
+	<target name="test_jspnl" depends="init,jspnl">
+		<java classpath="lib/${antlr4}:bin" classname="org.antlr.v4.gui.TestRig" dir="bin" fork="true">
+			<arg value="jspetrinet.parser.JSPNL" />
 			<arg value="prog" />
 			<arg value="-gui" />
 		</java>
-	</target> -->
+	</target>
 
-	<target name="compile" depends="init,javacc">
+	<target name="compile" depends="init,jspnl">
 		<javac srcdir="src" destdir="bin" includeantruntime="false">
 			<classpath>
       	<pathelement path="lib/${commons}" />
