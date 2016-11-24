@@ -32,8 +32,8 @@ public final class ASTLogical extends ASTBinary {
 		lhs = this.getLeft().eval(m);
 		rhs = this.getRight().eval(m);
 		
-		if (lhs instanceof String || rhs instanceof String) {
-			return "(" + lhs.toString() + op + rhs.toString() + ")";
+		if (lhs instanceof ASTNaN || rhs instanceof ASTNaN) {
+			return new ASTNaN(new ASTLogical(AST.getAST(lhs), AST.getAST(rhs), op));
 		}
 
 		switch(op) {

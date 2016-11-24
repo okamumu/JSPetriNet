@@ -12,6 +12,7 @@ public class ASTList extends ArrayList<AST> implements AST {
 	
 	@Override
 	public Object eval(ASTEnv env) throws JSPNException {
+		// TODO: for ASTNaN
 		Object obj = null;
 		for (AST a : this) {
 			obj = a.eval(env);

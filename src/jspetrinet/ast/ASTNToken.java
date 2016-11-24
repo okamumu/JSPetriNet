@@ -17,9 +17,14 @@ public class ASTNToken implements AST {
 	@Override
 	public Object eval(ASTEnv env) {
 		if (env.getCurrentMark() == null) {
-			return "#" + place.getLabel();
+			return new ASTNaN(this);
 		} else {
 			return env.getCurrentMark().get(place.getIndex());
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return "#" + place.getLabel();
 	}
 }

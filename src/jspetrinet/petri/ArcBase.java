@@ -22,6 +22,10 @@ abstract public class ArcBase extends Arc {
 	}
 	
 	// getter
+	public final AST getMulti() {
+		return multi;
+	}
+	
 	public final int getMulti(ASTEnv env) throws JSPNException {
 		Object result = multi.eval(env);
 		if (result instanceof Integer) {

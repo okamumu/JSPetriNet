@@ -18,15 +18,21 @@ public class ASTAssignNToken implements AST {
 	@Override
 	public Object eval(ASTEnv env) throws JSPNException {
 		Mark m = env.getCurrentMark();
-		Object obj = right.eval(env);
-		if (obj instanceof Integer) {
-			int tmp = (Integer) obj;
-			m.set(place.getIndex(), tmp);
-			return tmp;
-		} else if (obj instanceof String) {
-			return "#" + place.getLabel() + "=" + obj.toString();
+		if (m != null) {
+			Object obj = right.eval(env);
+			if (obj instanceof Integer) {
+				int tmp = (Integer) obj;
+				m.set(place.getIndex(), tmp);
+				return tmp;
+			} else if (obj instanceof ASTNaN) {
+				ASTNaN nan = (ASTNaN) obj;
+				nan.setValue(new ASTAssignNToken(place, nan.getValue()));
+				return nan;
+			} else {
+				throw new TypeMismatch();
+			}
 		} else {
-			throw new TypeMismatch();
+			return new ASTNaN(new ASTAssignNToken(place, AST.getAST(right.eval(env))));			
 		}
 	}
 	

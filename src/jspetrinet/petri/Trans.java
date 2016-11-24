@@ -1,18 +1,10 @@
 package jspetrinet.petri;
 
-import jspetrinet.ast.ASTEnv;
+import jspetrinet.ast.*;
 
-import java.util.Map;
-
-import jspetrinet.JSPetriNet;
-import jspetrinet.ast.AST;
 import jspetrinet.exception.JSPNException;
-import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.exception.TypeMismatch;
-import jspetrinet.graph.Arc;
 import jspetrinet.graph.LabeledNode;
-import jspetrinet.marking.Mark;
-import jspetrinet.marking.TransStatus;
 
 abstract public class Trans extends LabeledNode {
 
@@ -25,7 +17,7 @@ abstract public class Trans extends LabeledNode {
 
 	public Trans(String label) {
 		super(label);
-		guard = null;
+		guard = new ASTValue(true);
 		index = 0;
 		priority = 0;
 		update = null;
@@ -45,9 +37,13 @@ abstract public class Trans extends LabeledNode {
 		return vanishable;
 	}
 	
-//	public final AST getGuard() {
-//		return guard;
-//	}
+	public final AST getGuard() {
+		return guard;
+	}
+
+	public final AST getUpdate() {
+		return update;
+	}
 
 	// setter
 
@@ -89,25 +85,4 @@ abstract public class Trans extends LabeledNode {
 		}
 		update.eval(m);
 	}
-
-	public final String toGuardString(ASTEnv m) throws JSPNException {
-	if (guard == null) {
-		throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Cannot covert Guard to String in " + this.getLabel());
-	}
-	Object result = guard.eval(m);
-	if (result instanceof Boolean) {
-		throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "The guard of " + this.getLabel() + " is set as a boolean TRUE/FALSE");
-	} else {
-		return result.toString();
-	}
-}
-
-	public final String toUpdateString(ASTEnv m) throws JSPNException {
-		if (update == null) {
-			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Cannot covert Update to String in " + this.getLabel());
-		} else {
-			return update.toString();
-		}
-	}
-
 }

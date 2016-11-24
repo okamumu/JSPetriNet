@@ -50,6 +50,12 @@ public final class ASTUnary implements AST {
 	public Object eval(ASTEnv m) throws JSPNException {
 		res = this.child.eval(m);
 		
+		if (res instanceof ASTNaN) {
+			ASTNaN nan = (ASTNaN) res;
+			nan.setValue(new ASTUnary(nan.getValue(), op));
+			return nan;
+		}
+		
 		switch(op) {
 		case "+":
 			return plus();

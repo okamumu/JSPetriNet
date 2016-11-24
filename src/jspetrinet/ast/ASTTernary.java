@@ -52,4 +52,9 @@ public final class ASTTernary implements AST {
 			throw new TypeMismatch();
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return "ifelse(" + first.toString() +"," + second.toString() + "," + third.toString() + ")";
+	}
 }

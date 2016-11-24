@@ -20,7 +20,7 @@ public class ASTVariable implements AST {
 		try {
 			v = env.get(label);
 		} catch (NotFindObjectException e) {
-			return label;
+			return new ASTNaN(this);
 		}
 		if (v instanceof AST) {
 			return ((AST) v).eval(env);
