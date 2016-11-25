@@ -8,7 +8,7 @@ import jspetrinet.sim.Utility;
 
 public class ExpDist extends Dist {
 	
-	public static final String dname = "dist.exp";
+	public static final String dname = "exp";
 
 	private AST rate;
 	private Object rateObj;

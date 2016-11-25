@@ -26,7 +26,7 @@
 		</java>
 	</target>
 
-	<target name="test_jspnl" depends="init,jspnl">
+	<target name="test_jspnl" depends="init,jspnl,compile">
 		<java classpath="lib/${antlr4}:bin" classname="org.antlr.v4.gui.TestRig" dir="bin" fork="true">
 			<arg value="jspetrinet.parser.JSPNL" />
 			<arg value="prog" />

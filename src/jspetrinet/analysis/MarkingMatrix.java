@@ -35,7 +35,7 @@ public class MarkingMatrix {
 		revMarkGroupIndex = new HashMap<MarkGroup,String>();
 		genGroup = mp.getGenGroup();
 		immGroup = mp.getImmGroup();
-
+		
 		Set<GenVec> tmp = new HashSet<GenVec>();
 		tmp.addAll(mp.getImmGroup().keySet());
 		tmp.addAll(mp.getGenGroup().keySet());
@@ -43,31 +43,6 @@ public class MarkingMatrix {
 		Collections.sort(sortedAllGenVec);
 
 		this.createIndex(oneBased);
-
-		for (MarkGroup src : immGroup.values()) {
-			for (MarkGroup dest : immGroup.values()) {
-				this.makeArcI(src, dest);
-			}
-		}
-		for (MarkGroup src : immGroup.values()) {
-			for (MarkGroup dest : genGroup.values()) {
-				this.makeArcI(src, dest);
-			}
-		}
-		for (MarkGroup src : genGroup.values()) {
-			for (MarkGroup dest : immGroup.values()) {
-				this.makeArcE(src, dest);
-				this.makeArcG(src, dest);
-			}
-		}
-		for (MarkGroup src : genGroup.values()) {
-			for (MarkGroup dest : genGroup.values()) {
-				if (src != dest) {
-					this.makeArcE(src, dest);
-				}
-				this.makeArcG(src, dest);
-			}
-		}
 	}
 	
 	private void createIndex(boolean oneBased) {
@@ -96,55 +71,6 @@ public class MarkingMatrix {
 				}
 			}
 			x++;
-		}
-	}
-
-
-	// create group graph
-	private void makeArcI(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
-		for (Mark src: srcMarkGroup.getMarkSet()) {
-			for (Arc arc: src.getOutArc()) {
-				Mark dest = (Mark) arc.getDest();
-				if (destMarkGroup.getMarkSet().contains(dest)) {
-					new MarkingArc(srcMarkGroup, destMarkGroup, null);
-					return;
-				}
-			}
-		}
-	}
-
-	// create group graph
-	private void makeArcE(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
-		for (Mark src: srcMarkGroup.getMarkSet()) {
-			for (Arc arc: src.getOutArc()) {
-				Mark dest = (Mark) arc.getDest();
-				if (destMarkGroup.getMarkSet().contains(dest)) {
-					Trans tr = ((MarkingArc) arc).getTrans();
-					if (tr instanceof ExpTrans) {
-						new MarkingArc(srcMarkGroup, destMarkGroup, null);
-						return;
-					}
-				}
-			}
-		}
-	}
-
-	// create group graph
-	private void makeArcG(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
-		Set<Trans> mm = new HashSet<Trans>();
-		for (Mark src: srcMarkGroup.getMarkSet()) {
-			for (Arc arc: src.getOutArc()) {
-				Mark dest = (Mark) arc.getDest();
-				if (destMarkGroup.getMarkSet().contains(dest)) {
-					Trans tr = ((MarkingArc) arc).getTrans();
-					if (!mm.contains(tr)) {
-						if (tr instanceof GenTrans) {
-							new MarkingArc(srcMarkGroup, destMarkGroup, tr);
-							mm.add(tr);
-						}
-					}
-				}
-			}
 		}
 	}
 
@@ -219,11 +145,12 @@ public class MarkingMatrix {
 						elem.add(revMarkIndex.get(src));
 						elem.add(revMarkIndex.get(dest));
 						GenTrans tr = (GenTrans) markingArc.getTrans();
-						try {
-							elem.add(tr.getDist().eval(net));
-						} catch (JSPNException e) {
-							System.err.println("Fail to get dist: " + tr.getLabel());
-						}
+//						try {
+//							elem.add(tr.getDist().eval(net));
+//						} catch (JSPNException e) {
+//							System.err.println("Fail to get dist: " + tr.getLabel());
+//						}
+						elem.add(1);
 						if (!result.containsKey(tr)) {
 							result.put(tr, new ArrayList<List<Object>>());
 						}
@@ -282,9 +209,11 @@ public class MarkingMatrix {
 				} else if (markingArc.getTrans() instanceof GenTrans) {
 					GenTrans tr = (GenTrans) markingArc.getTrans();
 					if (!tmp.containsKey(tr)) {
-						tmp.put(tr, tr.getDist());
+//						tmp.put(tr, tr.getDist());
+						tmp.put(tr, new ASTValue(1));
 					} else {
-						tmp.put(tr, new ASTArithmetic(tmp.get(tr), tr.getDist(), "+"));
+//						tmp.put(tr, new ASTArithmetic(tmp.get(tr), tr.getDist(), "+"));
+						tmp.put(tr, new ASTArithmetic(tmp.get(tr), new ASTValue(1), "+"));
 					}
 				}
 			}

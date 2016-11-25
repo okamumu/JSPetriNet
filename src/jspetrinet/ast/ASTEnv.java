@@ -48,6 +48,10 @@ public class ASTEnv {
 		hash.put(label, value);
 	}
 	
+	public void remove(String label) {
+		hash.remove(label);
+	}
+
 	public boolean contains(String label) {
 		return hash.containsKey(label);
 	}

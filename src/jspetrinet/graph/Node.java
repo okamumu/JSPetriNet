@@ -32,13 +32,13 @@ public class Node implements Component {
 		outarc.add(arc);
 	}
 
-	public final void removeInArc(Arc arc) {
-		inarc.remove(arc);
-	}
-
-	public final void removeOutArc(Arc arc) {
-		outarc.remove(arc);
-	}
+//	public final void removeInArc(Arc arc) {
+//		inarc.remove(arc);
+//	}
+//
+//	public final void removeOutArc(Arc arc) {
+//		outarc.remove(arc);
+//	}
 
 	//	@Override
 //	public final String toString() {

@@ -25,7 +25,9 @@ declaration
     ;
 
 node_declaration
-    : type=('place'|'imm'|'exp'|'gen') id=ID ('(' option_list ')')? (simple_block)?
+    : node='place' id=ID ('(' option_list ')')?
+    | node='trans' id=ID ('(' option_list ')')? (simple_block)?
+    | node=ID id=ID ('(' option_list ')')? (simple_block)?
     ;
 
 arc_declaration
@@ -127,7 +129,7 @@ FLOAT
     | DIGIT+ EXPONENT
     ;
 
-STRING: '"' ('~[\r\n]')* '"' ;
+STRING : '"' ( ESCAPED_QUOTE | ~('\n'|'\r') )*? '"';
 
 NEWLINE : [\r\n;EOF]+ ;
 
@@ -155,3 +157,5 @@ TRUE    : [Tt][Rr][Uu][Ee] ;
 
 fragment
 FALSE   : [Ff][Aa][Ll][Ss][Ee] ;
+
+fragment ESCAPED_QUOTE : '\\"';

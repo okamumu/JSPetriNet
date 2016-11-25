@@ -265,6 +265,30 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		}
 	}
 
+	private void defineTrans(String name) throws JSPNException {
+		if (options.contains("type")) {
+			Object obj = ((AST) options.get("type")).eval(env);
+			options.remove("type");
+			if (obj instanceof String) {
+				switch ((String) obj) {
+				case "exp":
+					this.defineExpTrans(name);
+					break;
+				case "gen":
+					this.defineGenTrans(name);
+					break;
+				case "imm":
+					this.defineImmTrans(name);
+					break;
+				default:
+					throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "type option should be a string; exp, imm, gen");
+				}
+			}
+		} else {
+			this.defineExpTrans(name);
+		}
+	}
+
 	@Override public void enterNode_declaration(JSPNLParser.Node_declarationContext ctx) {
 		this.options = new Net("options");
 		hasBlock = false;
@@ -273,7 +297,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 	@Override
 	public void exitNode_declaration(JSPNLParser.Node_declarationContext ctx) {
 		try {
-			switch (ctx.type.getText()) {
+			switch (ctx.node.getText()) {
 			case "place":
 				this.definePlace(ctx.id.getText());
 				break;
@@ -284,9 +308,14 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 				this.defineExpTrans(ctx.id.getText());
 				break;
 			case "gen":
-				this.defineGenTrans(ctx.id.getText());
+				this.defineExpTrans(ctx.id.getText());
+				break;
+			case "trans":
+				this.defineTrans(ctx.id.getText());
 				break;
 			default:
+				System.err.println("Error: Node " + ctx.node.getText() + " could not be defined.");
+				return;
 			}
 		} catch (JSPNException e) {
 			// TODO Auto-generated catch block
@@ -569,7 +598,8 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 			stack.push(new ASTValue(Boolean.parseBoolean(ctx.val.getText())));
 			break;
 		case 4: // string
-			stack.push(new ASTValue(ctx.val.getText()));
+			String x = ctx.val.getText().replaceAll("\"", "");
+			stack.push(new ASTValue(x));
 			break;
 		default:
 		}

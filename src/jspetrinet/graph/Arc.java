@@ -21,12 +21,12 @@ public class Arc implements Component {
 		return dest;
 	}
 	
-	public final Arc delete() {
-		src.removeOutArc(this);
-		dest.removeInArc(this);
-		return this;
-	}
-	
+//	public final Arc delete() {
+//		src.removeOutArc(this);
+//		dest.removeInArc(this);
+//		return this;
+//	}
+//	
 	@Override
 	public final void accept(Visitor visitor) {
 		visitor.visit(this);

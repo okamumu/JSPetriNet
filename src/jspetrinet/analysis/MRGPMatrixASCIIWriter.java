@@ -12,6 +12,7 @@ import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkGroup;
 import jspetrinet.marking.MarkingGraph;
+import jspetrinet.petri.GenTrans;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.Trans;
 
@@ -180,6 +181,11 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 		pw.println("# size" + colsep + src.size() + colsep + dest.size() + colsep + s.size());
 	}
 
+	private void defineMatrix(PrintWriter pw, String matrixName, MarkGroup src, MarkGroup dest, String dist, List<List<Object>> s) {
+		pw.println("# " + matrixName + " " + this.getGroupLabel(src) + " to " + this.getGroupLabel(dest) + " " + dist);
+		pw.println("# size" + colsep + src.size() + colsep + dest.size() + colsep + s.size());
+	}
+
 	private void putElement(PrintWriter pw, String matrixName, Object i, Object j, Object v) {
 		pw.println(matrixName + colsep + i + colsep + j + colsep + v);
 	}
@@ -190,7 +196,6 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 			return;
 		}
 		List< List<Object> > s = this.getMatrixI(net, src, dest);
-//		s.sort(new CSCComparator());
 		if (s.size() == 0) {
 			return;
 		}
@@ -202,14 +207,13 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 		matrixName.put(new GroupPair(src, dest), matname);
 	}
 
-	private void writeGen(PrintWriter pw, MarkGroup src, MarkGroup dest) {
+	private void writeGen(PrintWriter pw, MarkGroup src, MarkGroup dest) throws JSPNException {
 		Net net = this.getMarkingGraph().getNet();
 		if (dest.size() == 0) {
 			return;
 		}
 		Map<Trans,List<List<Object>>> elem = this.getMatrixG(net, src, dest);
 		List<List<Object>> s = elem.get(null); // get EXP
-	//	s.sort(new CSCComparator());
 		if (s.size() != 0 || src == dest) {
 			String matname = this.getGroupLabel(src) + this.getGroupLabel(dest) + "E";
 			this.defineMatrix(pw, matname, src, dest, s);
@@ -221,11 +225,11 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 		for (Map.Entry<Trans, List<List<Object>>> entry: elem.entrySet()) {
 			if (entry.getKey() != null) {
 				s = entry.getValue();
-//				s.sort(new CSCComparator());
 				if (s.size() != 0) {
 					String matname = this.getGroupLabel(src) + this.getGroupLabel(dest)
 						+ "P" + entry.getKey().getIndex();
-					this.defineMatrix(pw, matname, src, dest, s);
+					String dist = entry.getKey().getLabel() + " " + ((GenTrans) entry.getKey()).getDist().eval(net);
+					this.defineMatrix(pw, matname, src, dest, dist, s);
 					for (List<Object> e: s) {
 						this.putElement(pw, matname, e.get(0), e.get(1), e.get(2));
 					}
@@ -235,7 +239,7 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 		}
 	}
 
-	public void writeMatrix(PrintWriter pw) {
+	public void writeMatrix(PrintWriter pw) throws JSPNException {
 		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
 		for (GenVec srcgv : this.getSortedAllGenVec()) {

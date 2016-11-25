@@ -8,7 +8,7 @@ import jspetrinet.sim.Utility;
 
 public class UnifDist extends Dist {
 	
-	public static final String dname = "dist.unif";
+	public static final String dname = "unif";
 
 	private AST lower;
 	private AST upper;
