@@ -63,7 +63,7 @@ assign_expression returns [int type]
 
 expression returns [int type]
     : op=('!'|'+'|'-') expression { $type = 1; }
-    | expression op=('*'|'/'|'%') expression { $type = 2; }
+    | expression op=('*'|'/'|'div'|'mod') expression { $type = 2; }
     | expression op=('+'|'-') expression { $type = 3; }
     | expression op=('<'|'<='|'>'|'>=') expression { $type = 4; }
     | expression op=('=='|'!=') expression { $type = 5; }

@@ -84,7 +84,8 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		switch(op) {
 		case "*":
 		case "/":
-		case "%":
+		case "div":
+		case "mod":
 		case "+":
 		case "-":
 			stack.push(new ASTArithmetic(expr1, expr2, op));
@@ -527,6 +528,21 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 			case ExpDist.dname:
 				this.defineExpDist(args);
 				break;
+			case "min":
+				stack.push(new ASTMathFunc(args, "min"));
+				break;
+			case "max":
+				stack.push(new ASTMathFunc(args, "max"));
+				break;
+			case "pow":
+				stack.push(new ASTMathFunc(args, "pow"));
+				break;
+			case "log":
+				stack.push(new ASTMathFunc(args, "log"));
+				break;
+//			case "print":
+//				stack.push(new ASTMathFunc(args, "print"));
+//				break;
 			default:
 			}
 		} catch (JSPNException e) {

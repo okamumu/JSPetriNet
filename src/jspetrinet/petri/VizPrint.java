@@ -165,7 +165,6 @@ public class VizPrint implements Visitor {
 		} else if (component instanceof InhibitArc) {
 			InhibitArc ac = (InhibitArc) component;			
 			bw.printf(harcFMT, ac.getSrc(), ac.getDest(), this.makeArcLabel(ac));
-			bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [arrowhead=odot];");
 			hash.add(component);
 			ac.getSrc().accept(this);
 			ac.getDest().accept(this);

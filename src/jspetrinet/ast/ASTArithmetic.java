@@ -67,6 +67,20 @@ public final class ASTArithmetic extends ASTBinary {
 		}
 	}
 
+	private final Object idivide() throws JSPNException {
+		if (lhs instanceof Integer && rhs instanceof Integer) {
+			return (Integer) lhs / (Integer) rhs;
+		} else if (lhs instanceof Integer && rhs instanceof Double) {
+			return (Integer) lhs / ((Double) rhs).intValue();
+		} else if (lhs instanceof Double && rhs instanceof Integer) {
+			return ((Double) lhs).intValue() / (Integer) rhs;
+		} else if (lhs instanceof Double && rhs instanceof Double) {
+			return ((Double) lhs).intValue() / ((Double) rhs).intValue();
+		} else {
+			throw new TypeMismatch();
+		}
+	}
+
 	private final Object mod() throws JSPNException {
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return (Integer) lhs / (Integer) rhs;
@@ -93,7 +107,9 @@ public final class ASTArithmetic extends ASTBinary {
 			return multi();
 		case "/":
 			return divide();
-		case "%":
+		case "div":
+			return idivide();
+		case "mod":
 			return mod();
 		default:
 			throw new TypeMismatch();
