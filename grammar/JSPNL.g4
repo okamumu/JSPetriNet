@@ -22,6 +22,7 @@ simple_block
 declaration
     : node_declaration
     | arc_declaration
+    | assert_declaration
     ;
 
 node_declaration
@@ -32,6 +33,10 @@ node_declaration
 
 arc_declaration
     : type=('arc'|'iarc'|'oarc'|'harc') srcName=ID 'to' destName=ID ('(' option_list ')')?
+    ;
+
+assert_declaration
+    : 'assert' simple_block
     ;
 
 // option

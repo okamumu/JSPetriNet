@@ -8,6 +8,7 @@ import java.util.Map;
 
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.ast.ASTValue;
+import jspetrinet.JSPetriNet;
 import jspetrinet.ast.AST;
 import jspetrinet.exception.*;
 import jspetrinet.graph.Arc;
@@ -23,10 +24,8 @@ public class Net extends ASTEnv {
 	protected final List<Trans> immTransList;
 	protected final List<Trans> expTransList;
 	protected final List<Trans> genTransList;
-
-	public Net(String label) {
-		this(null, label);
-	}
+	
+	protected List<AST> assertExpr;
 
 	public Net(Net outer, String label) {
 		this.label = label;
@@ -41,6 +40,12 @@ public class Net extends ASTEnv {
 		if (outer != null) {
 			outer.setChild(label, this);
 		}
+		
+		assertExpr = new ArrayList<AST>();
+	}
+
+	public Net(String label) {
+		this(null, label);
 	}
 
 	// getter
@@ -204,5 +209,23 @@ public class Net extends ASTEnv {
 		}
 		ArcBase tmp = new InhibitArc(src, dest, multi);
 		return tmp;
+	}
+	
+	/// assert
+	
+	public final void addAssert(AST assertExpression) {
+		this.assertExpr.add(assertExpression);
+	}
+	
+	public final void assertNet() throws JSPNException {
+		for (AST a : assertExpr) {
+			Object obj = a.eval(this);
+			if (obj instanceof Boolean) {
+				Boolean b = (Boolean) obj;
+				if (b == false) {
+					throw new JSPNAssertException("Assert function " + a.toString() + " retures false at mark " + JSPetriNet.markToString(this, this.getCurrentMark()));
+				}
+			}
+		}
 	}
 }

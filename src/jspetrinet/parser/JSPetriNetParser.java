@@ -106,11 +106,11 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		}
 	}
 
-	private void ternaryExpression(String op) {
+	private void ifThenElseExpression(String op) {
 		AST expr3 = stack.pop();
 		AST expr2 = stack.pop();
 		AST expr1 = stack.pop();
-		stack.push(new ASTTernary(expr1, expr2, expr3, "ite"));
+		stack.push(new ASTIfThenElse(expr1, expr2, expr3));
 	}
 		
 	private void defineIArc(Place src, Trans dest, AST multi) {
@@ -403,6 +403,14 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 	}
 
 	@Override
+	public void exitAssert_declaration(JSPNLParser.Assert_declarationContext ctx) {
+		if (hasBlock) {
+			AST a = stack.pop();
+			currentEnv.addAssert(a);
+		}
+	}
+
+	@Override
 	public void enterOption_list(JSPNLParser.Option_listContext ctx) {
 		currentEnv = options;
 	}
@@ -442,7 +450,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 			binaryExpression(ctx.op.getText());
 			break;
 		case 8:
-			ternaryExpression(ctx.op.getText());
+			ifThenElseExpression(ctx.op.getText());
 			break;
 		case 12:
 			try {

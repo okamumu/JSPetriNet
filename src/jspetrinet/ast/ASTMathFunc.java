@@ -120,20 +120,6 @@ public class ASTMathFunc implements AST {
 		return tmp1;
 	}
 
-	private final Object print() throws JSPNException {
-		Iterator<Object> ite = res.iterator();
-		Object tmp = new ASTNull();
-		while (ite.hasNext()) {
-			tmp = ite.next();
-			System.out.print(tmp.toString());
-			if (ite.hasNext()) {
-				System.out.print(",");
-			}
-		}
-		System.out.println();
-		return tmp;
-	}
-
 	private Object makeASTNaN() {
 		ASTList x = new ASTList();
 		for (Object obj : res) {
@@ -168,8 +154,6 @@ public class ASTMathFunc implements AST {
 			return min();
 		case "max":
 			return max();
-//		case "print":
-//			return print();
 		default:
 			throw new TypeMismatch();
 		}

@@ -90,6 +90,18 @@ public class JSPNLBaseListener implements JSPNLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterAssert_declaration(JSPNLParser.Assert_declarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAssert_declaration(JSPNLParser.Assert_declarationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterOption_list(JSPNLParser.Option_listContext ctx) { }
 	/**
 	 * {@inheritDoc}

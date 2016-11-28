@@ -70,6 +70,16 @@ public interface JSPNLListener extends ParseTreeListener {
 	 */
 	void exitArc_declaration(JSPNLParser.Arc_declarationContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link JSPNLParser#assert_declaration}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssert_declaration(JSPNLParser.Assert_declarationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link JSPNLParser#assert_declaration}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssert_declaration(JSPNLParser.Assert_declarationContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link JSPNLParser#option_list}.
 	 * @param ctx the parse tree
 	 */
