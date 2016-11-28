@@ -36,7 +36,7 @@ arc_declaration
     ;
 
 assert_declaration
-    : 'assert' simple_block
+    : 'assert' (expression | simple_block)
     ;
 
 // option

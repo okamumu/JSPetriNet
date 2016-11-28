@@ -24,7 +24,9 @@ public class Net extends ASTEnv {
 	protected final List<Trans> immTransList;
 	protected final List<Trans> expTransList;
 	protected final List<Trans> genTransList;
-	
+
+	protected final Map<String,AST> imark;
+
 	protected List<AST> assertExpr;
 
 	public Net(Net outer, String label) {
@@ -40,7 +42,8 @@ public class Net extends ASTEnv {
 		if (outer != null) {
 			outer.setChild(label, this);
 		}
-		
+	
+		imark = new HashMap<String,AST>();
 		assertExpr = new ArrayList<AST>();
 	}
 
@@ -57,6 +60,19 @@ public class Net extends ASTEnv {
 		child.put(label, net);
 	}
 	
+	public final void setIMark(String name, AST value) {
+		imark.put(name, value);
+	}
+	
+	public final Map<String,Integer> getIMark() throws JSPNException {
+		Map<String,Integer> mark = new HashMap<String,Integer>();
+		for (Map.Entry<String, AST> entry : imark.entrySet()) {
+			int i = (Integer) entry.getValue().eval(this);
+			mark.put(entry.getKey(), i);
+		}
+		return mark;
+	}
+
 	public final boolean containts(String label) {
 		return child.containsKey(label);
 	}

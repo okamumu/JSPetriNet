@@ -12,16 +12,19 @@ import java.util.Map;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 
+import jspetrinet.JSPetriNet;
 import jspetrinet.ast.*;
 import jspetrinet.dist.ConstDist;
 import jspetrinet.dist.ExpDist;
 import jspetrinet.dist.UnifDist;
 import jspetrinet.exception.*;
+import jspetrinet.marking.Mark;
 import jspetrinet.petri.*;
 
 public class JSPetriNetParser extends JSPNLBaseListener {
 	
-	private Net env;
+	private Net env;	
+	
 	private final LinkedList<AST> stack;
 	private final LinkedList<Exception> errorStack;
 	
@@ -63,7 +66,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		this.env = net;
 		this.currentEnv = env;
 	}
-
+	
 	public void makeNet() {
 		parser.prog();
 	}
@@ -144,7 +147,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		int pmax = Place.DefaultMax;
 		for (Map.Entry<String,Object> entry : options.entrySet()) {
 			switch (entry.getKey()) {
-			case "max":
+			case "max": {
 				Object obj = ((AST) entry.getValue()).eval(currentEnv);
 				if (obj instanceof Integer) {
 					pmax = (Integer) obj;
@@ -152,6 +155,12 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 			          throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error in the definition of place " + name + ". The max attribute should be an integer.");
 				}
 				break;
+			}
+			case "init": {
+				AST tmp = (AST) options.get("init");
+				env.setIMark(name, tmp);
+				break;
+			}
 			default:
 				throw new UnknownOption(entry.getKey());
 			}
@@ -404,10 +413,8 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 
 	@Override
 	public void exitAssert_declaration(JSPNLParser.Assert_declarationContext ctx) {
-		if (hasBlock) {
-			AST a = stack.pop();
-			currentEnv.addAssert(a);
-		}
+		AST a = stack.pop();
+		currentEnv.addAssert(a);
 	}
 
 	@Override

@@ -148,11 +148,16 @@ public class CommandLineMain {
 				System.err.println("Error: " + e.getMessage() + " Please check the imark option.");
 				System.exit(1);
 			}
-			System.out.println("Initial marking: " + JSPetriNet.markToString(net, imark));
 		} else {
-			System.err.println("Marking process requires an initial marking (-" + Opts.INITMARK + ").");
-			System.exit(1);
+			try {
+				imark = JSPetriNet.mark(net,  net.getIMark());
+			} catch (JSPNException e) {
+				System.err.println("Error: " + e.getMessage() + " Please check the init option of the definition of places.");
+				System.err.println("The initial marking is also defined by (-" + Opts.INITMARK + ").");
+				System.exit(1);
+			}
 		}
+		System.out.println("Initial marking: " + JSPetriNet.markToString(net, imark));
 		return imark;
 	}
 
