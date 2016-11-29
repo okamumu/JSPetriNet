@@ -1,5 +1,6 @@
 package jspetrinet.marking;
 
+
 import jspetrinet.JSPetriNet;
 import jspetrinet.ast.ASTEnv;
 import jspetrinet.exception.JSPNException;
@@ -69,7 +70,8 @@ public final class PetriAnalysis {
 	}
 
 	public final static Mark doFiring(Net net, Trans tr) throws JSPNException {
-		Mark nextMark = new Mark(net.getCurrentMark());
+		Mark currentMark = net.getCurrentMark();
+		Mark nextMark = new Mark(currentMark);
 		for (Arc arc : tr.getInArc()) {
 			Place place = (Place) arc.getSrc();
 			ArcBase arcBase = (ArcBase) arc;
@@ -88,6 +90,9 @@ public final class PetriAnalysis {
 						+ tr.getLabel() + " at " + JSPetriNet.markToString(net, net.getCurrentMark()));
 			}
 		}
+		net.setCurrentMark(nextMark);
+		tr.updateEval(net);
+		net.setCurrentMark(currentMark);
 		return nextMark;
 	}
 }

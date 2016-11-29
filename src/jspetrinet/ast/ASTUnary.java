@@ -3,7 +3,7 @@ package jspetrinet.ast;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.TypeMismatch;
 
-public final class ASTUnary extends AST {
+public final class ASTUnary implements AST {
 
 	private final AST child;
 	private final String op;
@@ -50,6 +50,12 @@ public final class ASTUnary extends AST {
 	public Object eval(ASTEnv m) throws JSPNException {
 		res = this.child.eval(m);
 		
+		if (res instanceof ASTNaN) {
+			ASTNaN nan = (ASTNaN) res;
+			nan.setValue(new ASTUnary(nan.getValue(), op));
+			return nan;
+		}
+		
 		switch(op) {
 		case "+":
 			return plus();
@@ -60,6 +66,11 @@ public final class ASTUnary extends AST {
 		default:
 			throw new TypeMismatch();
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return "(" + op + this.child.toString() + ")";
 	}
 }
 

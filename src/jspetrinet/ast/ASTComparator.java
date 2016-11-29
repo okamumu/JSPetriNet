@@ -4,13 +4,11 @@ import jspetrinet.exception.*;
 
 public final class ASTComparator extends ASTBinary {
 	
-	private final String op;
 	private Object lhs;
 	private Object rhs;
 
 	public ASTComparator(AST left, AST right, String op) {
-		super(left, right);
-		this.op = op;
+		super(left, right, op);
 	}
 
 	private final Object eq() throws JSPNException {
@@ -106,8 +104,8 @@ public final class ASTComparator extends ASTBinary {
 		lhs = this.getLeft().eval(m);
 		rhs = this.getRight().eval(m);
 		
-		if (lhs instanceof String || rhs instanceof String) {
-			return "(" + lhs.toString() + op + rhs.toString() + ")";
+		if (lhs instanceof ASTNaN || rhs instanceof ASTNaN) {
+			return new ASTNaN(new ASTLogical(AST.getAST(lhs), AST.getAST(rhs), op));
 		}
 
 		switch(op) {

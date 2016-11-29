@@ -5,7 +5,10 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
+import jspetrinet.ast.AST;
+import jspetrinet.ast.ASTEnv;
 import jspetrinet.exception.JSPNException;
+import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.graph.Arc;
 import jspetrinet.graph.Component;
 import jspetrinet.graph.Visitor;
@@ -17,6 +20,65 @@ public class VizPrint implements Visitor {
 	private final Net net;
 
 	private PrintWriter bw;
+	
+	private static String ln = "\n";	
+	private static String placeFMT = "\"%s\" [shape = circle, label = \"%s\"];" + ln;
+	private static String expFMT = "\"%s\" [shape = box, label = \"%s\" width=0.8, height=0.2];" + ln;
+	private static String immFMT = "\"%s\" [shape = box, label = \"%s\" width=0.8, height=0.02, style=\"filled,dashed\"];" + ln;
+	private static String genFMT = "\"%s\" [shape = box, label = \"%s\" width=0.8, height=0.2, style=filled];" + ln;
+	private static String arcFMT = "\"%s\" -> \"%s\" [label = \"%s\"];" + ln;
+	private static String harcFMT = "\"%s\" -> \"%s\" [label = \"%s\", arrowhead=odot];" + ln;
+
+	private String makeTransLabel(Trans tr) {
+		String label = tr.getLabel();
+
+		// guard
+		AST guard = tr.getGuard();
+		if (guard != null) {
+			try {
+				Object obj = guard.eval(net);
+				if (obj instanceof Boolean) {
+					if ((Boolean) obj != true) {
+						label += ln + "[" + obj.toString() + "]";
+					}
+				} else {
+					label += ln + "[" + obj.toString() + "]";
+				}
+			} catch (JSPNException e) {
+				label += ln + "[" + guard.toString() + "]";
+			}
+		}
+		
+		// update
+		AST update = tr.getUpdate();
+		if (update != null) {
+			label += ln + "{" + update.toString() + "}";
+		}
+		
+		return label;
+	}
+
+	private String makeArcLabel(ArcBase arc) {
+		Object obj;
+		try {
+			obj = arc.getMulti().eval(net);
+		} catch (JSPNException e) {
+			return arc.getMulti().toString();
+		}
+		int m;
+		if (obj instanceof Integer) {
+			m = (Integer) obj;
+		} else if (obj instanceof Double) {
+			m = ((Double) obj).intValue();
+		} else {
+			return obj.toString();
+		}
+		if (m != 1) {
+			return Integer.toString(m);
+		} else {
+			return "";
+		}
+	}
 
 	public VizPrint(Net net) {
 		hash = new HashSet<Component>();
@@ -46,7 +108,7 @@ public class VizPrint implements Visitor {
 		}
 		if (component instanceof Place) {
 			Place c =  (Place) component;
-			bw.println("\"" + c + "\" [shape = circle, label = \"" + c.getLabel() + "\"];");
+			bw.printf(placeFMT, c, c.getLabel());
 			hash.add(component);
 			allnodes.remove(component);
 			for (Arc a : c.getInArc()) {
@@ -57,12 +119,7 @@ public class VizPrint implements Visitor {
 			}
 		} else if (component instanceof ExpTrans) {
 			ExpTrans c =  (ExpTrans) component;
-			try {
-				String g = c.toGuardString(net);
-				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\n[" + g + "] \" width=0.8, height=0.2];");
-			} catch (JSPNException e) {
-				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.2];");
-			}
+			bw.printf(expFMT, c, this.makeTransLabel(c));
 			hash.add(component);
 			allnodes.remove(component);
 			for (Arc a : c.getInArc()) {
@@ -73,12 +130,7 @@ public class VizPrint implements Visitor {
 			}
 		} else if (component instanceof ImmTrans) {
 			ImmTrans c =  (ImmTrans) component;
-			try {
-				String g = c.toGuardString(net);
-				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\n[" + g + "] \" width=0.8, height=0.02, style=\"filled,dashed\"];");
-			} catch (JSPNException e) {
-				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.02, style=\"filled,dashed\"];");
-			}
+			bw.printf(immFMT, c, this.makeTransLabel(c));
 			hash.add(component);
 			allnodes.remove(component);
 			for (Arc a : c.getInArc()) {
@@ -89,12 +141,7 @@ public class VizPrint implements Visitor {
 			}
 		} else if (component instanceof GenTrans) {
 			GenTrans c =  (GenTrans) component;
-			try {
-				String g = c.toGuardString(net);
-				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\n[" + g + "] \" width=0.8, height=0.2, style=filled];");
-			} catch (JSPNException e) {
-				bw.println("\"" + c + "\" [shape = box, label = \"" + c.getLabel() + "\" width=0.8, height=0.2, style=filled];");
-			}
+			bw.printf(genFMT, c, this.makeTransLabel(c));
 			hash.add(component);
 			allnodes.remove(component);
 			for (Arc a : c.getInArc()) {
@@ -105,52 +152,19 @@ public class VizPrint implements Visitor {
 			}
 		} else if (component instanceof InArc) {
 			InArc ac = (InArc) component;
-			int multi;
-			Object obj;
-			try {
-				multi = ac.getMulti(net);
-				obj = ac.getFiring().eval(net);
-			} catch (JSPNException e1) {
-				multi = 0;
-				obj = "Error";
-			}
-			try {
-				int firing = (Integer) obj;
-				if (multi != 1 || firing != 1) {
-					bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + multi + "(" + firing + ")\"];");
-				} else {
-					bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\";");					
-				}
-			} catch (Exception e) {
-				bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + multi + "(" + obj + ")\"];");
-			}
+			bw.printf(arcFMT, ac.getSrc(), ac.getDest(), this.makeArcLabel(ac));
 			hash.add(component);
 			ac.getSrc().accept(this);
 			ac.getDest().accept(this);
 		} else if (component instanceof OutArc) {
 			OutArc ac = (OutArc) component;
-			Object obj;
-			try {
-				obj = ac.getFiring().eval(net);
-			} catch (JSPNException e1) {
-				obj = "Error";
-			}
-			try {
-				int firing = (Integer) obj;
-				if (firing != 1) {
-					bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + firing + "\"];");
-				} else {
-					bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\";");					
-				}
-			} catch (Exception e) {
-				bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [label = \"" + obj + "\"];");
-			}
+			bw.printf(arcFMT, ac.getSrc(), ac.getDest(), this.makeArcLabel(ac));
 			hash.add(component);
 			ac.getSrc().accept(this);
 			ac.getDest().accept(this);
 		} else if (component instanceof InhibitArc) {
 			InhibitArc ac = (InhibitArc) component;			
-			bw.println("\"" + ac.getSrc() + "\" -> \"" + ac.getDest() + "\" [arrowhead=odot];");
+			bw.printf(harcFMT, ac.getSrc(), ac.getDest(), this.makeArcLabel(ac));
 			hash.add(component);
 			ac.getSrc().accept(this);
 			ac.getDest().accept(this);

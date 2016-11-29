@@ -1,9 +1,8 @@
 package jspetrinet;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,21 +12,19 @@ import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.marking.*;
 import jspetrinet.parser.JSPetriNetParser;
-import jspetrinet.parser.ParseException;
 import jspetrinet.petri.*;
 
 public class JSPetriNet {
 
-	public static Net load(Net net, InputStream in) throws ParseException, JSPNException {
+	public static Net load(Net net, InputStream in) throws JSPNException, IOException {
 		JSPetriNetParser parser = new JSPetriNetParser(in);
 		parser.setNet(net);
 		parser.makeNet();
 		return net;
 	}
 
-	public static Net eval(Net net, String text) throws ParseException, JSPNException, UnsupportedEncodingException {
-		InputStream in = new ByteArrayInputStream(text.getBytes("utf-8"));
-		JSPetriNetParser parser = new JSPetriNetParser(in);
+	public static Net eval(Net net, String text) throws JSPNException {
+		JSPetriNetParser parser = new JSPetriNetParser(text);
 		parser.setNet(net);
 		parser.makeNet();
 		return net;

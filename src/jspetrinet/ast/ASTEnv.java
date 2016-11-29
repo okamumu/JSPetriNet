@@ -2,6 +2,7 @@ package jspetrinet.ast;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.NotFindObjectException;
@@ -47,8 +48,16 @@ public class ASTEnv {
 		hash.put(label, value);
 	}
 	
+	public void remove(String label) {
+		hash.remove(label);
+	}
+
 	public boolean contains(String label) {
 		return hash.containsKey(label);
+	}
+	
+	public Set<Map.Entry<String,Object>> entrySet() {
+		return hash.entrySet();
 	}
 
 }

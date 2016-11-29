@@ -2,7 +2,7 @@ package jspetrinet.ast;
 
 import jspetrinet.exception.*;
 
-public class ASTVariable extends AST {
+public class ASTVariable implements AST {
 
 	private final String label;
 
@@ -20,12 +20,17 @@ public class ASTVariable extends AST {
 		try {
 			v = env.get(label);
 		} catch (NotFindObjectException e) {
-			return label;
+			return new ASTNaN(this);
 		}
 		if (v instanceof AST) {
 			return ((AST) v).eval(env);
 		} else {
 			return v;
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return label;
 	}
 }

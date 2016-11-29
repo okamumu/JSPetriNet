@@ -6,4 +6,5 @@ public enum JSPNExceptionType {
 	TYPE_MISMATCH,
 	UNKNOWN_OPTION,
 	MARKING_ERROR,
+	ASSERTION
 }

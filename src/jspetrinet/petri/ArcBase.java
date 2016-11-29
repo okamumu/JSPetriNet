@@ -22,6 +22,10 @@ abstract public class ArcBase extends Arc {
 	}
 	
 	// getter
+	public final AST getMulti() {
+		return multi;
+	}
+	
 	public final int getMulti(ASTEnv env) throws JSPNException {
 		Object result = multi.eval(env);
 		if (result instanceof Integer) {
@@ -37,9 +41,9 @@ abstract public class ArcBase extends Arc {
 		this.multi = multi;
 	}
 	
-	public final AST getFiring() {
-		return firingFunc;
-	}
+//	public final AST getFiring() {
+//		return firingFunc;
+//	}
 
 	public final void setFiring(AST firingFunc) {
 		this.firingFunc = firingFunc;

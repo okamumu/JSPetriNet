@@ -4,13 +4,11 @@ import jspetrinet.exception.*;
 
 public final class ASTArithmetic extends ASTBinary {
 	
-	private final String op;
 	private Object lhs;
 	private Object rhs;
 
 	public ASTArithmetic(AST left, AST right, String op) {
-		super(left, right);
-		this.op = op;
+		super(left, right, op);
 	}
 
 	private final Object plus() throws JSPNException {
@@ -69,6 +67,20 @@ public final class ASTArithmetic extends ASTBinary {
 		}
 	}
 
+	private final Object idivide() throws JSPNException {
+		if (lhs instanceof Integer && rhs instanceof Integer) {
+			return (Integer) lhs / (Integer) rhs;
+		} else if (lhs instanceof Integer && rhs instanceof Double) {
+			return (Integer) lhs / ((Double) rhs).intValue();
+		} else if (lhs instanceof Double && rhs instanceof Integer) {
+			return ((Double) lhs).intValue() / (Integer) rhs;
+		} else if (lhs instanceof Double && rhs instanceof Double) {
+			return ((Double) lhs).intValue() / ((Double) rhs).intValue();
+		} else {
+			throw new TypeMismatch();
+		}
+	}
+
 	private final Object mod() throws JSPNException {
 		if (lhs instanceof Integer && rhs instanceof Integer) {
 			return (Integer) lhs / (Integer) rhs;
@@ -82,8 +94,8 @@ public final class ASTArithmetic extends ASTBinary {
 		lhs = this.getLeft().eval(m);
 		rhs = this.getRight().eval(m);
 		
-		if (lhs instanceof String || rhs instanceof String) {
-			return "(" + lhs.toString() + op + rhs.toString() + ")";
+		if (lhs instanceof ASTNaN || rhs instanceof ASTNaN) {
+			return new ASTNaN(new ASTLogical(AST.getAST(lhs), AST.getAST(rhs), op));
 		}
 
 		switch(op) {
@@ -95,11 +107,13 @@ public final class ASTArithmetic extends ASTBinary {
 			return multi();
 		case "/":
 			return divide();
-		case "%":
+		case "div":
+			return idivide();
+		case "mod":
 			return mod();
 		default:
 			throw new TypeMismatch();
 		}
 	}
-
+	
 }

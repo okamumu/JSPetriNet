@@ -5,7 +5,7 @@ import jspetrinet.marking.PetriAnalysis;
 import jspetrinet.marking.TransStatus;
 import jspetrinet.petri.Trans;
 
-public class ASTEnableCond extends AST {
+public class ASTEnableCond implements AST {
 
 	private final Trans trans;
 
@@ -25,5 +25,10 @@ public class ASTEnableCond extends AST {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return "(?" + trans.getLabel() + ")";
 	}
 }

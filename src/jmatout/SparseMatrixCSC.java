@@ -33,16 +33,18 @@ public class SparseMatrixCSC {
 		return name;
 	}
 	
-	public void set(int i, int j, double v) {
+	public final void set(int i, int j, double v) {
 		if (j != prevj) {
-			colptr[j] = z;
+			for (int x=prevj+1; x<=j; x++) {
+				colptr[x] = z;
+			}
 			prevj = j;
 		}
 		rowind[z] = i;
 		value[z] = v;
 		z++;
 		if (z == nnz) {
-			colptr[j+1] = z;
+			colptr[ncol] = z;
 		}
 	}
 	

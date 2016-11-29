@@ -8,6 +8,8 @@ import jspetrinet.sim.Utility;
 
 public class ConstDist extends Dist {
 	
+	public static final String dname = "det";
+
 	AST constValue;
 	Object constValueObj;
 
@@ -25,7 +27,7 @@ public class ConstDist extends Dist {
 
 	@Override
 	public String toString() {
-		return "ConstDist(" + constValueObj + ")";
+		return dname + "(" + constValueObj + ")";
 	}
 
 	@Override

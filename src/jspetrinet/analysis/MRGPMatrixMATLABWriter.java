@@ -17,6 +17,7 @@ import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkGroup;
 import jspetrinet.marking.MarkingGraph;
+import jspetrinet.petri.GenTrans;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.Trans;
 
@@ -255,6 +256,13 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 		return new SparseMatrixCSC(matrixName, src.size(), dest.size(), s.size());
 	}
 
+	private SparseMatrixCSC defineMatrix(PrintWriter pw, String matrixName, MarkGroup src, MarkGroup dest, String dist, List<List<Object>> s) {
+		s.sort(new CSCComparator());
+		pw.println("# " + matrixName + " " + this.getGroupLabel(src) + " to " + this.getGroupLabel(dest) + " " + dist);
+		pw.println("# size " + src.size() + " " + dest.size() + " " + s.size());
+		return new SparseMatrixCSC(matrixName, src.size(), dest.size(), s.size());
+	}
+
 	private void putElement(SparseMatrixCSC m, Object iv, Object jv, Object vv) throws JSPNException {
 		int i = (Integer) iv;
 		int j = (Integer) jv;
@@ -262,7 +270,7 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 		if (vv instanceof Double) {
 			v = (Double) vv;
 		} else if (vv instanceof Integer) {
-			v = (Integer) vv;
+			v = ((Integer) vv).doubleValue();
 		} else {
 			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error: Could not convert " + vv.toString() + " to Double in (" + i + "," + j + ") of " + m.getName());
 		}
@@ -309,7 +317,8 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 				if (s.size() != 0) {
 					String matname = this.getGroupLabel(src) + this.getGroupLabel(dest)
 						+ "P" + entry.getKey().getIndex();
-					SparseMatrixCSC mm = this.defineMatrix(pw, matname, src, dest, s);
+					String dist = entry.getKey().getLabel() + " " + ((GenTrans) entry.getKey()).getDist().eval(net);
+					SparseMatrixCSC mm = this.defineMatrix(pw, matname, src, dest, dist, s);
 					for (List<Object> e: s) {
 						this.putElement(mm, e.get(0), e.get(1), e.get(2));
 					}

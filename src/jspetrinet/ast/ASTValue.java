@@ -1,7 +1,7 @@
 package jspetrinet.ast;
 
-public class ASTValue extends AST {
-
+public class ASTValue implements AST {
+	
 	private final Object value;
 
 	public ASTValue(int value) {
@@ -16,6 +16,18 @@ public class ASTValue extends AST {
 		this.value = new Double(value);
 	}
 
+	public ASTValue(Integer value) {
+		this.value = value;
+	}
+
+	public ASTValue(Boolean value) {
+		this.value = value;
+	}
+
+	public ASTValue(Double value) {
+		this.value = value;
+	}
+
 	public ASTValue(String value) {
 		this.value = value;
 	}
@@ -24,5 +36,9 @@ public class ASTValue extends AST {
 	public Object eval(ASTEnv m) {
 		return value;
 	}
-
+	
+	@Override
+	public String toString() {
+		return value.toString();
+	}
 }

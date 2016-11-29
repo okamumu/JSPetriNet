@@ -8,6 +8,8 @@ import jspetrinet.sim.Utility;
 
 public class ExpDist extends Dist {
 	
+	public static final String dname = "exp";
+
 	private AST rate;
 	private Object rateObj;
 
@@ -30,7 +32,7 @@ public class ExpDist extends Dist {
 
 	@Override
 	public String toString() {
-		return "ExpDist(" + rateObj + ")";
+		return dname + "(" + rateObj + ")";
 	}
 
 	@Override

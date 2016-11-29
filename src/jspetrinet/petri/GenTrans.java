@@ -25,14 +25,15 @@ public class GenTrans extends Trans {
 		return dist;
 	}
 	
-	public final void setDist(AST dist) {
-		this.dist = dist;
-	}
-	
 	public final GenTransPolicy getPolicy() {
 		return policy;
 	}
 
+	// setter
+	public final void setDist(AST dist) {
+		this.dist = dist;
+	}
+	
 	public final void setPolicy(GenTransPolicy policy) {
 		this.policy = policy;
 	}

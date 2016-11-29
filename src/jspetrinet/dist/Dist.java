@@ -5,7 +5,7 @@ import jspetrinet.ast.AST;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.sim.Random;
 
-abstract public class Dist extends AST {
+abstract public class Dist implements AST {
 	
 	@Override
 	public final Object eval(ASTEnv env) throws JSPNException {

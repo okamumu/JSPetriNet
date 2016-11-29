@@ -1,8 +1,12 @@
 package jspetrinet.marking;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jspetrinet.JSPetriNet;
 import jspetrinet.exception.*;
@@ -12,6 +16,7 @@ import jspetrinet.petri.*;
 public class MarkingGraph {
 
 	protected Net net;
+	protected Mark imark;
 
 	protected final Map<Mark,Mark> markSet;
 
@@ -19,7 +24,7 @@ public class MarkingGraph {
 	protected final Map<GenVec,MarkGroup> genGroup;
 	protected final Map<GenVec,MarkGroup> immGroup;
 	
-	private CreateMarking creteMarking;
+	private CreateMarking createMarking;
 	
 	public MarkingGraph() {
 		markSet = new HashMap<Mark,Mark>();
@@ -29,7 +34,7 @@ public class MarkingGraph {
 	}
 	
 	public void setCreateMarking(CreateMarking createMarking) {
-		this.creteMarking = createMarking;
+		this.createMarking = createMarking;
 	}
 	
 	public final int size() {
@@ -50,6 +55,10 @@ public class MarkingGraph {
 	
 	public final Net getNet() {
 		return net;
+	}
+
+	public final Mark getInitialMark() {
+		return imark;
 	}
 
 	public final Map<GenVec,MarkGroup> getImmGroup() {
@@ -74,11 +83,14 @@ public class MarkingGraph {
 
 	public Mark create(Mark init, Net net) throws JSPNException {
 		this.net = net;
+		this.imark = init;
 		markSet.clear();
 		numOfGenTrans = net.getNumOfGenTrans();
 		immGroup.clear();
 		genGroup.clear();		
-		return this.creteMarking.create(init, net);
+		Mark ret = this.createMarking.create(init, net);
+		this.createMarkGroupGraph();
+		return ret;
 	}
 
 	public void dotMarking(PrintWriter bw) {
@@ -91,6 +103,85 @@ public class MarkingGraph {
 			}
 		}
 		bw.println("}");
+	}
+
+	// mark group
+	public final void createMarkGroupGraph() {
+		for (MarkGroup src : immGroup.values()) {
+			for (MarkGroup dest : immGroup.values()) {
+				if (src != dest) {
+					this.makeArcI(src, dest);
+				}
+			}
+		}
+		for (MarkGroup src : immGroup.values()) {
+			for (MarkGroup dest : genGroup.values()) {
+				this.makeArcI(src, dest);
+			}
+		}
+		for (MarkGroup src : genGroup.values()) {
+			for (MarkGroup dest : immGroup.values()) {
+				this.makeArcE(src, dest);
+				this.makeArcG(src, dest);
+			}
+		}
+		for (MarkGroup src : genGroup.values()) {
+			for (MarkGroup dest : genGroup.values()) {
+				if (src != dest) {
+					this.makeArcE(src, dest);
+				}
+				this.makeArcG(src, dest);
+			}
+		}
+	}
+	
+
+	// create group graph
+	private void makeArcI(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+		for (Mark src: srcMarkGroup.getMarkSet()) {
+			for (Arc arc: src.getOutArc()) {
+				Mark dest = (Mark) arc.getDest();
+				if (destMarkGroup.getMarkSet().contains(dest)) {
+					new MarkingArc(srcMarkGroup, destMarkGroup, null);
+					return;
+				}
+			}
+		}
+	}
+
+	// create group graph
+	private void makeArcE(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+		for (Mark src: srcMarkGroup.getMarkSet()) {
+			for (Arc arc: src.getOutArc()) {
+				Mark dest = (Mark) arc.getDest();
+				if (destMarkGroup.getMarkSet().contains(dest)) {
+					Trans tr = ((MarkingArc) arc).getTrans();
+					if (tr instanceof ExpTrans) {
+						new MarkingArc(srcMarkGroup, destMarkGroup, null);
+						return;
+					}
+				}
+			}
+		}
+	}
+
+	// create group graph
+	private void makeArcG(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+		Set<Trans> mm = new HashSet<Trans>();
+		for (Mark src: srcMarkGroup.getMarkSet()) {
+			for (Arc arc: src.getOutArc()) {
+				Mark dest = (Mark) arc.getDest();
+				if (destMarkGroup.getMarkSet().contains(dest)) {
+					Trans tr = ((MarkingArc) arc).getTrans();
+					if (!mm.contains(tr)) {
+						if (tr instanceof GenTrans) {
+							new MarkingArc(srcMarkGroup, destMarkGroup, tr);
+							mm.add(tr);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public void dotMarkGroup(PrintWriter bw) {
