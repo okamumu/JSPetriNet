@@ -270,7 +270,7 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 		if (vv instanceof Double) {
 			v = (Double) vv;
 		} else if (vv instanceof Integer) {
-			v = (Integer) vv;
+			v = ((Integer) vv).doubleValue();
 		} else {
 			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error: Could not convert " + vv.toString() + " to Double in (" + i + "," + j + ") of " + m.getName());
 		}
