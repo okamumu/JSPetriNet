@@ -1,12 +1,13 @@
 /*
-  ORIS Tool Example: Fischer
+  ORIS Tool Example: Fischer's protocol
+  Fischer's mutual exclusion protocol with three processes.
 */
 
 place id
 
 // net 1
 
-place idle1
+place idle1 (init = 1)
 place ready1
 place writing1
 place waiting1
@@ -16,7 +17,7 @@ place completed1
 
 exp arrival1
 imm readEmpty1 (guard = #id == 0)
-gen write1 { #id = 1 }
+gen write1 (policy="pri") { #id = 1 }
 gen wait1
 imm readOther1 (guard = #id != 1)
 imm readSelf1 (guard = #id == 1)
@@ -42,7 +43,7 @@ arc reset1 to idle1
 
 // net 2
 
-place idle2
+place idle2 (init = 1)
 place ready2
 place writing2
 place waiting2
@@ -78,7 +79,7 @@ arc reset2 to idle2
 
 // net 3
 
-place idle3
+place idle3 (init = 1)
 place ready3
 place writing3
 place waiting3
@@ -127,6 +128,4 @@ service2.dist = unif(0,2)
 arrival3.rate = 0.1
 write3.dist = unif(0,1)
 wait3.dist = det(1)
-service3.dist = exp(2)
-
-#id = 1
+service3.dist = unif(0,2)
