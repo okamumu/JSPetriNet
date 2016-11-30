@@ -1,0 +1,42 @@
+place Pn
+place Pdf
+place Pf
+place Pw
+place Pr
+place Pc
+
+exp Tdfail (guard = gdfail)
+exp Tfail (guard = gdfail)
+gen Trebuild (guard = gdfail)
+gen Trecon
+
+imm Tstart (guard = gstart, weight = 1)
+imm Tinitr (guard = ginitr, weight = 1)
+imm Tinitf1 (guard = ginitf, weight = 1)
+imm Tinitf2 (guard = ginitf, weight = 1)
+
+arc Pn to Tdfail
+arc Pn to Tfail
+arc Tdfail to Pdf
+arc Tfail to Pf
+arc Pdf to Trebuild
+arc Pdf to Tinitf1
+arc Pf to Tinitf2
+arc Trebuild to Pn
+arc Tinitf1 to Pn
+arc Tinitf2 to Pn
+
+arc Pw to Tstart
+arc Tstart to Pr
+arc Pr to Trecon
+arc Trecon to Pc
+arc Pc to Tinitr
+arc Tinitr to Pw
+
+Tdfail.rate := #Pn * lambda * (1 - (#Pdf / (#Pdf + #Pn)))
+Tfail.rate := #Pn * lambda * (#Pdf / (#Pdf + #Pn))
+
+gdfail := #Pw == 1
+gstart := #Pdf > 3 || #Pf == 1
+ginitf := #Pc == 1
+ginitr := #Pdf == 0 && #Pf == 0
