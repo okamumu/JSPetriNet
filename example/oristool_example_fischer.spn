@@ -17,7 +17,7 @@ place completed1
 
 exp arrival1
 imm readEmpty1 (guard = #id == 0)
-gen write1 (policy="pri") { #id = 1 }
+gen write1 { #id = 1 }
 gen wait1
 imm readOther1 (guard = #id != 1)
 imm readSelf1 (guard = #id == 1)
