@@ -1,8 +1,8 @@
-<project name="JSPetriNet" default="compile" basedir=".">
+<project name="JSPetriNet" default="jar" basedir=".">
 
 	<property name="version" value="0.10.1-dev"/>
 
-	<property name="commons" value="commons-cli-1.3.1.jar"/>
+	<property name="commons-cli" value="commons-cli-1.3.1.jar"/>
 	<property name="antlr4" value="antlr-4.5.3-complete.jar"/>
 
 	<target name="init">
@@ -26,7 +26,7 @@
 		</java>
 	</target>
 
-	<target name="test_jspnl" depends="init,jspnl,compile">
+	<target name="jspnl_test" depends="init,jspnl,compile">
 		<java classpath="lib/${antlr4}:bin" classname="org.antlr.v4.gui.TestRig" dir="bin" fork="true">
 			<arg value="jspetrinet.parser.JSPNL" />
 			<arg value="prog" />
@@ -37,7 +37,7 @@
 	<target name="compile" depends="init,jspnl">
 		<javac srcdir="src" destdir="bin" includeantruntime="false">
 			<classpath>
-      	<pathelement path="lib/${commons}" />
+      	<pathelement path="lib/${commons-cli}" />
         <pathelement path="lib/${antlr4}" />
       </classpath>
 		</javac>
@@ -54,7 +54,7 @@
 
 	<target name="jar" depends="compile">
 		<jar jarfile="${ant.project.name}-${version}.jar" basedir="bin">
-			<zipfileset src="lib/${commons}" />
+			<zipfileset src="lib/${commons-cli}" />
 			<zipfileset src="lib/${antlr4}" />
 			<manifest>
 				<attribute name="Main-Class" value="jspetrinet.cli.CommandLineMain"/>
