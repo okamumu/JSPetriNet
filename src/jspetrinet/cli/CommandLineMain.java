@@ -1,8 +1,4 @@
-import jspetrinet.cli.CommandLineMark;
-import jspetrinet.cli.CommandLineOptions;
-import jspetrinet.cli.CommandLineSim;
-import jspetrinet.cli.CommandLineView;
-
+package jspetrinet.cli;
 public class CommandLineMain {
 
 	public static void main(String[] args) {

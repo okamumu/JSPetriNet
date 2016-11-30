@@ -57,7 +57,7 @@
 			<zipfileset src="lib/${commons}" />
 			<zipfileset src="lib/${antlr4}" />
 			<manifest>
-				<attribute name="Main-Class" value="CommandLineMain"/>
+				<attribute name="Main-Class" value="jspetrinet.cli.CommandLineMain"/>
 			</manifest>
 		</jar>
 	</target>

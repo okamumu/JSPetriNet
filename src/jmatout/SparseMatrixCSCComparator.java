@@ -1,9 +1,9 @@
-package jspetrinet.analysis;
+package jmatout;
 
 import java.util.Comparator;
 import java.util.List;
 
-public class CSCComparator implements Comparator<List<?>> {
+public class SparseMatrixCSCComparator implements Comparator<List<?>> {
 
 	@Override
 	public int compare(List<?> o1, List<?> o2) {
