@@ -260,7 +260,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 			}
 			hasBlock = false;
 		}
-
+		
 		for (Map.Entry<String,Object> entry : options.entrySet()) {
 			switch (entry.getKey()) {
 			case "dist":
@@ -269,6 +269,30 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 			case "guard":
 				currentEnv.put(name + ".guard", entry.getValue());
 				break;
+			case "policy": {
+				Object obj;
+				if (entry.getValue() instanceof AST) {
+					obj = ((AST) entry.getValue()).eval(currentEnv);
+				} else {
+					obj = entry.getValue();
+				}
+				if (obj instanceof String) {
+					String pol = (String) obj;
+					switch (pol) {
+						case "prd":
+							tr.setPolicy(GenTransPolicy.PRD);
+							break;
+						case "prs":
+							tr.setPolicy(GenTransPolicy.PRS);
+							break;
+						default:
+							throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "The policy of GEN transition should be defined by string 'prd' or 'prs'.");
+					}
+				} else {
+					throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "The policy of GEN transition should be defined by string 'prd' or 'prs'.");
+				}
+				break;
+			}
 			default:
 				throw new UnknownOption(entry.getKey());
 			}
@@ -318,7 +342,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 				this.defineExpTrans(ctx.id.getText());
 				break;
 			case "gen":
-				this.defineExpTrans(ctx.id.getText());
+				this.defineGenTrans(ctx.id.getText());
 				break;
 			case "trans":
 				this.defineTrans(ctx.id.getText());
