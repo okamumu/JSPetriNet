@@ -1,0 +1,33 @@
+// HDD model
+place Pn
+place Pdf
+exp Tdfail (guard = gfail)
+gen Trebuild (guard = gfail)
+imm Tinit (guard = ginit)
+arc Pn to Tdfail
+arc Tdfail to Pdf
+arc Pdf to Trebuild
+arc Pdf to Tinit
+arc Trebuild to Pn
+arc Tinit to Pn
+
+// Reconstruction model
+place Po
+place Pr
+place Pc
+imm Tstart (guard = gstart)
+gen Trecon
+imm Tend (guard = gend)
+arc Po to Tstart
+arc Tstart to Pr
+arc Pr to Trecon
+arc Trecon to Pc
+arc Pc to Tend
+arc Tend to Po
+
+// rate and gurads
+Tdfail.rate := #Pn * lambda
+gfail := #Po == 1
+gstart := #Pdf > 2
+ginit := #Pc == 1
+gend := #Pdf == 0

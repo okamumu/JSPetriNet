@@ -112,7 +112,6 @@ public class CreateMarkingDFS2 implements CreateMarking {
 	}
 
 	private void visitImmMark(Net net, List<Trans> enabledIMMList, Mark m) throws JSPNException {
-		net.assertNet();
 		for (Trans tr : enabledIMMList) {
 			Mark dest = PetriAnalysis.doFiring(net, tr);
 			if (createdMarks.containsKey(dest)) {
@@ -127,7 +126,6 @@ public class CreateMarkingDFS2 implements CreateMarking {
 	}
 	
 	private void visitGenMark(Net net, Mark m) throws JSPNException {
-		net.assertNet();
 		for (Trans tr : net.getGenTransSet()) {
 			switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 			case ENABLE:

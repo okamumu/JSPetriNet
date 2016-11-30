@@ -93,6 +93,10 @@ public final class PetriAnalysis {
 		net.setCurrentMark(nextMark);
 		tr.updateEval(net);
 		net.setCurrentMark(currentMark);
+
+		// assert
+		net.assertNet();
+
 		return nextMark;
 	}
 }

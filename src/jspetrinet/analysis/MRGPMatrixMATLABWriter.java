@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jmatout.SparseMatrixCSCComparator;
 import jmatout.MATLABDoubleMatrix;
 import jmatout.SparseMatrixCSC;
 import jspetrinet.JSPetriNet;
@@ -250,14 +251,14 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 	}
 
 	private SparseMatrixCSC defineMatrix(PrintWriter pw, String matrixName, MarkGroup src, MarkGroup dest, List<List<Object>> s) {
-		s.sort(new CSCComparator());
+		s.sort(new SparseMatrixCSCComparator());
 		pw.println("# " + matrixName + " " + this.getGroupLabel(src) + " to " + this.getGroupLabel(dest));
 		pw.println("# size " + src.size() + " " + dest.size() + " " + s.size());
 		return new SparseMatrixCSC(matrixName, src.size(), dest.size(), s.size());
 	}
 
 	private SparseMatrixCSC defineMatrix(PrintWriter pw, String matrixName, MarkGroup src, MarkGroup dest, String dist, List<List<Object>> s) {
-		s.sort(new CSCComparator());
+		s.sort(new SparseMatrixCSCComparator());
 		pw.println("# " + matrixName + " " + this.getGroupLabel(src) + " to " + this.getGroupLabel(dest) + " " + dist);
 		pw.println("# size " + src.size() + " " + dest.size() + " " + s.size());
 		return new SparseMatrixCSC(matrixName, src.size(), dest.size(), s.size());
