@@ -128,5 +128,3 @@ arrival3.rate = 0.1
 write3.dist = unif(0,1)
 wait3.dist = det(1)
 service3.dist = exp(2)
-
-#id = 1
