@@ -172,6 +172,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		ImmTrans tr = currentEnv.createImmTrans(name, new ASTVariable(name + ".weight"));
 		tr.setGuard(new ASTVariable(name + ".guard"));
 		currentEnv.put(name + ".guard", new ASTValue(true));
+		currentEnv.put(name + ".weight", new ASTValue(1));
 		tr.setPriority(0);
 		tr.setVanishable(true);
 
