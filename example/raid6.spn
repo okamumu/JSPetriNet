@@ -1,5 +1,5 @@
 // HDD model
-place Pn
+place Pn (init = 6)
 place Pdf
 exp Tdfail (guard = gfail)
 gen Trebuild (guard = gfail)
@@ -12,7 +12,7 @@ arc Trebuild to Pn
 arc Tinit to Pn
 
 // Reconstruction model
-place Po
+place Po (init = 1)
 place Pr
 place Pc
 imm Tstart (guard = gstart)
