@@ -1,5 +1,6 @@
 /*
   SPNP Example 1: M.K. Molloy's IEEE TC
+  (M. K. Molloy, Performance analysis using stochastic Petri nets, IEEE Trans. Comput., C-31 (9), 913-917, 1982)
 */
 
 place p0 (init = 3)

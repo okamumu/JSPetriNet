@@ -15,6 +15,11 @@ import jspetrinet.petri.*;
 
 public class MarkingGraph {
 
+	private static String ln = "\n";
+	private static String genFormat = "\"%s\" [label=\"GEN(%d)\n %s\"];" + ln;
+	private static String immFormat = "\"%s\" [label=\"IMM(%d)\n %s\"];" + ln;
+	private static String arcFormat = "\"%s\" -> \"%s\";" + ln;
+
 	protected Net net;
 	protected Mark imark;
 
@@ -187,17 +192,19 @@ public class MarkingGraph {
 	public void dotMarkGroup(PrintWriter bw) {
 		bw.println("digraph { layout=dot; overlap=false; splines=true;");
 		for (Map.Entry<GenVec, MarkGroup> entry : this.genGroup.entrySet()) {
-			bw.println("\"" + entry.getValue() + "\" [label = \"GEN "
-					+ JSPetriNet.genvecToString(net, entry.getKey()) + "\"];");
+			bw.printf(genFormat, entry.getValue(),
+					entry.getValue().getMarkSet().size(),
+					JSPetriNet.genvecToString(net, entry.getKey()));
 			for (Arc a : entry.getValue().getOutArc()) {
-				bw.println("\"" + a.getSrc() + "\" -> \"" + a.getDest() + "\";");
+				bw.printf(arcFormat, a.getSrc(), a.getDest());
 			}
 		}
 		for (Map.Entry<GenVec, MarkGroup> entry : this.immGroup.entrySet()) {
-			bw.println("\"" + entry.getValue() + "\" [label = \"IMM "
-					+ JSPetriNet.genvecToString(net, entry.getKey()) + "\"];");
+			bw.printf(immFormat, entry.getValue(),
+					entry.getValue().getMarkSet().size(),
+					JSPetriNet.genvecToString(net, entry.getKey()));
 			for (Arc a : entry.getValue().getOutArc()) {
-				bw.println("\"" + a.getSrc() + "\" -> \"" + a.getDest() + "\";");
+				bw.printf(arcFormat, a.getSrc(), a.getDest());
 			}
 		}
 		bw.println("}");

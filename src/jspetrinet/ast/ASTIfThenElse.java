@@ -18,6 +18,9 @@ public final class ASTIfThenElse implements AST {
 	@Override
 	public Object eval(ASTEnv m) throws JSPNException {
 		Object f = this.first.eval(m);
+		if (f instanceof ASTNaN) {
+			return new ASTNaN(new ASTIfThenElse(first, second, third));
+		}
 		if (f instanceof Boolean) {
 			if ((Boolean) f) {
 				return this.second.eval(m);
