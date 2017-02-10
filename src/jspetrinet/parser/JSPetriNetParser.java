@@ -16,6 +16,7 @@ import jspetrinet.JSPetriNet;
 import jspetrinet.ast.*;
 import jspetrinet.dist.ConstDist;
 import jspetrinet.dist.ExpDist;
+import jspetrinet.dist.TNormDist;
 import jspetrinet.dist.UnifDist;
 import jspetrinet.exception.*;
 import jspetrinet.marking.Mark;
@@ -555,6 +556,18 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 		}
 	}
 
+	private void defineTNormDist(List<AST> args) throws JSPNException {
+		if (args.size() == 2) {
+			Iterator<AST> it = args.iterator();
+			AST mu = it.next();
+			AST sig = it.next();
+			stack.push(new TNormDist(mu, sig));
+		} else {
+			stack.push(new ASTValue(ConstDist.dname + "(mu,sig)"));
+			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Wrong definition of args of tnorm dist");
+		}
+	}
+
 	@Override
 	public void exitFunction_expression(JSPNLParser.Function_expressionContext ctx) {
 		try {
@@ -564,6 +577,9 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 				break;
 			case UnifDist.dname:
 				this.defineUnifDist(args);
+				break;
+			case TNormDist.dname:
+				this.defineTNormDist(args);
 				break;
 			case ExpDist.dname:
 				this.defineExpDist(args);
@@ -576,6 +592,9 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 				break;
 			case "pow":
 				stack.push(new ASTMathFunc(args, "pow"));
+				break;
+			case "sqrt":
+				stack.push(new ASTMathFunc(args, "sqrt"));
 				break;
 			case "log":
 				stack.push(new ASTMathFunc(args, "log"));

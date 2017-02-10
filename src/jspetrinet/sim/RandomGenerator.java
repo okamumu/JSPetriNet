@@ -24,4 +24,13 @@ public class RandomGenerator implements Random{
 	public double nextExp(double rate) {
 		return rnd.NextExp()/rate;
 	}
+
+	@Override
+	public double nextTNorm(double mu, double sig) {
+		double tmp;
+		do {
+			tmp = sig * rnd.NextNormal() + mu;
+		} while (tmp > 0.0);
+		return tmp;
+	}
 }
