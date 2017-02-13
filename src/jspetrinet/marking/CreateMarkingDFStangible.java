@@ -46,7 +46,6 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	private Map<Mark,Mark> createdMarks;
 	private Map<GenVec,GenVec> createdGenVec;
 
-	private Map<Mark,GenVec> immToGenVec;
 	private Set<Mark> visitedIMM;
 	private Set<Mark> visited;
 
@@ -65,13 +64,11 @@ public class CreateMarkingDFStangible implements CreateMarking {
 		private Mark emark;
 		private int numOfMark;
 		private boolean vanishing;
-		private GenVec gev;
 		
 		ExitMark() {
 			this.emark = null;
 			this.numOfMark = 0;
 			this.vanishing = false;
-			this.gev = null;
 		}
 		
 		Mark get() {
@@ -90,17 +87,15 @@ public class CreateMarkingDFStangible implements CreateMarking {
 		void addMark(Mark self, Mark emark, GenVec gev) {
 			switch (this.numOfMark) {
 			case 0:
-				if (immToGenVec.get(self) == gev) {
+				if (self.getGenVec() == gev) {
 					this.emark = emark;
 					this.numOfMark = 1;
 					this.vanishing = true;
-					this.gev = gev;
 					break;
 				} else {
 					this.emark = self;
 					this.numOfMark = 1;
 					this.vanishing = false;
-					this.gev = immToGenVec.get(self);
 					break;
 				}
 			case 1:
@@ -108,7 +103,6 @@ public class CreateMarkingDFStangible implements CreateMarking {
 					this.emark = null;
 					this.numOfMark = 2;
 					this.vanishing = false;
-					this.gev = null;
 				};
 				break;
 			default:
@@ -120,23 +114,20 @@ public class CreateMarkingDFStangible implements CreateMarking {
 			case 0:
 				switch (other.numOfMark) {
 				case 1:
-					if (immToGenVec.get(self) == other.gev) {
+					if (self.getGenVec() == other.emark.getGenVec()) {
 						this.emark = other.emark;
 						this.numOfMark = 1;
 						this.vanishing = true;
-						this.gev = other.gev;
 					} else {
 						this.emark = self;
 						this.numOfMark = 1;
 						this.vanishing = false;
-						this.gev = immToGenVec.get(self);
 					}
 					break;
 				case 2:
 					this.emark = null;
 					this.numOfMark = 2;
 					this.vanishing = false;
-					this.gev = null;
 					break;
 				default:
 				}
@@ -148,7 +139,6 @@ public class CreateMarkingDFStangible implements CreateMarking {
 						this.emark = null;
 						this.numOfMark = 2;
 						this.vanishing = false;
-						this.gev = null;
 					};
 					break;
 				case 0:
@@ -156,7 +146,6 @@ public class CreateMarkingDFStangible implements CreateMarking {
 					this.emark = null;
 					this.numOfMark = 2;
 					this.vanishing = false;
-					this.gev = null;
 					break;
 				default:
 				}
@@ -206,7 +195,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
 		}
 		markGraph.addMark(m);
-		markGraph.getImmGroup().get(genv).add(m);					
+		markGraph.getImmGroup().get(genv).add(m);
 	}
 
 	private void setGenVecToGen(Net net, GenVec genv, Mark m) {
@@ -215,13 +204,14 @@ public class CreateMarkingDFStangible implements CreateMarking {
 		}
 		markGraph.addMark(m);
 		markGraph.getGenGroup().get(genv).add(m);
+		m.setGroup(genv);
 	}
 
 	@Override
 	public Mark create(Mark init, Net net) throws JSPNException {
 		createdMarks = new HashMap<Mark,Mark>();
 		createdGenVec = new HashMap<GenVec,GenVec>();
-		immToGenVec = new HashMap<Mark,GenVec>();
+//		immToGenVec = new HashMap<Mark,GenVec>();
 
 		visitedIMM = new HashSet<Mark>();
 		visited = new HashSet<Mark>();
@@ -257,7 +247,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 			List<Mark> nextMarksFromIMM = createNextMarksIMM(net, m);
 			int size = nextMarksFromIMM.size();
 			if (size > 0) {
-				immToGenVec.put(m, createGenVec(net));
+				m.setGroup(createGenVec(net));
 				visitImmMark(net, nextMarksFromIMM, size, m);
 				vanishing(net);
 			} else {
@@ -347,7 +337,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 			List<Mark> nextMarksFromIMM = createNextMarksIMM(net, m);
 			int size = nextMarksFromIMM.size();
 			if (size > 0) {
-				immToGenVec.put(m, createGenVec(net));
+				m.setGroup(createGenVec(net));
 				visitImmMark(net, nextMarksFromIMM, size, m);
 			} else {
 				Mark r = markPath.peekLast();
@@ -399,9 +389,9 @@ public class CreateMarkingDFStangible implements CreateMarking {
 
 	private void postProcessing(Net net) {
 		// post processing 1		
-		for (Map.Entry<Mark,GenVec> v : immToGenVec.entrySet()) {
-			if (!exitMarkSet.get(v.getKey()).canVanishing()) {
-				this.setGenVecToImm(net, v.getValue(), v.getKey());
+		for (Mark m : visitedIMM) {
+			if (!exitMarkSet.get(m).canVanishing()) {
+				this.setGenVecToImm(net, m.getGenVec(), m);
 			}
 		}
 
