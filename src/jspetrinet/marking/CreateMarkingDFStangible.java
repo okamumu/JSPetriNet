@@ -39,81 +39,7 @@ final class MarkMarkTrans {
 	}
 }
 
-class ExitMark {
-	private Mark emark;
-	private int numOfMark;
-	
-	ExitMark() {
-		this.emark = null;
-		this.numOfMark = 0;
-	}
-	
-	Mark get() {
-		return emark;
-	}
-	
-	boolean canVanishing() {
-		if (numOfMark == 1) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	void addMark(Mark emark) {
-		switch (this.numOfMark) {
-		case 0:
-			this.emark = emark;
-			this.numOfMark = 1;
-			break;
-		case 1:
-			if (this.emark != emark) {
-				this.emark = null;
-				this.numOfMark = 2;
-			};
-			break;
-		default:
-		}
-	}
-
-	void addMark(ExitMark other) {
-		switch (this.numOfMark) {
-		case 0:
-			switch (other.numOfMark) {
-			case 1:
-				this.emark = other.emark;
-				this.numOfMark = 1;
-				break;
-			case 2:
-				this.emark = null;
-				this.numOfMark = 2;
-				break;
-			default:
-			}
-			break;
-		case 1:
-			switch (other.numOfMark) {
-			case 1:
-				if (this.emark != other.emark) {
-					this.emark = null;
-					this.numOfMark = 2;
-				};
-				break;
-			case 0:
-			case 2:
-				this.emark = null;
-				this.numOfMark = 2;
-				break;
-			default:
-			}
-			break;
-		default:
-		}
-	}
-}
-
 public class CreateMarkingDFStangible implements CreateMarking {
-	
 	private final MarkingGraph markGraph;
 	private final List<Trans> expTransSet;
 
@@ -134,6 +60,104 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	private LinkedList<Mark> novisitedGEN;
 	private LinkedList<Mark> markPath;
 	
+	/* inner class */
+	class ExitMark {
+		private Mark emark;
+		private int numOfMark;
+		private boolean vanishing;
+		private GenVec gev;
+		
+		ExitMark() {
+			this.emark = null;
+			this.numOfMark = 0;
+			this.vanishing = false;
+			this.gev = null;
+		}
+		
+		Mark get() {
+			return emark;
+		}
+		
+		boolean canVanishing() {
+			return vanishing;
+//			if (numOfMark == 1) {
+//				return true;
+//			} else {
+//				return false;
+//			}
+		}
+		
+		void addMark(Mark self, Mark emark, GenVec gev) {
+			switch (this.numOfMark) {
+			case 0:
+				if (immToGenVec.get(self) == gev) {
+					this.emark = emark;
+					this.numOfMark = 1;
+					this.vanishing = true;
+					break;
+				} else {
+					this.emark = self;
+					this.numOfMark = 1;
+					this.vanishing = false;
+					break;
+				}
+			case 1:
+				if (this.emark != emark) {
+					this.emark = null;
+					this.numOfMark = 2;
+					this.vanishing = false;
+				};
+				break;
+			default:
+			}
+		}
+
+		void addMark(Mark self, ExitMark other) {
+			switch (this.numOfMark) {
+			case 0:
+				switch (other.numOfMark) {
+				case 1:
+					if (immToGenVec.get(self) == other.gev) {
+						this.emark = other.emark;
+						this.numOfMark = 1;
+						this.vanishing = true;
+					} else {
+						this.emark = self;
+						this.numOfMark = 1;
+						this.vanishing = false;
+					}
+					break;
+				case 2:
+					this.emark = null;
+					this.numOfMark = 2;
+					this.vanishing = false;
+					break;
+				default:
+				}
+				break;
+			case 1:
+				switch (other.numOfMark) {
+				case 1:
+					if (this.emark != other.emark) {
+						this.emark = null;
+						this.numOfMark = 2;
+						this.vanishing = false;
+					};
+					break;
+				case 0:
+				case 2:
+					this.emark = null;
+					this.numOfMark = 2;
+					this.vanishing = false;
+					break;
+				default:
+				}
+				break;
+			default:
+			}
+		}
+	}
+
 	public CreateMarkingDFStangible(MarkingGraph markGraph, List<Trans> genTransSet) {
 		this.markGraph = markGraph;
 		this.expTransSet = genTransSet;
@@ -289,7 +313,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 				Mark e = markPath.removeLast();
 				Mark r = markPath.peekLast();
 				if (r != null) {
-					exitMarkSet.get(r).addMark(exitMarkSet.get(e));
+					exitMarkSet.get(r).addMark(r, exitMarkSet.get(e));
 				}
 				visitedIMM.add(e);		
 				visited.add(e);
@@ -298,19 +322,19 @@ public class CreateMarkingDFStangible implements CreateMarking {
 
 			if (visitedIMM.contains(m)) {
 				Mark r = markPath.peekLast();
-				exitMarkSet.get(r).addMark(exitMarkSet.get(m));
+				exitMarkSet.get(r).addMark(r, exitMarkSet.get(m));
 				continue;
 			}
+
+			// new visit?
+			net.setCurrentMark(m);
 
 			// check tangible GEN (set visited - visitedIMM)
 			if (visited.contains(m)) {
 				Mark r = markPath.peekLast();
-				exitMarkSet.get(r).addMark(m);
+				exitMarkSet.get(r).addMark(r, m, createGenVec(net));
 				continue;
 			}
-
-			// new visit
-			net.setCurrentMark(m);
 
 			List<Mark> nextMarksFromIMM = createNextMarksIMM(net, m);
 			int size = nextMarksFromIMM.size();
@@ -319,8 +343,9 @@ public class CreateMarkingDFStangible implements CreateMarking {
 				visitImmMark(net, nextMarksFromIMM, size, m);
 			} else {
 				Mark r = markPath.peekLast();
-				exitMarkSet.get(r).addMark(m);
-				setGenVecToGen(net, createGenVec(net), m);
+				GenVec gev = createGenVec(net);
+				exitMarkSet.get(r).addMark(r, m, gev);
+				setGenVecToGen(net, gev, m);
 				visitGenMark(net, m);
 			}
 		}
