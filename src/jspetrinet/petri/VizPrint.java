@@ -6,9 +6,7 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import jspetrinet.ast.AST;
-import jspetrinet.ast.ASTEnv;
 import jspetrinet.exception.JSPNException;
-import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.graph.Arc;
 import jspetrinet.graph.Component;
 import jspetrinet.graph.Visitor;
