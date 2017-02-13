@@ -3,7 +3,6 @@ package jspetrinet.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,14 +11,14 @@ import java.util.Map;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 
-import jspetrinet.JSPetriNet;
 import jspetrinet.ast.*;
 import jspetrinet.dist.ConstDist;
 import jspetrinet.dist.ExpDist;
+import jspetrinet.dist.LNormDist;
 import jspetrinet.dist.TNormDist;
 import jspetrinet.dist.UnifDist;
+import jspetrinet.dist.WeibullDist;
 import jspetrinet.exception.*;
-import jspetrinet.marking.Mark;
 import jspetrinet.petri.*;
 
 public class JSPetriNetParser extends JSPNLBaseListener {
@@ -536,11 +535,11 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 	private void defineUnifDist(List<AST> args) throws JSPNException {
 		if (args.size() == 2) {
 			Iterator<AST> it = args.iterator();
-			AST lower = it.next();
-			AST upper = it.next();
-			stack.push(new UnifDist(lower, upper));
+			AST min = it.next();
+			AST max = it.next();
+			stack.push(new UnifDist(min, max));
 		} else {
-			stack.push(new ASTValue(ConstDist.dname + "(lower,upper)"));
+			stack.push(new ASTValue(UnifDist.dname + "(min,max)"));
 			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Wrong definition of args of unif dist");
 		}
 	}
@@ -559,12 +558,36 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 	private void defineTNormDist(List<AST> args) throws JSPNException {
 		if (args.size() == 2) {
 			Iterator<AST> it = args.iterator();
-			AST mu = it.next();
-			AST sig = it.next();
-			stack.push(new TNormDist(mu, sig));
+			AST mean = it.next();
+			AST sd = it.next();
+			stack.push(new TNormDist(mean, sd));
 		} else {
-			stack.push(new ASTValue(ConstDist.dname + "(mu,sig)"));
+			stack.push(new ASTValue(TNormDist.dname + "(mean,sd)"));
 			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Wrong definition of args of tnorm dist");
+		}
+	}
+
+	private void defineLNormDist(List<AST> args) throws JSPNException {
+		if (args.size() == 2) {
+			Iterator<AST> it = args.iterator();
+			AST mean = it.next();
+			AST sd = it.next();
+			stack.push(new LNormDist(mean, sd));
+		} else {
+			stack.push(new ASTValue(LNormDist.dname + "(mean,sd)"));
+			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Wrong definition of args of lnorm dist");
+		}
+	}
+
+	private void defineWeibullDist(List<AST> args) throws JSPNException {
+		if (args.size() == 2) {
+			Iterator<AST> it = args.iterator();
+			AST shape = it.next();
+			AST scale = it.next();
+			stack.push(new WeibullDist(shape, scale));
+		} else {
+			stack.push(new ASTValue(WeibullDist.dname + "(shape,scale)"));
+			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Wrong definition of args of weibull dist");
 		}
 	}
 
@@ -581,6 +604,12 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 			case TNormDist.dname:
 				this.defineTNormDist(args);
 				break;
+			case LNormDist.dname:
+				this.defineLNormDist(args);
+				break;
+			case WeibullDist.dname:
+				this.defineWeibullDist(args);
+				break;
 			case ExpDist.dname:
 				this.defineExpDist(args);
 				break;
@@ -595,6 +624,9 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 				break;
 			case "sqrt":
 				stack.push(new ASTMathFunc(args, "sqrt"));
+				break;
+			case "exp":
+				stack.push(new ASTMathFunc(args, "exp"));
 				break;
 			case "log":
 				stack.push(new ASTMathFunc(args, "log"));

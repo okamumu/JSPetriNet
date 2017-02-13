@@ -10,6 +10,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import jp.rel.jmtrandom.Random;
 import jspetrinet.JSPetriNet;
 import jspetrinet.ast.AST;
 import jspetrinet.exception.JSPNException;
@@ -18,8 +19,6 @@ import jspetrinet.petri.Net;
 
 import jspetrinet.sim.EventValue;
 import jspetrinet.sim.MCSimulation;
-import jspetrinet.sim.Random;
-import jspetrinet.sim.RandomGenerator;
 import jspetrinet.sim.Utility;
 
 public class CommandLineSim {
@@ -83,7 +82,7 @@ public class CommandLineSim {
 			seed = (int) System.currentTimeMillis();
 		}
 
-		Random rnd = new RandomGenerator(seed);
+		Random rnd = new Random(seed);
 
 		if (cmd.hasOption(CommandLineOptions.REWARD)) {
 			String rewardLabel = cmd.getOptionValue(CommandLineOptions.REWARD);

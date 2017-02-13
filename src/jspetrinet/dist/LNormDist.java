@@ -6,16 +6,16 @@ import jspetrinet.ast.AST;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.sim.Utility;
 
-public class TNormDist extends Dist {
+public class LNormDist extends Dist {
 	
-	public static final String dname = "tnorm";
+	public static final String dname = "lnorm";
 
 	private AST mean;
 	private AST sd;
 	private Object meanObj;
 	private Object sdObj;
 
-	public TNormDist(AST mean, AST sd) {
+	public LNormDist(AST mean, AST sd) {
 		this.mean = mean;
 		this.sd = sd;
 	}
@@ -46,8 +46,8 @@ public class TNormDist extends Dist {
 
 	@Override
 	public double nextImpl(Random rnd) throws JSPNException {
-		double mean_value = Utility.convertObjctToDouble(meanObj);
-		double sd_value = Utility.convertObjctToDouble(sdObj);
-		return rnd.nextTruncNormal(mean_value, sd_value);
+		double meanlog_value = Utility.convertObjctToDouble(meanObj);
+		double sdlog_value = Utility.convertObjctToDouble(sdObj);
+		return rnd.nextLogNormal(meanlog_value, sdlog_value);
 	}
 }
