@@ -94,11 +94,13 @@ public class CreateMarkingDFStangible implements CreateMarking {
 					this.emark = emark;
 					this.numOfMark = 1;
 					this.vanishing = true;
+					this.gev = gev;
 					break;
 				} else {
 					this.emark = self;
 					this.numOfMark = 1;
 					this.vanishing = false;
+					this.gev = immToGenVec.get(self);
 					break;
 				}
 			case 1:
@@ -106,6 +108,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 					this.emark = null;
 					this.numOfMark = 2;
 					this.vanishing = false;
+					this.gev = null;
 				};
 				break;
 			default:
@@ -121,16 +124,19 @@ public class CreateMarkingDFStangible implements CreateMarking {
 						this.emark = other.emark;
 						this.numOfMark = 1;
 						this.vanishing = true;
+						this.gev = other.gev;
 					} else {
 						this.emark = self;
 						this.numOfMark = 1;
 						this.vanishing = false;
+						this.gev = immToGenVec.get(self);
 					}
 					break;
 				case 2:
 					this.emark = null;
 					this.numOfMark = 2;
 					this.vanishing = false;
+					this.gev = null;
 					break;
 				default:
 				}
@@ -142,6 +148,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 						this.emark = null;
 						this.numOfMark = 2;
 						this.vanishing = false;
+						this.gev = null;
 					};
 					break;
 				case 0:
@@ -149,6 +156,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 					this.emark = null;
 					this.numOfMark = 2;
 					this.vanishing = false;
+					this.gev = null;
 					break;
 				default:
 				}
