@@ -96,6 +96,8 @@ public class CreateMarkingDFS2 implements CreateMarking {
 	}
 	
 	private void setGenVecToImm(Net net, GenVec genv, Mark m) {
+		m.setGroup(genv);
+		m.setIMM();
 		if (!markGraph.getImmGroup().containsKey(genv)) {
 			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
 		}
@@ -104,6 +106,8 @@ public class CreateMarkingDFS2 implements CreateMarking {
 	}
 
 	private void setGenVecToGen(Net net, GenVec genv, Mark m) {
+		m.setGroup(genv);
+		m.setGEN();
 		if (!markGraph.getGenGroup().containsKey(genv)) {
 			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
 		}

@@ -39,10 +39,10 @@ final class GvGvTrans {
 	@Override
 	public boolean equals(Object obj) {
 		GvGvTrans other = (GvGvTrans) obj;
-		if (src != other.src) {
+		if (!src.equals(other.src)) {
 			return false;
 		}
-		if (dest != other.dest) {
+		if (!dest.equals(other.dest)) {
 			return false;
 		}
 		if (tr instanceof ImmTrans && other.tr instanceof ImmTrans) {
