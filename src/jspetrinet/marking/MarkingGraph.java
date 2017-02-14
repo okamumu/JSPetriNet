@@ -16,7 +16,7 @@ public class MarkingGraph {
 	private static String ln = "\n";
 	private static String genFormat = "\"%s\" [label=\"GEN(%d)\n %s\"];" + ln;
 	private static String immFormat = "\"%s\" [label=\"IMM(%d)\n %s\"];" + ln;
-	private static String arcFormat = "\"%s\" -> \"%s\";" + ln;
+	private static String arcFormat = "\"%s\" -> \"%s\" [label=\"%s\"];" + ln;
 
 	protected Net net;
 	protected Mark imark;
@@ -110,81 +110,7 @@ public class MarkingGraph {
 
 	// mark group
 	public final void createMarkGroupGraph() {
-		for (MarkGroup src : immGroup.values()) {
-			for (MarkGroup dest : immGroup.values()) {
-				if (src != dest) {
-					this.makeArcI(src, dest);
-				}
-			}
-		}
-		for (MarkGroup src : immGroup.values()) {
-			for (MarkGroup dest : genGroup.values()) {
-				this.makeArcI(src, dest);
-			}
-		}
-		for (MarkGroup src : genGroup.values()) {
-			for (MarkGroup dest : immGroup.values()) {
-				this.makeArcE(src, dest);
-				this.makeArcG(src, dest);
-			}
-		}
-		for (MarkGroup src : genGroup.values()) {
-			for (MarkGroup dest : genGroup.values()) {
-				if (src != dest) {
-					this.makeArcE(src, dest);
-				}
-				this.makeArcG(src, dest);
-			}
-		}
-	}
-	
-
-	// create group graph
-	private void makeArcI(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
-		for (Mark src: srcMarkGroup.getMarkSet()) {
-			for (Arc arc: src.getOutArc()) {
-				Mark dest = (Mark) arc.getDest();
-				if (destMarkGroup.getMarkSet().contains(dest)) {
-					new MarkingArc(srcMarkGroup, destMarkGroup, null);
-					return;
-				}
-			}
-		}
-	}
-
-	// create group graph
-	private void makeArcE(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
-		for (Mark src: srcMarkGroup.getMarkSet()) {
-			for (Arc arc: src.getOutArc()) {
-				Mark dest = (Mark) arc.getDest();
-				if (destMarkGroup.getMarkSet().contains(dest)) {
-					Trans tr = ((MarkingArc) arc).getTrans();
-					if (tr instanceof ExpTrans) {
-						new MarkingArc(srcMarkGroup, destMarkGroup, null);
-						return;
-					}
-				}
-			}
-		}
-	}
-
-	// create group graph
-	private void makeArcG(MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
-		Set<Trans> mm = new HashSet<Trans>();
-		for (Mark src: srcMarkGroup.getMarkSet()) {
-			for (Arc arc: src.getOutArc()) {
-				Mark dest = (Mark) arc.getDest();
-				if (destMarkGroup.getMarkSet().contains(dest)) {
-					Trans tr = ((MarkingArc) arc).getTrans();
-					if (!mm.contains(tr)) {
-						if (tr instanceof GenTrans) {
-							new MarkingArc(srcMarkGroup, destMarkGroup, tr);
-							mm.add(tr);
-						}
-					}
-				}
-			}
-		}
+		CreateGroupMarkingGraph.createMarkGroupGraph(net, immGroup, genGroup);
 	}
 
 	public void dotMarkGroup(PrintWriter bw) {
@@ -194,7 +120,12 @@ public class MarkingGraph {
 					entry.getValue().getMarkSet().size(),
 					JSPetriNet.genvecToString(net, entry.getKey()));
 			for (Arc a : entry.getValue().getOutArc()) {
-				bw.printf(arcFormat, a.getSrc(), a.getDest());
+				MarkingArc ma = (MarkingArc) a;
+				if (ma.getTrans() instanceof ExpTrans) {
+					bw.printf(arcFormat, ma.getSrc(), ma.getDest(), "EXP(" + ma.getTrans().getLabel() + ")");
+				} else {
+					bw.printf(arcFormat, ma.getSrc(), ma.getDest(), ma.getTrans().getLabel());
+				}
 			}
 		}
 		for (Map.Entry<GenVec, MarkGroup> entry : this.immGroup.entrySet()) {
@@ -202,7 +133,8 @@ public class MarkingGraph {
 					entry.getValue().getMarkSet().size(),
 					JSPetriNet.genvecToString(net, entry.getKey()));
 			for (Arc a : entry.getValue().getOutArc()) {
-				bw.printf(arcFormat, a.getSrc(), a.getDest());
+				MarkingArc ma = (MarkingArc) a;
+				bw.printf(arcFormat, ma.getSrc(), ma.getDest(),  "IMM(" + ma.getTrans().getLabel() + ")");
 			}
 		}
 		bw.println("}");
