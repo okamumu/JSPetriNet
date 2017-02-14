@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import jspetrinet.JSPetriNet;
+import jspetrinet.analysis.CreateGroupMarkingGraph;
 import jspetrinet.exception.*;
 import jspetrinet.graph.Arc;
 import jspetrinet.petri.*;
@@ -92,7 +93,7 @@ public class MarkingGraph {
 		immGroup.clear();
 		genGroup.clear();		
 		Mark ret = this.createMarking.create(init, net);
-		this.createMarkGroupGraph();
+//		this.createMarkGroupGraph();
 		return ret;
 	}
 
@@ -109,34 +110,34 @@ public class MarkingGraph {
 	}
 
 	// mark group
-	public final void createMarkGroupGraph() {
-		CreateGroupMarkingGraph.createMarkGroupGraph(net, immGroup, genGroup);
-	}
-
-	public void dotMarkGroup(PrintWriter bw) {
-		bw.println("digraph { layout=dot; overlap=false; splines=true;");
-		for (Map.Entry<GenVec, MarkGroup> entry : this.genGroup.entrySet()) {
-			bw.printf(genFormat, entry.getValue(),
-					entry.getValue().getMarkSet().size(),
-					JSPetriNet.genvecToString(net, entry.getKey()));
-			for (Arc a : entry.getValue().getOutArc()) {
-				MarkingArc ma = (MarkingArc) a;
-				if (ma.getTrans() instanceof ExpTrans) {
-					bw.printf(arcFormat, ma.getSrc(), ma.getDest(), "EXP(" + ma.getTrans().getLabel() + ")");
-				} else {
-					bw.printf(arcFormat, ma.getSrc(), ma.getDest(), ma.getTrans().getLabel());
-				}
-			}
-		}
-		for (Map.Entry<GenVec, MarkGroup> entry : this.immGroup.entrySet()) {
-			bw.printf(immFormat, entry.getValue(),
-					entry.getValue().getMarkSet().size(),
-					JSPetriNet.genvecToString(net, entry.getKey()));
-			for (Arc a : entry.getValue().getOutArc()) {
-				MarkingArc ma = (MarkingArc) a;
-				bw.printf(arcFormat, ma.getSrc(), ma.getDest(),  "IMM(" + ma.getTrans().getLabel() + ")");
-			}
-		}
-		bw.println("}");
-	}
+//	public final void createMarkGroupGraph() {
+//		CreateGroupMarkingGraph.createMarkGroupGraph(net, immGroup, genGroup);
+//	}
+//
+//	public void dotMarkGroup(PrintWriter bw) {
+//		bw.println("digraph { layout=dot; overlap=false; splines=true;");
+//		for (Map.Entry<GenVec, MarkGroup> entry : this.genGroup.entrySet()) {
+//			bw.printf(genFormat, entry.getValue(),
+//					entry.getValue().getMarkSet().size(),
+//					JSPetriNet.genvecToString(net, entry.getKey()));
+//			for (Arc a : entry.getValue().getOutArc()) {
+//				MarkingArc ma = (MarkingArc) a;
+//				if (ma.getTrans() instanceof ExpTrans) {
+//					bw.printf(arcFormat, ma.getSrc(), ma.getDest(), "EXP(" + ma.getTrans().getLabel() + ")");
+//				} else {
+//					bw.printf(arcFormat, ma.getSrc(), ma.getDest(), ma.getTrans().getLabel());
+//				}
+//			}
+//		}
+//		for (Map.Entry<GenVec, MarkGroup> entry : this.immGroup.entrySet()) {
+//			bw.printf(immFormat, entry.getValue(),
+//					entry.getValue().getMarkSet().size(),
+//					JSPetriNet.genvecToString(net, entry.getKey()));
+//			for (Arc a : entry.getValue().getOutArc()) {
+//				MarkingArc ma = (MarkingArc) a;
+//				bw.printf(arcFormat, ma.getSrc(), ma.getDest(),  "IMM(" + ma.getTrans().getLabel() + ")");
+//			}
+//		}
+//		bw.println("}");
+//	}
 }

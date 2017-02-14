@@ -1,4 +1,4 @@
-package jspetrinet.marking;
+package jspetrinet.analysis;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -6,6 +6,10 @@ import java.util.Set;
 
 import jspetrinet.JSPetriNet;
 import jspetrinet.graph.Arc;
+import jspetrinet.marking.GenVec;
+import jspetrinet.marking.Mark;
+import jspetrinet.marking.MarkGroup;
+import jspetrinet.marking.MarkingArc;
 import jspetrinet.petri.Net;
 
 public class CreateGroupMarkingGraph {
