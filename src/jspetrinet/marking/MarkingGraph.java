@@ -97,17 +97,17 @@ public class MarkingGraph {
 		return ret;
 	}
 
-	public void dotMarking(PrintWriter bw) {
-		bw.println("digraph { layout=dot; overlap=false; splines=true;");
-		for (Mark m : markSet.keySet()) {
-			bw.println("\"" + m + "\" [label = \""
-					+ JSPetriNet.markToString(net, m) + "\"];");
-			for (Arc a : m.getOutArc()) {
-				bw.println("\"" + a.getSrc() + "\" -> \"" + a.getDest() + "\";");
-			}
-		}
-		bw.println("}");
-	}
+//	public void dotMarking(PrintWriter bw) {
+//		bw.println("digraph { layout=dot; overlap=false; splines=true;");
+//		for (Mark m : markSet.keySet()) {
+//			bw.println("\"" + m + "\" [label = \""
+//					+ JSPetriNet.markToString(net, m) + "\"];");
+//			for (Arc a : m.getOutArc()) {
+//				bw.println("\"" + a.getSrc() + "\" -> \"" + a.getDest() + "\";");
+//			}
+//		}
+//		bw.println("}");
+//	}
 
 	// mark group
 //	public final void createMarkGroupGraph() {

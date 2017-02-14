@@ -228,7 +228,7 @@ public class CommandLineMark {
 			try {
 				PrintWriter pw;
 				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.MARKGRAPH))));
-				mp.dotMarking(pw);
+				mmat.dotMarking(pw);
 				pw.close();
 			} catch (FileNotFoundException e) {
 				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.MARKGRAPH));

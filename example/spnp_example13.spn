@@ -12,6 +12,8 @@
      -imark "p0:3,p5:2,pk:2"
 */
 
+// set default values
+
 n = 3 // Total processes
 k = 2 // Max reading processes
 
@@ -47,7 +49,7 @@ iarc p5 to t4 (multi = #pk) // (multi = k)
 oarc t4 to p4
 iarc p4 to t5
 oarc t5 to p0
-oarc t5 to p5 (multi = k)
+oarc t5 to p5 (multi = #pk) // (multi = k)
 iarc p2 to t6 (multi = fun)
 oarc t6 to p5 (multi = fun)
 oarc t6 to p0 (multi = fun)
