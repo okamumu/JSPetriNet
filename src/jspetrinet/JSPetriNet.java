@@ -59,7 +59,7 @@ public class JSPetriNet {
 				mp.setCreateMarking(new CreateMarkingDFS2(mp, expTransSet));
 			}
 		} else {
-			mp.setCreateMarking(new CreateMarkingBFS(mp, depth));
+			mp.setCreateMarking(new CreateMarkingBFS2(mp, expTransSet, depth));
 		}
 		pw.print("Create marking...");
 		long start = System.nanoTime();

@@ -1,4 +1,4 @@
-package jspetrinet.analysis;
+package jspetrinet.marking;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -6,10 +6,6 @@ import java.util.Set;
 
 import jspetrinet.JSPetriNet;
 import jspetrinet.graph.Arc;
-import jspetrinet.marking.GenVec;
-import jspetrinet.marking.Mark;
-import jspetrinet.marking.MarkGroup;
-import jspetrinet.marking.MarkingArc;
 import jspetrinet.petri.Net;
 
 public class CreateGroupMarkingGraph {
@@ -21,9 +17,11 @@ public class CreateGroupMarkingGraph {
 		Set<GvGvTrans> gvGtoG = new HashSet<GvGvTrans>();
 		for (MarkGroup srcG : immGroup.values()) {
 			for (Mark src : srcG.getMarkSet()) {
+//				System.out.println("srcI " + JSPetriNet.markToString(net, src));
 				for (Arc a : src.getOutArc()) {
 					MarkingArc ma = (MarkingArc) a;
 					Mark dest = (Mark) ma.getDest();
+//					System.out.println("destI " + JSPetriNet.markToString(net, dest));
 					if (dest.isIMM()) {
 						GvGvTrans gvtrans = new GvGvTrans(src.getGenVec(), dest.getGenVec(), ma.getTrans());
 						if (!gvItoI.contains(gvtrans)) {
@@ -42,9 +40,11 @@ public class CreateGroupMarkingGraph {
 		}
 		for (MarkGroup srcG : genGroup.values()) {
 			for (Mark src : srcG.getMarkSet()) {
+//				System.out.println("srcG " + JSPetriNet.markToString(net, src));
 				for (Arc a : src.getOutArc()) {
 					MarkingArc ma = (MarkingArc) a;
 					Mark dest = (Mark) ma.getDest();
+//					System.out.println("destG " + JSPetriNet.markToString(net, dest));
 					if (!dest.isIMM() && !src.getGenVec().equals(dest.getGenVec())) {
 						GvGvTrans gvtrans = new GvGvTrans(src.getGenVec(), dest.getGenVec(), ma.getTrans());
 						if (!gvGtoG.contains(gvtrans)) {

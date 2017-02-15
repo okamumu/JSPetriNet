@@ -1,6 +1,5 @@
-package jspetrinet.analysis;
+package jspetrinet.marking;
 
-import jspetrinet.marking.GenVec;
 import jspetrinet.petri.ExpTrans;
 import jspetrinet.petri.ImmTrans;
 import jspetrinet.petri.Trans;

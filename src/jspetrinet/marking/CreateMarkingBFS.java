@@ -45,11 +45,13 @@ public class CreateMarkingBFS implements CreateMarking {
 	}
 
 	private void createMarking(LinkedList<Mark> novisited, Net net) throws JSPNException {
+		boolean isMaxdepth;
 		while (!novisited.isEmpty()) {
 			Mark m = novisited.poll();
 			if (markDepth.get(m) > this.maxdepth) {
-				continue;
+				isMaxdepth = true;
 			} else {
+				isMaxdepth = false;
 				depth = markDepth.get(m);
 			}
 
@@ -71,6 +73,30 @@ public class CreateMarkingBFS implements CreateMarking {
 					break;
 				default:
 				}
+			}
+			m.setGroup(genv);
+			
+			if (isMaxdepth) {
+				boolean hasImmTrans = false;
+				int highestPriority = 0;
+				for (Trans tr : sortedImmTrans) {
+					if (highestPriority > tr.getPriority()) {
+						break;
+					}
+					switch (PetriAnalysis.isEnable(net, tr)) {
+					case ENABLE:
+						highestPriority = tr.getPriority();
+						hasImmTrans = true;
+						break;
+					default:
+					}
+				}
+				if (hasImmTrans == true) {
+					m.setIMM();
+				} else {
+					m.setGEN();
+				}
+				continue;
 			}
 
 			boolean hasImmTrans = false;
@@ -97,6 +123,7 @@ public class CreateMarkingBFS implements CreateMarking {
 				}
 			}
 			if (hasImmTrans == true) {
+				m.setIMM();
 				if (!markGraph.getImmGroup().containsKey(genv)) {
 					markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
 				}
@@ -104,6 +131,7 @@ public class CreateMarkingBFS implements CreateMarking {
 				markGraph.getImmGroup().get(genv).add(m);
 				continue;
 			} else {
+				m.setGEN();
 				if (!markGraph.getGenGroup().containsKey(genv)) {
 					markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
 				}

@@ -13,6 +13,7 @@ import jspetrinet.JSPetriNet;
 import jspetrinet.ast.*;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.graph.Arc;
+import jspetrinet.marking.CreateGroupMarkingGraph;
 import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkGroup;
@@ -147,11 +148,6 @@ public class MarkingMatrix {
 						elem.add(revMarkIndex.get(src));
 						elem.add(revMarkIndex.get(dest));
 						GenTrans tr = (GenTrans) markingArc.getTrans();
-//						try {
-//							elem.add(tr.getDist().eval(net));
-//						} catch (JSPNException e) {
-//							System.err.println("Fail to get dist: " + tr.getLabel());
-//						}
 						elem.add(1);
 						if (!result.containsKey(tr)) {
 							result.put(tr, new ArrayList<List<Object>>());
@@ -292,7 +288,7 @@ public class MarkingMatrix {
 	}
 
 	public void dotMarkGroup(PrintWriter bw) {
-		CreateGroupMarkingGraph.createMarkGroupGraph(mp.getNet(), immGroup, genGroup);
+//		CreateGroupMarkingGraph.createMarkGroupGraph(mp.getNet(), immGroup, genGroup);
 		bw.println("digraph { layout=dot; overlap=false; splines=true;");
 		for (Map.Entry<GenVec, MarkGroup> entry : this.genGroup.entrySet()) {
 			bw.printf(genFormatG, entry.getValue(),
