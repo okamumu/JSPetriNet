@@ -3,7 +3,6 @@ package jspetrinet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -47,19 +46,19 @@ public class JSPetriNet {
 		return m;
 	}
 	
-	public static MarkingGraph marking(PrintWriter pw, Net net, Mark m, int depth, boolean tangible, List<Trans> expTransSet) throws JSPNException {
+	public static MarkingGraph marking(PrintWriter pw, Net net, Mark m, int depth, boolean tangible) throws JSPNException {
 		MarkingGraph mp = new MarkingGraph();
 		if (depth == 0) {
 			if (tangible) {
-				mp.setCreateMarking(new CreateMarkingDFStangible(mp, expTransSet));
+				mp.setCreateMarking(new CreateMarkingDFStangible(mp));
 			} else {
 //				CreateMarkingDFS cmdt = new CreateMarkingDFS(mp);
 //				cmdt.setGenTransSet(expTransSet);
 //				mp.setCreateMarking(cmdt);
-				mp.setCreateMarking(new CreateMarkingDFS2(mp, expTransSet));
+				mp.setCreateMarking(new CreateMarkingDFS2(mp));
 			}
 		} else {
-			mp.setCreateMarking(new CreateMarkingBFS2(mp, expTransSet, depth));
+			mp.setCreateMarking(new CreateMarkingBFS2(mp, depth));
 		}
 		pw.print("Create marking...");
 		long start = System.nanoTime();
@@ -112,20 +111,20 @@ public class JSPetriNet {
 				break;
 			}
 		}
-		for (Trans t: net.getExpTransSet()) {
-			switch(genv.get(t.getIndex())) {
-			case 0:
-				break;
-			case 1:
-				if (!result.equals("(")) {
-					result += " ";
-				}
-				result += t.getLabel() + "->enable";
-				break;
-			default:
-				break;
-			}
-		}
+//		for (Trans t: net.getExpTransSet()) {
+//			switch(genv.get(t.getIndex())) {
+//			case 0:
+//				break;
+//			case 1:
+//				if (!result.equals("(")) {
+//					result += " ";
+//				}
+//				result += t.getLabel() + "->enable";
+//				break;
+//			default:
+//				break;
+//			}
+//		}
 		if (result.equals("(")) {
 			result += "EXP";
 		}

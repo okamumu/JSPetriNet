@@ -17,7 +17,7 @@ import jspetrinet.petri.ImmTrans;
 
 public class CreateMarkingDFStangible implements CreateMarking {
 	private final MarkingGraph markGraph;
-	private final List<Trans> expTransSet;
+//	private final List<Trans> expTransSet;
 
 	private Map<Mark,Mark> createdMarks;
 	private Map<GenVec,GenVec> createdGenVec;
@@ -35,9 +35,9 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	private LinkedList<Mark> novisitedGEN;
 	private LinkedList<Mark> markPath;
 	
-	public CreateMarkingDFStangible(MarkingGraph markGraph, List<Trans> genTransSet) {
+	public CreateMarkingDFStangible(MarkingGraph markGraph) {
 		this.markGraph = markGraph;
-		this.expTransSet = genTransSet;
+//		this.expTransSet = genTransSet;
 	}
 	
 	private GenVec createGenVec(Net net) throws JSPNException {
@@ -53,14 +53,14 @@ public class CreateMarkingDFStangible implements CreateMarking {
 			default:
 			}
 		}
-		for (Trans tr : expTransSet) {
-			switch (PetriAnalysis.isEnable(net, tr)) {
-			case ENABLE:
-				genv.set(tr.getIndex(), 1);
-				break;
-			default:
-			}
-		}
+//		for (Trans tr : expTransSet) {
+//			switch (PetriAnalysis.isEnable(net, tr)) {
+//			case ENABLE:
+//				genv.set(tr.getIndex(), 1);
+//				break;
+//			default:
+//			}
+//		}
 		
 		if (!createdGenVec.containsKey(genv)) {
 			createdGenVec.put(genv, genv);

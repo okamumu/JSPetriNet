@@ -1,4 +1,5 @@
 package jspetrinet.cli;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
@@ -7,9 +8,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -27,7 +26,6 @@ import jspetrinet.exception.JSPNException;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingGraph;
 import jspetrinet.petri.Net;
-import jspetrinet.petri.Trans;
 
 public class CommandLineMark {
 
@@ -159,7 +157,7 @@ public class CommandLineMark {
 		options.addOption(CommandLineOptions.GROUPGRAPH, true, "marking group graph (output)");
 		options.addOption(CommandLineOptions.MARKGRAPH, true, "marking graph (output)");
 		options.addOption(CommandLineOptions.REWARD, true, "reward");
-		options.addOption(CommandLineOptions.EXP, true, "exp trans");
+//		options.addOption(CommandLineOptions.EXP, true, "exp trans");
 		options.addOption(CommandLineOptions.TEXT, false, "TEXT mat file");
 		options.addOption(CommandLineOptions.MATLAB, false, "MATLAB mat file");
 		options.addOption(CommandLineOptions.SCC, true, "scc");
@@ -179,23 +177,23 @@ public class CommandLineMark {
 		int depth = CommandLineCommons.getLimit(cmd, 0);
 		boolean vanishing = CommandLineCommons.getVanish(cmd, false);
 
-		List<Trans> expTrans = null;
-		if (cmd.hasOption(CommandLineOptions.EXP)) {
-			try {
-				expTrans = CommandLineCommons.parseExpTrans(net, cmd.getOptionValue(CommandLineOptions.EXP));
-			} catch (JSPNException e) {
-				System.err.println(e.getMessage());
-				System.exit(1);
-			}
-		} else {
-			expTrans = new ArrayList<Trans>();
-		}
+//		List<Trans> expTrans = null;
+//		if (cmd.hasOption(CommandLineOptions.EXP)) {
+//			try {
+//				expTrans = CommandLineCommons.parseExpTrans(net, cmd.getOptionValue(CommandLineOptions.EXP));
+//			} catch (JSPNException e) {
+//				System.err.println(e.getMessage());
+//				System.exit(1);
+//			}
+//		} else {
+//			expTrans = new ArrayList<Trans>();
+//		}
 		
 		PrintWriter pw0;
 		pw0 = new PrintWriter(System.out);
 		MarkingGraph mp;
 		try {
-			mp = JSPetriNet.marking(pw0, net, imark, depth, vanishing, expTrans);
+			mp = JSPetriNet.marking(pw0, net, imark, depth, vanishing);
 		} catch (JSPNException e1) {
 			System.err.println(e1.getMessage());
 			return;

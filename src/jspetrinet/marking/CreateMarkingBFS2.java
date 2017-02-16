@@ -18,7 +18,7 @@ import jspetrinet.petri.Trans;
 public class CreateMarkingBFS2 implements CreateMarking {
 
 	private final MarkingGraph markGraph;
-	private final List<Trans> expTransSet;
+//	private final List<Trans> expTransSet;
 
 	private Map<Mark,Integer> markDepth;
 	private int depth;
@@ -32,9 +32,9 @@ public class CreateMarkingBFS2 implements CreateMarking {
 	private LinkedList<Mark> novisitedIMM;
 	private LinkedList<Mark> novisitedGEN;
 	
-	public CreateMarkingBFS2(MarkingGraph markGraph, List<Trans> genTransSet, int maxdepth) {
+	public CreateMarkingBFS2(MarkingGraph markGraph, int maxdepth) {
 		this.markGraph = markGraph;
-		this.expTransSet = genTransSet;
+//		this.expTransSet = genTransSet;
 		this.maxdepth = maxdepth;
 	}
 	
@@ -72,14 +72,14 @@ public class CreateMarkingBFS2 implements CreateMarking {
 			default:
 			}
 		}
-		for (Trans tr : expTransSet) {
-			switch (PetriAnalysis.isEnable(net, tr)) {
-			case ENABLE:
-				genv.set(tr.getIndex(), 1);
-				break;
-			default:
-			}
-		}
+//		for (Trans tr : expTransSet) {
+//			switch (PetriAnalysis.isEnable(net, tr)) {
+//			case ENABLE:
+//				genv.set(tr.getIndex(), 1);
+//				break;
+//			default:
+//			}
+//		}
 		return genv;
 	}
 	

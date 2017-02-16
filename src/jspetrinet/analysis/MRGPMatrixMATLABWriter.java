@@ -113,7 +113,7 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 
 	public void writeStateRewardVec(DataOutputStream dos, PrintWriter pw, List<AST> reward) throws JSPNException, IOException {
 		Net net = this.getMarkingGraph().getNet();
-		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
+//		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
 		for (GenVec gv : this.getSortedAllGenVec()) {
 			if (genGroup.containsKey(gv)) {

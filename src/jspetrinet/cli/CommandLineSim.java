@@ -21,8 +21,24 @@ import jspetrinet.sim.EventValue;
 import jspetrinet.sim.MCSimulation;
 import jspetrinet.sim.Utility;
 
-public class CommandLineSim {
+class DValue {
+	private double value;
+	
+	public DValue() {
+		this.value = 0.0;
+	}
+	
+	public void add(double x) {
+		value += x;
+	}
+	
+	public double getValue() {
+		return value;
+	}
+}
 
+public class CommandLineSim {
+	
 	public static void cmdSimulation(String[] args) {
 		Options options = new Options();
 		options.addOption(CommandLineOptions.INPETRI, true, "input PetriNet file");
@@ -88,28 +104,40 @@ public class CommandLineSim {
 			String rewardLabel = cmd.getOptionValue(CommandLineOptions.REWARD);
 			try {
 				List<AST> rwdList = CommandLineCommons.parseReward(net, rewardLabel);
-				Map<AST,Double> totalRwd = new HashMap<AST,Double>();
-				Map<AST,Double> total2Rwd = new HashMap<AST,Double>();
+				Map<AST,DValue> totalRwd = new HashMap<AST,DValue>();
+				Map<AST,DValue> total2Rwd = new HashMap<AST,DValue>();
+				Map<AST,DValue> itotalRwd = new HashMap<AST,DValue>();
+				Map<AST,DValue> itotal2Rwd = new HashMap<AST,DValue>();
 				for (AST rwd : rwdList) {
-					totalRwd.put(rwd, 0.0);
-					total2Rwd.put(rwd, 0.0);
+					totalRwd.put(rwd, new DValue());
+					total2Rwd.put(rwd, new DValue());
+					itotalRwd.put(rwd, new DValue());
+					itotal2Rwd.put(rwd, new DValue());
 				}
 				for (int k=0; k<run; k++) {
 					List<EventValue> result = mc.runSimulation(imark, 0.0, endTime, limits, rnd);
 					for (AST rwd : rwdList) {
-						double tmp = mc.resultReward(net, result, rwd, 0.0, endTime);
-						totalRwd.put(rwd, totalRwd.get(rwd) + tmp);
-						total2Rwd.put(rwd, total2Rwd.get(rwd) + tmp*tmp);
+						double[] tmp = mc.resultCumulativeReward(net, result, rwd, 0.0, endTime);
+						totalRwd.get(rwd).add(tmp[0]);
+						total2Rwd.get(rwd).add(tmp[0]*tmp[0]);
+						itotalRwd.get(rwd).add(tmp[1]);
+						itotal2Rwd.get(rwd).add(tmp[1]*tmp[1]);
 					}
 				}
 				for (AST rwd : rwdList) {
-					double mean = totalRwd.get(rwd) / run;
-					double s2 = (total2Rwd.get(rwd) - totalRwd.get(rwd) * totalRwd.get(rwd) / run) / (run - 1);
+					double mean = totalRwd.get(rwd).getValue() / run;
+					double s2 = (total2Rwd.get(rwd).getValue() - totalRwd.get(rwd).getValue() * totalRwd.get(rwd).getValue() / run) / (run - 1);
 					double lcl = mean - 1.96 * Math.sqrt(s2 / run);
 					double ucl = mean + 1.96 * Math.sqrt(s2 / run);
 
+					double imean = itotalRwd.get(rwd).getValue() / run;
+					double is2 = (itotal2Rwd.get(rwd).getValue() - itotalRwd.get(rwd).getValue() * itotalRwd.get(rwd).getValue() / run) / (run - 1);
+					double ilcl = imean - 1.96 * Math.sqrt(is2 / run);
+					double iucl = imean + 1.96 * Math.sqrt(is2 / run);
+
 					System.out.println(rwd.toString());
 					System.out.println(mean + " [" + lcl + "," + ucl + "]");
+					System.out.println(imean + " [" + ilcl + "," + iucl + "]");
 				}
 			} catch (JSPNException e) {
 				e.printStackTrace();

@@ -13,7 +13,6 @@ import jspetrinet.JSPetriNet;
 import jspetrinet.ast.*;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.graph.Arc;
-import jspetrinet.marking.CreateGroupMarkingGraph;
 import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkGroup;

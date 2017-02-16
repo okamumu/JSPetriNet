@@ -9,7 +9,8 @@ public final class GenVec implements Comparable<GenVec> {
 	private final byte[] vec;
 
 	public GenVec(Net net) {
-		int size = net.getGenTransSet().size() + net.getExpTransSet().size();
+		int size = net.getGenTransSet().size();
+//		+ net.getExpTransSet().size();
 		this.vec = new byte [size];
 	}
 

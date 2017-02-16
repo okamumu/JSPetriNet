@@ -1,4 +1,4 @@
-package jspetrinet.marking;
+package jspetrinet.sim;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,15 +10,19 @@ import java.util.Set;
 
 import jspetrinet.JSPetriNet;
 import jspetrinet.exception.JSPNException;
+import jspetrinet.marking.*;
+import jspetrinet.petri.ImmTrans;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.PriorityComparator;
 import jspetrinet.petri.Trans;
-import jspetrinet.petri.ImmTrans;
 
-public class CreateMarkingDFS2 implements CreateMarking {
-	
+public class CreateMarkingSim implements CreateMarking {
+
 	private final MarkingGraph markGraph;
-//	private final List<Trans> expTransSet;
+	private final List<Trans> expTransSet;
+
+	private int depth;
+	private final int maxdepth;
 
 	private Map<Mark,Mark> createdMarks;
 	private Set<Mark> visitedGEN;
@@ -28,25 +32,30 @@ public class CreateMarkingDFS2 implements CreateMarking {
 	private LinkedList<Mark> novisitedIMM;
 	private LinkedList<Mark> novisitedGEN;
 	
-	public CreateMarkingDFS2(MarkingGraph markGraph) {
+	private double[] remainingTime;
+
+	public CreateMarkingSim(MarkingGraph markGraph, List<Trans> genTransSet, int maxdepth) {
 		this.markGraph = markGraph;
-//		this.expTransSet = genTransSet;
+		this.expTransSet = genTransSet;
+		this.maxdepth = maxdepth;
 	}
 	
 	@Override
 	public Mark create(Mark init, Net net) throws JSPNException {
 		createdMarks = new HashMap<Mark,Mark>();
+		
+		depth = 0;
+		
+		remainingTime = new double [net.getGenTransSet().size()];
 
 		visitedGEN = new HashSet<Mark>();
 
 		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
 		sortedImmTrans.sort(new PriorityComparator());
 		
-		novisitedGEN = new LinkedList<Mark>();
-		novisitedIMM = new LinkedList<Mark>();
-
 		createdMarks.put(init, init);
 		novisitedGEN.push(init);
+
 		createMarking(net);
 
 		return init;
@@ -65,14 +74,14 @@ public class CreateMarkingDFS2 implements CreateMarking {
 			default:
 			}
 		}
-//		for (Trans tr : expTransSet) {
-//			switch (PetriAnalysis.isEnable(net, tr)) {
-//			case ENABLE:
-//				genv.set(tr.getIndex(), 1);
-//				break;
-//			default:
-//			}
-//		}
+		for (Trans tr : expTransSet) {
+			switch (PetriAnalysis.isEnable(net, tr)) {
+			case ENABLE:
+				genv.set(tr.getIndex(), 1);
+				break;
+			default:
+			}
+		}
 		return genv;
 	}
 	
@@ -96,8 +105,6 @@ public class CreateMarkingDFS2 implements CreateMarking {
 	}
 	
 	private void setGenVecToImm(Net net, GenVec genv, Mark m) {
-		m.setGroup(genv);
-		m.setIMM();
 		if (!markGraph.getImmGroup().containsKey(genv)) {
 			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
 		}
@@ -106,8 +113,6 @@ public class CreateMarkingDFS2 implements CreateMarking {
 	}
 
 	private void setGenVecToGen(Net net, GenVec genv, Mark m) {
-		m.setGroup(genv);
-		m.setGEN();
 		if (!markGraph.getGenGroup().containsKey(genv)) {
 			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
 		}
@@ -120,8 +125,10 @@ public class CreateMarkingDFS2 implements CreateMarking {
 			Mark dest = PetriAnalysis.doFiring(net, tr);
 			if (createdMarks.containsKey(dest)) {
 				dest = createdMarks.get(dest);
+				markDepth.put(dest, Math.min(markDepth.get(dest), depth+1));
 			} else {
 				createdMarks.put(dest, dest);
+				markDepth.put(dest, depth+1);
 			}
 			novisitedIMM.push(dest);
 			new MarkingArc(m, dest, tr);
@@ -136,8 +143,10 @@ public class CreateMarkingDFS2 implements CreateMarking {
 				Mark dest = PetriAnalysis.doFiring(net, tr);
 				if (createdMarks.containsKey(dest)) {
 					dest = createdMarks.get(dest);
+					markDepth.put(dest, Math.min(markDepth.get(dest), depth+1));
 				} else {
 					createdMarks.put(dest, dest);
+					markDepth.put(dest, depth+1);
 				}
 				novisitedGEN.push(dest);
 				new MarkingArc(m, dest, tr);
@@ -151,8 +160,10 @@ public class CreateMarkingDFS2 implements CreateMarking {
 				Mark dest = PetriAnalysis.doFiring(net, tr);
 				if (createdMarks.containsKey(dest)) {
 					dest = createdMarks.get(dest);
+					markDepth.put(dest, Math.min(markDepth.get(dest), depth+1));
 				} else {
 					createdMarks.put(dest, dest);
+					markDepth.put(dest, depth+1);
 				}
 				novisitedGEN.push(dest);
 				new MarkingArc(m, dest, tr);
@@ -166,6 +177,9 @@ public class CreateMarkingDFS2 implements CreateMarking {
 	private void vanishing(Net net) throws JSPNException {
 		while (!novisitedIMM.isEmpty()) {
 			Mark m = novisitedIMM.pop();
+			depth = markDepth.get(m);
+//			System.out.println("visit " + JSPetriNet.markToString(net, m) + " depth " + depth);
+
 			if (visitedGEN.contains(m)) {
 				continue;
 			}
@@ -173,14 +187,21 @@ public class CreateMarkingDFS2 implements CreateMarking {
 			// new visit
 			net.setCurrentMark(m);
 			GenVec genv = createGenVec(net);
-
+			m.setGroup(genv);
+			
 			List<Trans> enabledIMMList = createEnabledIMM(net);			
 			if (enabledIMMList.size() > 0) {
+				m.setIMM();
 				setGenVecToImm(net, genv, m);
-				visitImmMark(net, enabledIMMList, m);
+				if (depth < maxdepth) {
+					visitImmMark(net, enabledIMMList, m);
+				}
 			} else {
+				m.setGEN();
 				setGenVecToGen(net, genv, m);
-				visitGenMark(net, m);
+				if (depth < maxdepth) {
+					visitGenMark(net, m);
+				}
 			}
 		}
 	}
@@ -188,6 +209,8 @@ public class CreateMarkingDFS2 implements CreateMarking {
 	private void createMarking(Net net) throws JSPNException {
 		while (!novisitedGEN.isEmpty()) {
 			Mark m = novisitedGEN.pop();
+			depth = markDepth.get(m);
+//			System.out.println("visit " + JSPetriNet.markToString(net, m) + " depth " + depth);
 			if (visitedGEN.contains(m)) {
 				continue;
 			}
@@ -195,15 +218,22 @@ public class CreateMarkingDFS2 implements CreateMarking {
 			// new visit
 			net.setCurrentMark(m);
 			GenVec genv = createGenVec(net);
+			m.setGroup(genv);
 
 			List<Trans> enabledIMMList = createEnabledIMM(net);
 			if (enabledIMMList.size() > 0) {
+				m.setIMM();
 				setGenVecToImm(net, genv, m);
-				visitImmMark(net, enabledIMMList, m);
-				vanishing(net);
+				if (depth < maxdepth) {
+					visitImmMark(net, enabledIMMList, m);
+					vanishing(net);
+				}
 			} else {
+				m.setGEN();
 				setGenVecToGen(net, genv, m);
-				visitGenMark(net, m);
+				if (depth < maxdepth) {
+					visitGenMark(net, m);
+				}
 			}
 		}
 	}

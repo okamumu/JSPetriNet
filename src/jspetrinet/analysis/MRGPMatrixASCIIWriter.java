@@ -98,7 +98,7 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 
 	public void writeStateRewardVec(PrintWriter pw, List<AST> reward) throws JSPNException {
 		Net net = this.getMarkingGraph().getNet();
-		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
+//		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
 		for (GenVec gv : this.getSortedAllGenVec()) {
 			if (genGroup.containsKey(gv)) {

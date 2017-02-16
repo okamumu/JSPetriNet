@@ -278,19 +278,23 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 					obj = entry.getValue();
 				}
 				if (obj instanceof String) {
-					String pol = (String) obj;
+					String pol = ((String) obj).toLowerCase();
 					switch (pol) {
 						case "prd":
 							tr.setPolicy(GenTransPolicy.PRD);
 							break;
+						case "prr":
 						case "prs":
 							tr.setPolicy(GenTransPolicy.PRS);
 							break;
+						case "pri":
+							tr.setPolicy(GenTransPolicy.PRI);
+							break;
 						default:
-							throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "The policy of GEN transition should be defined by string 'prd' or 'prs'.");
+							throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "The policy of GEN transition should be defined by string 'prd', 'prr (prs)' or 'pri'.");
 					}
 				} else {
-					throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "The policy of GEN transition should be defined by string 'prd' or 'prs'.");
+					throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "The policy of GEN transition should be defined by string 'prd', 'prr (prs)' or 'pri'.");
 				}
 				break;
 			}
@@ -305,7 +309,7 @@ public class JSPetriNetParser extends JSPNLBaseListener {
 			Object obj = ((AST) options.get("type")).eval(env);
 			options.remove("type");
 			if (obj instanceof String) {
-				switch ((String) obj) {
+				switch (((String) obj).toLowerCase()) {
 				case "exp":
 					this.defineExpTrans(name);
 					break;
