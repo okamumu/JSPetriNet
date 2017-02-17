@@ -26,8 +26,8 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	private Set<Mark> visited;
 
 	private Map<Mark,ExitMark> exitMarkSet;
-	private LinkedList<MarkMarkTrans> arcListIMM;
-	private LinkedList<MarkMarkTrans> arcListGEN;
+	private List<MarkMarkTrans> arcListIMM;
+	private List<MarkMarkTrans> arcListGEN;
 
 	private List<Trans> sortedImmTrans;
 	
@@ -97,8 +97,8 @@ public class CreateMarkingDFStangible implements CreateMarking {
 		visited = new HashSet<Mark>();
 
 		exitMarkSet = new HashMap<Mark,ExitMark>();
-		arcListIMM = new LinkedList<MarkMarkTrans>();
-		arcListGEN = new LinkedList<MarkMarkTrans>();
+		arcListIMM = new ArrayList<MarkMarkTrans>();
+		arcListGEN = new ArrayList<MarkMarkTrans>();
 
 		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
 		sortedImmTrans.sort(new PriorityComparator());

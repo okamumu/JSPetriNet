@@ -26,6 +26,12 @@ public class MarkingGraph {
 		numOfGenTrans = 0;
 	}
 	
+	public MarkingGraph(Net net) {
+		this();
+		this.net = net;
+		numOfGenTrans = net.getNumOfGenTrans();
+	}
+
 	public void setCreateMarking(CreateMarking createMarking) {
 		this.createMarking = createMarking;
 	}

@@ -14,6 +14,7 @@ import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.exception.TypeMismatch;
 import jspetrinet.marking.Mark;
+import jspetrinet.marking.MarkMarkTrans;
 import jspetrinet.marking.MarkingArc;
 import jspetrinet.marking.PetriAnalysis;
 import jspetrinet.petri.ExpTrans;
@@ -27,13 +28,13 @@ public class MCSimulation {
 	protected Net net;
 	protected Random rnd;
 	protected final Map<Mark, Mark> markSet;//結果表示用に通ったマーキングを保存
-	protected final Map<PairMark, PairMark> arcSet;
+	protected final Map<MarkMarkTrans, MarkMarkTrans> arcSet;
 	protected final Map<Trans, Double> remainingTime;//一般発火トランジションの残り時間
 
 	public MCSimulation(Net net) {
 		this.net = net;
 		markSet = new HashMap<Mark, Mark>();
-		arcSet = new HashMap<PairMark, PairMark>();
+		arcSet = new HashMap<MarkMarkTrans, MarkMarkTrans>();
 		remainingTime = new HashMap<Trans, Double>();
 		for (Trans tr : net.getGenTransSet()) {
 			remainingTime.put(tr, 0.0);
@@ -167,7 +168,7 @@ public class MCSimulation {
 			}else{//発火先がmarkSetにある場合、
 				currentMarking = markSet.get(currentMarking);
 			}
- 			PairMark pairMark = new PairMark(previousMarking, currentMarking);
+ 			MarkMarkTrans pairMark = new MarkMarkTrans(previousMarking, currentMarking, null);
 			if(!arcSet.containsValue(pairMark)){
 				arcSet.put(pairMark, pairMark);
 				new MarkingArc(previousMarking, currentMarking, selTrans);
@@ -274,7 +275,7 @@ public class MCSimulation {
 			}else{//発火先がmarkSetにある場合、
 				currentMarking = markSet.get(currentMarking);
 			}
- 			PairMark pairMark = new PairMark(previousMarking, currentMarking);
+ 			MarkMarkTrans pairMark = new MarkMarkTrans(previousMarking, currentMarking, null);
 			if(!arcSet.containsValue(pairMark)){
 				arcSet.put(pairMark, pairMark);
 				new MarkingArc(previousMarking, currentMarking, selTrans);

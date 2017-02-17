@@ -2,8 +2,10 @@ package jspetrinet.sim;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jp.rel.jmtrandom.Random;
 import jspetrinet.JSPetriNet;
@@ -15,6 +17,7 @@ import jspetrinet.exception.TypeMismatch;
 import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkGroup;
+import jspetrinet.marking.MarkMarkTrans;
 import jspetrinet.marking.MarkingArc;
 import jspetrinet.marking.MarkingGraph;
 import jspetrinet.marking.PetriAnalysis;
@@ -31,23 +34,28 @@ public class MCSimulation2 {
 
 	private final Net net;
 	private final MarkingGraph markGraph;
-	private Random rnd;
 
-	private Map<Mark,Mark> createdMarks;
+	private final Map<Mark,Mark> createdMarks;
+	private final Set<MarkMarkTrans> createdArcs;
 	protected final double[] genTransRemainingTime;
 	protected final double[] genTransTimeInit;
-//	protected final TransStatus[] genTransStatus;
 	
 	private final List<GenTrans> genTrans;
 	private final List<GenTrans> genTransPRI;
 
 	private final List<Trans> sortedImmTrans;
+
+	private int count;
+	private double time;
+	private Random rnd;
 	
-	public MCSimulation2(MarkingGraph markGraph) {
+	public MCSimulation2(MarkingGraph markGraph, Random rnd) {
 		this.markGraph = markGraph;
-		net = markGraph.getNet();
+		this.net = markGraph.getNet();
+		this.rnd = rnd;
 
 		createdMarks = new HashMap<Mark,Mark>();
+		createdArcs = new HashSet<MarkMarkTrans>();
 
 		genTransRemainingTime = new double [net.getGenTransSet().size()];
 		genTransTimeInit = new double [net.getGenTransSet().size()];
@@ -65,8 +73,21 @@ public class MCSimulation2 {
 		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
 		sortedImmTrans.sort(new PriorityComparator());
 	}
-
-	private double nextExpTime(Net net, ExpTrans tr, Random rnd) throws JSPNException {
+	
+	public void makeMarking() {
+		for (Mark m : createdMarks.keySet()) {
+			if (m.isIMM()) {
+				setGenVecToImm(net, m.getGenVec(), m);				
+			} else {
+				setGenVecToGen(net, m.getGenVec(), m);
+			}			
+		}
+		for (MarkMarkTrans mmt : createdArcs) {
+			new MarkingArc(mmt.getSrc(), mmt.getDest(), mmt.getTrans());
+		}
+	}
+	
+	private double nextExpTime(Net net, ExpTrans tr) throws JSPNException {
 		try {
 			double rate = Utility.convertObjctToDouble(tr.getRate().eval(net));
 			return rnd.nextExp(rate);
@@ -76,7 +97,7 @@ public class MCSimulation2 {
 		}
 	}
 
-	private double nextGenTime(Net net, GenTrans tr, Random rnd) throws JSPNException {
+	private double nextGenTime(Net net, GenTrans tr) throws JSPNException {
 		Object v = tr.getDist().eval(net);
 		if (v instanceof Dist) {
 			return ((Dist) v).next(net, rnd);
@@ -154,26 +175,73 @@ public class MCSimulation2 {
 			}
 			totalWeight += weight;
 		}
-		Mark dest = PetriAnalysis.doFiring(net, selected);
-		if (createdMarks.containsKey(dest)) {
-			dest = createdMarks.get(dest);
+		if (selected != null) {
+			Mark dest = PetriAnalysis.doFiring(net, selected);
+			if (createdMarks.containsKey(dest)) {
+				dest = createdMarks.get(dest);
+			} else {
+				createdMarks.put(dest, dest);
+			}
+			createdArcs.add(new MarkMarkTrans(m, dest, selected));
+//			new MarkingArc(m, dest, selected);
+			count++;
+			return dest;
 		} else {
-			createdMarks.put(dest, dest);
+			return null;
 		}
-		new MarkingArc(m, dest, selected);
-		return dest;
 	}
 
-	public List<EventValue> runSimulation(Mark initMarking, double startTime, double endTime,
-			int limitFiring, Random rnd) throws JSPNException {
+	private Mark visitGenMark(Net net, GenVec genv, Mark m) throws JSPNException {
+		Trans selected = null;
+		double minFiringTime = Double.MAX_VALUE;
+		for (Trans tr : net.getGenTransSet()) {
+			if (genv.get(tr.getIndex()) == 1) { // ENABLE
+				if (genTransRemainingTime[tr.getIndex()] < minFiringTime) {
+					selected = tr;
+					minFiringTime = genTransRemainingTime[tr.getIndex()];
+				}
+			}
+		}
+		for (Trans tr : net.getExpTransSet()) {
+			switch (PetriAnalysis.isEnable(net, tr)) {
+			case ENABLE:
+				double expftime = nextExpTime(net, (ExpTrans) tr);
+				if (expftime < minFiringTime) {
+					selected = tr;
+					minFiringTime = expftime;
+				}
+				break;
+			default:
+			}
+		}
+		if (selected != null) {
+			Mark dest = PetriAnalysis.doFiring(net, selected);
+			if (createdMarks.containsKey(dest)) {
+				dest = createdMarks.get(dest);
+			} else {
+				createdMarks.put(dest, dest);
+			}
+			createdArcs.add(new MarkMarkTrans(m, dest, selected));
+//			new MarkingArc(m, dest, selected);
+			updateGenTransRemainingTime(genv, minFiringTime);
+			time += minFiringTime;
+			count++;
+			return dest;
+		} else {
+			return null;
+		}
+	}
+
+	public List<EventValue> runSimulation(Mark init, double endTime, int limitFiring, AST stopCondition) throws JSPNException {
 		List<EventValue> eventValues = new ArrayList<EventValue>();
 		for (Trans tr: net.getGenTransSet()) {
 			genTransRemainingTime[tr.getIndex()] = 0.0;
 		}
 
-		int count = 0;
-		double time = startTime;
-		Mark m = initMarking;
+		this.count = 0;
+		this.time = 0.0;
+
+		Mark m = init;
 		if (createdMarks.containsKey(m)) {
 			m = createdMarks.get(m);
 		} else {
@@ -181,12 +249,7 @@ public class MCSimulation2 {
 		}
 		eventValues.add(new EventValue(m, time));
 
-		while (true) {
-			
-			if (count >= limitFiring) {
-				break;
-			}
-			
+		while(true) {
 			net.setCurrentMark(m);
 			GenVec genv = createGenVec(net);
 			m.setGroup(genv);
@@ -199,7 +262,7 @@ public class MCSimulation2 {
 					break;
 				case 1: // ENABLE
 					if (genTransRemainingTime[tr.getIndex()] == 0.0) {
-						genTransRemainingTime[tr.getIndex()] = this.nextGenTime(net, tr, rnd);
+						genTransRemainingTime[tr.getIndex()] = this.nextGenTime(net, tr);
 					}
 					break;
 				case 2: // PREEMPTION
@@ -215,7 +278,7 @@ public class MCSimulation2 {
 					break;
 				case 1: // ENABLE
 					if (genTransRemainingTime[tr.getIndex()] == 0.0) {
-						genTransRemainingTime[tr.getIndex()] = this.nextGenTime(net, tr, rnd);
+						genTransRemainingTime[tr.getIndex()] = this.nextGenTime(net, tr);
 						genTransTimeInit[tr.getIndex()] = genTransRemainingTime[tr.getIndex()];
 					}
 					break;
@@ -228,174 +291,43 @@ public class MCSimulation2 {
 
 			// for IMM
 			List<ImmTrans> enabledIMMList = createEnabledIMM(net);
+			Mark next;
 			if (enabledIMMList.size() > 0) {
 				m.setIMM();
-				setGenVecToImm(net, genv, m);
-				m = visitImmMark(net, enabledIMMList, m);
-				count++;
+//				setGenVecToImm(net, genv, m);
+				next = visitImmMark(net, enabledIMMList, m);
 			} else {
 				m.setGEN();
-				setGenVecToGen(net, genv, m);
-				m = visitGenMark(net, m);
+//				setGenVecToGen(net, genv, m);
+				next = visitGenMark(net, genv, m);
+			}
+
+			// m is absorbing state
+			if (next == null) {
+				break;
+			}
+
+			// check stop conditions
+			if (stopCondition != null) {
+				Object obj = stopCondition.eval(net);
+				if (obj instanceof Boolean) {
+					if ((Boolean) obj) {
+						break;
+					}
+				}
+			}
+
+			if (time > endTime) {
+				break;
 			}
 			
-				Trans selTrans = null;
-				double mindt = 0;
-				double totalWeight = 0;
-				for (Trans tr : net.getExpTransSet()) {
-					switch (PetriAnalysis.isEnable(net, tr)) {
-					case ENABLE:
-						double dt = this.nextTime(net, (ExpTrans) tr, rnd);
-						if(dt < mindt){
-							mindt = dt;
-							selTrans = tr;
-						}
-						break;
-					default:
-					}
-				}
-			}
-			if(selTrans==null){
-				//終了したことを記録
+			if (count > limitFiring) {
 				break;
 			}
-			//一般発火トランジションの残り時間再セット
-			updateRemainingTime(selTrans, mindt);
-			time += mindt;
-			if(time>endTime){
-				break;
-			}
-			//発火処理
-			Mark previousMarking = m;
-			m = PetriAnalysis.doFiring(net, selTrans);
-			if(!markSet.containsValue(m)){//発火先がmarkSetになければ追加
-				markSet.put(m, m);
-			}else{//発火先がmarkSetにある場合、
-				m = markSet.get(m);
-			}
-			PairMark pairMark = new PairMark(previousMarking, m);
-			if(!arcSet.containsValue(pairMark)){
-				arcSet.put(pairMark, pairMark);
-				new MarkingArc(previousMarking, m, selTrans);
 
-			}
-			eventValues.add(new EventValue(m, time));
-			firingcount++;
+			eventValues.add(new EventValue(next, time));
+			m = next;
 		}
 		return eventValues;
-	}
-
-	public List<EventValue> runSimulation(Mark initMarking, double startTime, double endTime, AST stopCondition, int limitFiring, Random rnd) throws JSPNException {
-		List<EventValue> eventValues = new ArrayList<EventValue>();
-		int firingcount = 0;
-		double currentTime = startTime;
-		Mark currentMarking = initMarking;
-		if(!markSet.containsValue(currentMarking)){
-			markSet.put(currentMarking, currentMarking);
-		}else{
-			currentMarking = markSet.get(currentMarking);
-		}
-		eventValues.add(new EventValue(initMarking, currentTime));
-		while (true) {
-			net.setCurrentMark(currentMarking);
-			if (Utility.convertObjctToBoolean(stopCondition.eval(net))) {
-				break;
-			}
-			if(firingcount>=limitFiring){
-				//上限推移数で終了したことを伝える
-				break;
-			}
-			for (Trans tr : net.getGenTransSet()) {
-				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
-				case ENABLE:
-					if(genTransRemainingTime.get(tr)==0){//残り時間0とは前回がDISABLE,もしくは発火したことを示すので残り時間を初期化
-						genTransRemainingTime.put(tr, this.nextTime(net, (GenTrans) tr, rnd));
-					}//それ以外は残り時間継続
-					break;
-				case PREEMPTION:
-					//ガードがあり、PolicyがPRSのため残り時間は減らない
-					break;
-				case DISABLE:
-					genTransRemainingTime.put(tr, 0.0);
-					break;
-				default:
-				}
-			}
-			Trans selTrans = null;
-			double totalWeight = 0;
-			for (Trans tr : net.getImmTransSet()) {
-				switch (PetriAnalysis.isEnable(net, tr)) {
-				case ENABLE:
-					double weight = Utility.convertObjctToDouble(((ImmTrans)tr).getWeight().eval(net));
-					if(weight>=(rnd.nextUnif()*(weight+totalWeight))){
-						selTrans = tr;
-					}
-					totalWeight += weight;
-					break;
-				default:
-				}
-			}
-			double mindt = Double.POSITIVE_INFINITY;
-			if(totalWeight==0){
-				for (Trans tr : net.getGenTransSet()) {
-					switch (PetriAnalysis.isEnable(net, tr)) {
-					case ENABLE:
-						double dt = genTransRemainingTime.get(tr);
-						if(dt < mindt){
-							mindt = dt;
-							selTrans = tr;
-						}
-						break;
-					default:
-					}
-				}
-				for (Trans tr : net.getExpTransSet()) {
-					switch (PetriAnalysis.isEnable(net, tr)) {
-					case ENABLE:
-						double dt = this.nextTime(net, (ExpTrans) tr, rnd);
-						if(dt < mindt){
-							mindt = dt;
-							selTrans = tr;
-						}
-						break;
-					default:
-					}
-				}
-			}
-			if(selTrans==null){
-				//終了したことを記録
-				break;
-			}
-			//一般発火トランジションの残り時間再セット
-			updateRemainingTime(selTrans, mindt);
-			currentTime += mindt;
-			if(currentTime>endTime){
-				break;
-			}
-			//発火処理
-			Mark previousMarking = currentMarking;
-			currentMarking = PetriAnalysis.doFiring(net, selTrans);
-			if(!markSet.containsValue(currentMarking)){//発火先がmarkSetになければ追加
-				markSet.put(currentMarking, currentMarking);
-			}else{//発火先がmarkSetにある場合、
-				currentMarking = markSet.get(currentMarking);
-			}
-			PairMark pairMark = new PairMark(previousMarking, currentMarking);
-			if(!arcSet.containsValue(pairMark)){
-				arcSet.put(pairMark, pairMark);
-				new MarkingArc(previousMarking, currentMarking, selTrans);
-
-			}
-			eventValues.add(new EventValue(currentMarking, currentTime));
-			firingcount++;
-		}
-		return eventValues;
-	}
-
-	public void resultEvent(PrintWriter pw, List<EventValue> eventValues){
-		for (EventValue ev : eventValues) {
-			pw.print(String.format("%.2f", ev.getEventTime())+" : ");
-			pw.println(JSPetriNet.markToString(net, ev.getEventMarking()));
-		}
 	}
 }

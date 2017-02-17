@@ -15,10 +15,12 @@ import jspetrinet.JSPetriNet;
 import jspetrinet.ast.AST;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.marking.Mark;
+import jspetrinet.marking.MarkingGraph;
 import jspetrinet.petri.Net;
-
+import jspetrinet.sim.CompReward;
 import jspetrinet.sim.EventValue;
 import jspetrinet.sim.MCSimulation;
+import jspetrinet.sim.MCSimulation2;
 import jspetrinet.sim.Utility;
 
 class DValue {
@@ -59,7 +61,6 @@ public class CommandLineSim {
 
 		Net net = CommandLineCommons.loadNet(cmd);
 
-		MCSimulation mc = new MCSimulation(net);
 		Mark imark = CommandLineCommons.getInitialMark(cmd, net);
 		int limits = CommandLineCommons.getLimit(cmd, 1000);
 
@@ -98,7 +99,8 @@ public class CommandLineSim {
 			seed = (int) System.currentTimeMillis();
 		}
 
-		Random rnd = new Random(seed);
+		MarkingGraph mp = new MarkingGraph(net);
+		MCSimulation2 mc = new MCSimulation2(mp, new Random(seed));
 
 		if (cmd.hasOption(CommandLineOptions.REWARD)) {
 			String rewardLabel = cmd.getOptionValue(CommandLineOptions.REWARD);
@@ -114,16 +116,23 @@ public class CommandLineSim {
 					itotalRwd.put(rwd, new DValue());
 					itotal2Rwd.put(rwd, new DValue());
 				}
+				PrintWriter pw = new PrintWriter(System.out);
+				pw.print("Start simulation...");
+				long start = System.nanoTime();
 				for (int k=0; k<run; k++) {
-					List<EventValue> result = mc.runSimulation(imark, 0.0, endTime, limits, rnd);
+					List<EventValue> result = mc.runSimulation(imark, endTime, limits, null);
 					for (AST rwd : rwdList) {
-						double[] tmp = mc.resultCumulativeReward(net, result, rwd, 0.0, endTime);
+						double[] tmp = CompReward.resultCumulativeReward(net, result, rwd, 0.0, endTime);
 						totalRwd.get(rwd).add(tmp[0]);
 						total2Rwd.get(rwd).add(tmp[0]*tmp[0]);
 						itotalRwd.get(rwd).add(tmp[1]);
 						itotal2Rwd.get(rwd).add(tmp[1]*tmp[1]);
 					}
 				}
+				mc.makeMarking();
+				pw.println("done");
+				pw.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
+				pw.println(JSPetriNet.markingToString(net, mp));
 				for (AST rwd : rwdList) {
 					double mean = totalRwd.get(rwd).getValue() / run;
 					double s2 = (total2Rwd.get(rwd).getValue() - totalRwd.get(rwd).getValue() * totalRwd.get(rwd).getValue() / run) / (run - 1);
@@ -135,21 +144,31 @@ public class CommandLineSim {
 					double ilcl = imean - 1.96 * Math.sqrt(is2 / run);
 					double iucl = imean + 1.96 * Math.sqrt(is2 / run);
 
-					System.out.println(rwd.toString());
-					System.out.println(mean + " [" + lcl + "," + ucl + "]");
-					System.out.println(imean + " [" + ilcl + "," + iucl + "]");
+					pw.println(rwd.toString());
+					pw.println(mean + " [" + lcl + "," + ucl + "]");
+					pw.println(imean + " [" + ilcl + "," + iucl + "]");
 				}
+				pw.close();
 			} catch (JSPNException e) {
 				e.printStackTrace();
 			}
 		} else {
 			try {
 				PrintWriter pw = new PrintWriter(System.out);
+				pw.print("Start simulation...");
+				long start = System.nanoTime();
 				for (int k=0; k<run; k++) {
-					List<EventValue> result = mc.runSimulation(imark, 0.0, endTime, limits, rnd);
-					mc.resultEvent(pw, result);
+					List<EventValue> result = mc.runSimulation(imark, endTime, limits, null);
+					for (EventValue ev : result) {
+						pw.print(String.format("%.2f", ev.getEventTime())+" : ");
+						pw.println(JSPetriNet.markToString(net, ev.getEventMarking()));
+					}
 					pw.println("----------");
 				}
+				mc.makeMarking();
+				pw.println("done");
+				pw.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
+				pw.println(JSPetriNet.markingToString(net, mp));
 				pw.close();
 			} catch (JSPNException e) {
 				System.err.println("Failed: " + e.getMessage());
