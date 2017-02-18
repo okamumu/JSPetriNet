@@ -3,6 +3,7 @@ package jspetrinet.sim;
 import java.util.List;
 
 import jspetrinet.ast.AST;
+import jspetrinet.common.Utility;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.petri.Net;
 

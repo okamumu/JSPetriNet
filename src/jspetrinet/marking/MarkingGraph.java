@@ -19,17 +19,19 @@ public class MarkingGraph {
 	
 	private CreateMarking createMarking;
 	
-	public MarkingGraph() {
+//	public MarkingGraph() {
+//		markSet = new HashMap<Mark,Mark>();
+//		genGroup = new HashMap<GenVec,MarkGroup>();
+//		immGroup = new HashMap<GenVec,MarkGroup>();
+//		numOfGenTrans = 0;
+//	}
+	
+	public MarkingGraph(Net net) {
 		markSet = new HashMap<Mark,Mark>();
 		genGroup = new HashMap<GenVec,MarkGroup>();
 		immGroup = new HashMap<GenVec,MarkGroup>();
-		numOfGenTrans = 0;
-	}
-	
-	public MarkingGraph(Net net) {
-		this();
 		this.net = net;
-		numOfGenTrans = net.getNumOfGenTrans();
+		numOfGenTrans = net.getGenTransSet().size();
 	}
 
 	public void setCreateMarking(CreateMarking createMarking) {
@@ -76,7 +78,7 @@ public class MarkingGraph {
 		this.net = net;
 		this.imark = init;
 		markSet.clear();
-		numOfGenTrans = net.getNumOfGenTrans();
+		numOfGenTrans = net.getGenTransSet().size();
 		immGroup.clear();
 		genGroup.clear();		
 		Mark ret = this.createMarking.create(init, net);

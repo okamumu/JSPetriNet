@@ -10,6 +10,7 @@ import java.util.Set;
 import jp.rel.jmtrandom.Random;
 import jspetrinet.JSPetriNet;
 import jspetrinet.ast.AST;
+import jspetrinet.common.Utility;
 import jspetrinet.dist.Dist;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.JSPNExceptionType;
@@ -43,7 +44,7 @@ public class MCSimulation2 {
 	private final List<GenTrans> genTrans;
 	private final List<GenTrans> genTransPRI;
 
-	private final List<Trans> sortedImmTrans;
+//	private final List<Trans> sortedImmTrans;
 
 	private int count;
 	private double time;
@@ -61,17 +62,16 @@ public class MCSimulation2 {
 		genTransTimeInit = new double [net.getGenTransSet().size()];
 		genTrans = new ArrayList<GenTrans>();
 		genTransPRI = new ArrayList<GenTrans>();
-		for (Trans tr : net.getGenTransSet()) {
-			GenTrans gtr = (GenTrans) tr;
-			if (gtr.getPolicy() == GenTransPolicy.PRI) {
-				genTransPRI.add(gtr);
+		for (GenTrans tr : net.getGenTransSet()) {
+			if (tr.getPolicy() == GenTransPolicy.PRI) {
+				genTransPRI.add(tr);
 			} else {
-				genTrans.add(gtr);
+				genTrans.add(tr);
 			}
 		}
 
-		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
-		sortedImmTrans.sort(new PriorityComparator());
+//		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
+//		sortedImmTrans.sort(new PriorityComparator());
 	}
 	
 	public void makeMarking() {
@@ -107,7 +107,7 @@ public class MCSimulation2 {
 	}
 
 	private void updateGenTransRemainingTime(GenVec genv, double elapsedTime) throws JSPNException{
-		for (Trans tr : net.getGenTransSet()) {
+		for (GenTrans tr : net.getGenTransSet()) {
 			if (genv.get(tr.getIndex()) == 1) { // ENABLE
 				genTransRemainingTime[tr.getIndex()] -= elapsedTime;				
 			}
@@ -116,7 +116,7 @@ public class MCSimulation2 {
 	
 	private GenVec createGenVec(Net net) throws JSPNException {
 		GenVec genv = new GenVec(net);
-		for (Trans tr : net.getGenTransSet()) {
+		for (GenTrans tr : net.getGenTransSet()) {
 			switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 			case ENABLE:
 				genv.set(tr.getIndex(), 1);
@@ -133,8 +133,7 @@ public class MCSimulation2 {
 	private List<ImmTrans> createEnabledIMM(Net net) throws JSPNException {
 		List<ImmTrans> enabledIMMList = new ArrayList<ImmTrans>();
 		int highestPriority = 0;
-		for (Trans t : sortedImmTrans) {
-			ImmTrans tr = (ImmTrans) t;
+		for (ImmTrans tr : net.getImmTransSet()) {
 			if (highestPriority > tr.getPriority()) {
 				break;
 			}
@@ -194,7 +193,7 @@ public class MCSimulation2 {
 	private Mark visitGenMark(Net net, GenVec genv, Mark m) throws JSPNException {
 		Trans selected = null;
 		double minFiringTime = Double.MAX_VALUE;
-		for (Trans tr : net.getGenTransSet()) {
+		for (GenTrans tr : net.getGenTransSet()) {
 			if (genv.get(tr.getIndex()) == 1) { // ENABLE
 				if (genTransRemainingTime[tr.getIndex()] < minFiringTime) {
 					selected = tr;
@@ -202,10 +201,10 @@ public class MCSimulation2 {
 				}
 			}
 		}
-		for (Trans tr : net.getExpTransSet()) {
+		for (ExpTrans tr : net.getExpTransSet()) {
 			switch (PetriAnalysis.isEnable(net, tr)) {
 			case ENABLE:
-				double expftime = nextExpTime(net, (ExpTrans) tr);
+				double expftime = nextExpTime(net, tr);
 				if (expftime < minFiringTime) {
 					selected = tr;
 					minFiringTime = expftime;
@@ -234,7 +233,7 @@ public class MCSimulation2 {
 
 	public List<EventValue> runSimulation(Mark init, double endTime, int limitFiring, AST stopCondition) throws JSPNException {
 		List<EventValue> eventValues = new ArrayList<EventValue>();
-		for (Trans tr: net.getGenTransSet()) {
+		for (GenTrans tr: net.getGenTransSet()) {
 			genTransRemainingTime[tr.getIndex()] = 0.0;
 		}
 

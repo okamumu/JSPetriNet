@@ -31,7 +31,7 @@ public class MarkingMatrix {
 	private final Map<GenVec,MarkGroup> genGroup;
 	
 	private List<GenVec> sortedAllGenVec;
-	private List<Trans> sortedImmTrans;
+//	private List<Trans> sortedImmTrans;
 	
 	public MarkingMatrix(MarkingGraph mp, boolean oneBased) {
 		this.mp = mp;
@@ -46,8 +46,8 @@ public class MarkingMatrix {
 
 		sortedAllGenVec = new ArrayList<GenVec>(tmp);
 		Collections.sort(sortedAllGenVec);
-		sortedImmTrans = new ArrayList<Trans>(mp.getNet().getImmTransSet());
-		sortedImmTrans.sort(new PriorityComparator());
+//		sortedImmTrans = new ArrayList<Trans>(mp.getNet().getImmTransSet());
+//		sortedImmTrans.sort(new PriorityComparator());
 
 		this.createIndex(oneBased);
 	}
@@ -198,8 +198,7 @@ public class MarkingMatrix {
 			net.setCurrentMark(m);
 			AST d = null;
 			int highestPriority = 0;
-			for (Trans t : sortedImmTrans) {
-				ImmTrans tr = (ImmTrans) t;
+			for (ImmTrans tr : net.getImmTransSet()) {
 				if (highestPriority > tr.getPriority()) {
 					break;
 				}
@@ -285,8 +284,7 @@ public class MarkingMatrix {
 			net.setCurrentMark(m);
 			Map<Trans,AST> tmp = new HashMap<Trans,AST>();
 			tmp.put(null, null);
-			for (Trans t : net.getExpTransSet()) {
-				ExpTrans tr = (ExpTrans) t;
+			for (ExpTrans tr : net.getExpTransSet()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					if (tmp.get(null) == null) {
@@ -298,8 +296,7 @@ public class MarkingMatrix {
 				default:
 				}				
 			}
-			for (Trans t : net.getGenTransSet()) {
-				GenTrans tr = (GenTrans) t;
+			for (GenTrans tr : net.getGenTransSet()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					if (!tmp.containsKey(tr)) {

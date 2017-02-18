@@ -9,6 +9,7 @@ import java.util.Map;
 import jp.rel.jmtrandom.Random;
 import jspetrinet.JSPetriNet;
 import jspetrinet.ast.AST;
+import jspetrinet.common.Utility;
 import jspetrinet.dist.Dist;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.JSPNExceptionType;
@@ -111,10 +112,10 @@ public class MCSimulation {
 			Trans selTrans = null;
 			double mindt = 0;
 			double totalWeight = 0;
-			for (Trans tr : net.getImmTransSet()) {
+			for (ImmTrans tr : net.getImmTransSet()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
-					double weight = Utility.convertObjctToDouble(((ImmTrans)tr).getWeight().eval(net));
+					double weight = Utility.convertObjctToDouble(tr.getWeight().eval(net));
 					if(weight>=(rnd.nextUnif()*(weight+totalWeight))){
 						selTrans = tr;
 					}
@@ -125,7 +126,7 @@ public class MCSimulation {
 			}
 			if(totalWeight==0){
 				mindt = Double.POSITIVE_INFINITY;
-				for (Trans tr : net.getGenTransSet()) {
+				for (GenTrans tr : net.getGenTransSet()) {
 					switch (PetriAnalysis.isEnable(net, tr)) {
 					case ENABLE:
 						double dt = remainingTime.get(tr);
@@ -137,7 +138,7 @@ public class MCSimulation {
 					default:
 					}
 				}
-				for (Trans tr : net.getExpTransSet()) {
+				for (ExpTrans tr : net.getExpTransSet()) {
 					switch (PetriAnalysis.isEnable(net, tr)) {
 					case ENABLE:
 						double dt = this.nextTime(net, (ExpTrans) tr, rnd);
@@ -218,10 +219,10 @@ public class MCSimulation {
 			}
 			Trans selTrans = null;
 			double totalWeight = 0;
-			for (Trans tr : net.getImmTransSet()) {
+			for (ImmTrans tr : net.getImmTransSet()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
-					double weight = Utility.convertObjctToDouble(((ImmTrans)tr).getWeight().eval(net));
+					double weight = Utility.convertObjctToDouble(tr.getWeight().eval(net));
 					if(weight>=(rnd.nextUnif()*(weight+totalWeight))){
 						selTrans = tr;
 					}
@@ -244,10 +245,10 @@ public class MCSimulation {
 					default:
 					}
 				}
-				for (Trans tr : net.getExpTransSet()) {
+				for (ExpTrans tr : net.getExpTransSet()) {
 					switch (PetriAnalysis.isEnable(net, tr)) {
 					case ENABLE:
-						double dt = this.nextTime(net, (ExpTrans) tr, rnd);
+						double dt = this.nextTime(net, tr, rnd);
 						if(dt < mindt){
 							mindt = dt;
 							selTrans = tr;

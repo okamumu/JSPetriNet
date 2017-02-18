@@ -1,11 +1,11 @@
-package jspetrinet.sim;
+package jspetrinet.common;
 
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.TypeMismatch;
 
 public class Utility {
 
-	public static boolean convertObjctToBoolean(Object obj) throws JSPNException{
+	public static boolean convertObjctToBoolean(Object obj) throws JSPNException {
 		if (obj instanceof Boolean) {
 			return (Boolean) obj;
 		} else {
@@ -13,13 +13,13 @@ public class Utility {
 		}
 	}
 
-	public static double convertObjctToDouble(Object obj) throws JSPNException{
+	public static double convertObjctToDouble(Object obj) throws JSPNException {
 		double doubleType;
-		if(obj instanceof Integer){
-			doubleType = (Integer)obj;
-		}else if(obj instanceof Double){
+		if (obj instanceof Integer) {
+			doubleType = (Integer) obj;
+		} else if (obj instanceof Double) {
 			doubleType = (Double)obj;
-		}else {
+		} else {
 			throw new TypeMismatch();
 		}
 		return doubleType;

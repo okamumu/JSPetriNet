@@ -30,7 +30,7 @@ public class JSPetriNet {
 	}
 
 	public static Mark mark(Net net, Map<String,Integer> map) throws JSPNException {
-		Mark m = new Mark(net.getNumOfPlace());
+		Mark m = new Mark(net.getPlaceSet().size());
 		for (Map.Entry<String, Integer> entry : map.entrySet()) {
 			Object obj = null;
 			try {
@@ -47,7 +47,7 @@ public class JSPetriNet {
 	}
 	
 	public static MarkingGraph marking(PrintWriter pw, Net net, Mark m, int depth, boolean tangible) throws JSPNException {
-		MarkingGraph mp = new MarkingGraph();
+		MarkingGraph mp = new MarkingGraph(net);
 		if (depth == 0) {
 			if (tangible) {
 				mp.setCreateMarking(new CreateMarkingDFStangible(mp));
@@ -87,7 +87,7 @@ public class JSPetriNet {
 
 	public static String genvecToString(Net net, GenVec genv) {
 		String result = "(";
-		for (Trans t: net.getGenTransSet()) {
+		for (GenTrans t: net.getGenTransSet()) {
 			switch(genv.get(t.getIndex())) {
 			case 0:
 //				if (!result.equals("(")) {

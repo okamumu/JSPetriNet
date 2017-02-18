@@ -11,8 +11,9 @@ import java.util.Set;
 import jspetrinet.JSPetriNet;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.petri.Net;
-import jspetrinet.petri.PriorityComparator;
 import jspetrinet.petri.Trans;
+import jspetrinet.petri.ExpTrans;
+import jspetrinet.petri.GenTrans;
 import jspetrinet.petri.ImmTrans;
 
 public class CreateMarkingDFStangible implements CreateMarking {
@@ -29,8 +30,6 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	private List<MarkMarkTrans> arcListIMM;
 	private List<MarkMarkTrans> arcListGEN;
 
-	private List<Trans> sortedImmTrans;
-	
 	private LinkedList<Mark> novisitedIMM;
 	private LinkedList<Mark> novisitedGEN;
 	private LinkedList<Mark> markPath;
@@ -42,7 +41,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	
 	private GenVec createGenVec(Net net) throws JSPNException {
 		GenVec genv = new GenVec(net);
-		for (Trans tr : net.getGenTransSet()) {
+		for (GenTrans tr : net.getGenTransSet()) {
 			switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 			case ENABLE:
 				genv.set(tr.getIndex(), 1);
@@ -100,9 +99,6 @@ public class CreateMarkingDFStangible implements CreateMarking {
 		arcListIMM = new ArrayList<MarkMarkTrans>();
 		arcListGEN = new ArrayList<MarkMarkTrans>();
 
-		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
-		sortedImmTrans.sort(new PriorityComparator());
-		
 		novisitedGEN = new LinkedList<Mark>();
 		novisitedIMM = new LinkedList<Mark>();
 		markPath = new LinkedList<Mark>();
@@ -141,8 +137,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	private List<Mark> createNextMarksIMM(Net net, Mark m) throws JSPNException {
 		List<Mark> nextMarksFromIMM = new ArrayList<Mark>();
 		int highestPriority = 0;
-		for (Trans t : sortedImmTrans) {
-			ImmTrans tr = (ImmTrans) t;
+		for (ImmTrans tr : net.getImmTransSet()) {
 			if (highestPriority > tr.getPriority()) {
 				break;
 			}
@@ -231,7 +226,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	}
 
 	private void visitGenMark(Net net, Mark m) throws JSPNException {
-		for (Trans tr : net.getGenTransSet()) {
+		for (GenTrans tr : net.getGenTransSet()) {
 			switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 			case ENABLE:
 				Mark dest = PetriAnalysis.doFiring(net, tr);
@@ -246,7 +241,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 			default:
 			}
 		}
-		for (Trans tr : net.getExpTransSet()) {
+		for (ExpTrans tr : net.getExpTransSet()) {
 			switch (PetriAnalysis.isEnable(net, tr)) {
 			case ENABLE:
 				Mark dest = PetriAnalysis.doFiring(net, tr);

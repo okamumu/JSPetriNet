@@ -89,7 +89,7 @@ public class CommandLineCommons {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		net.setIndex();
+		net.setIndexAndSortIMM();
 		return net;
 	}
 

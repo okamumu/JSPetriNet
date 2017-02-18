@@ -13,6 +13,7 @@ import org.apache.commons.cli.ParseException;
 import jp.rel.jmtrandom.Random;
 import jspetrinet.JSPetriNet;
 import jspetrinet.ast.AST;
+import jspetrinet.common.Utility;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingGraph;
@@ -21,7 +22,6 @@ import jspetrinet.sim.CompReward;
 import jspetrinet.sim.EventValue;
 import jspetrinet.sim.MCSimulation;
 import jspetrinet.sim.MCSimulation2;
-import jspetrinet.sim.Utility;
 
 class DValue {
 	private double value;
