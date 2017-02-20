@@ -23,21 +23,21 @@ import jspetrinet.marking.MarkMarkTrans;
 import jspetrinet.marking.MarkingArc;
 import jspetrinet.marking.MarkingGraph;
 import jspetrinet.marking.PetriAnalysis;
-import jspetrinet.marking.TransStatus;
 import jspetrinet.petri.ExpTrans;
 import jspetrinet.petri.GenTrans;
 import jspetrinet.petri.GenTransPolicy;
 import jspetrinet.petri.ImmTrans;
 import jspetrinet.petri.Net;
-import jspetrinet.petri.PriorityComparator;
 import jspetrinet.petri.Trans;
 
-public class MCSimulation2 {
+public class MCSimCreateMarking {
 
 	private final Net net;
+
+	private final Map<Mark,Mark> createdMarks;
+	private final Set<MarkMarkTrans> createdArcs;
 	protected final double[] genTransRemainingTime;
 	protected final double[] genTransTimeInit;
-	protected final int[] genTransState;
 	
 	private final List<GenTrans> genTrans;
 	private final List<GenTrans> genTransPRI;
@@ -46,12 +46,15 @@ public class MCSimulation2 {
 	private double time;
 	private Random rnd;
 	
-	public MCSimulation2(Net net, Random rnd) {
+	public MCSimCreateMarking(Net net, Random rnd) {
 		this.net = net;
 		this.rnd = rnd;
+
+		createdMarks = new HashMap<Mark,Mark>();
+		createdArcs = new HashSet<MarkMarkTrans>();
+
 		genTransRemainingTime = new double [net.getGenTransSet().size()];
 		genTransTimeInit = new double [net.getGenTransSet().size()];
-		genTransState = new int [net.getGenTransSet().size()];
 		genTrans = new ArrayList<GenTrans>();
 		genTransPRI = new ArrayList<GenTrans>();
 		for (GenTrans tr : net.getGenTransSet()) {
@@ -61,6 +64,36 @@ public class MCSimulation2 {
 				genTrans.add(tr);
 			}
 		}
+	}
+	
+	private void setGenVecToImm(Net net, MarkingGraph markGraph, Mark m) {
+		GenVec genv = m.getGenVec();
+		if (!markGraph.getImmGroup().containsKey(genv)) {
+			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
+		}
+		markGraph.getImmGroup().get(genv).add(m);					
+	}
+
+	private void setGenVecToGen(Net net, MarkingGraph markGraph, Mark m) {
+		GenVec genv = m.getGenVec();
+		if (!markGraph.getGenGroup().containsKey(genv)) {
+			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
+		}
+		markGraph.getGenGroup().get(genv).add(m);
+	}
+
+	public void makeMarking(MarkingGraph markGraph) {
+		for (Mark m : createdMarks.keySet()) {
+			if (m.isIMM()) {
+				setGenVecToImm(net, markGraph, m);				
+			} else {
+				setGenVecToGen(net, markGraph, m);
+			}
+		}
+		for (MarkMarkTrans mmt : createdArcs) {
+			new MarkingArc(mmt.getSrc(), mmt.getDest(), mmt.getTrans());
+		}
+		CreateGroupMarkingGraph.createMarkGroupGraph(net, markGraph.getImmGroup(), markGraph.getGenGroup());
 	}
 	
 	private double nextExpTime(Net net, ExpTrans tr) throws JSPNException {
@@ -80,6 +113,30 @@ public class MCSimulation2 {
 		} else {
 			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Gen " + tr.getLabel() + " was not set as an object of Dist. Please check the 'dist' attribute of " + tr.getLabel());
 		}
+	}
+
+	private void updateGenTransRemainingTime(GenVec genv, double elapsedTime) throws JSPNException{
+		for (GenTrans tr : net.getGenTransSet()) {
+			if (genv.get(tr.getIndex()) == 1) { // ENABLE
+				genTransRemainingTime[tr.getIndex()] -= elapsedTime;				
+			}
+		}
+	}
+	
+	private GenVec createGenVec(Net net) throws JSPNException {
+		GenVec genv = new GenVec(net);
+		for (GenTrans tr : net.getGenTransSet()) {
+			switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
+			case ENABLE:
+				genv.set(tr.getIndex(), 1);
+				break;
+			case PREEMPTION:
+				genv.set(tr.getIndex(), 2);
+				break;
+			default:
+			}
+		}
+		return genv;
 	}
 
 	private List<ImmTrans> createEnabledIMM(Net net) throws JSPNException {
@@ -110,8 +167,15 @@ public class MCSimulation2 {
 		this.time = 0.0;
 
 		Mark m = init;
+		if (createdMarks.containsKey(m)) {
+			m = createdMarks.get(m);
+		} else {
+			createdMarks.put(m, m);
+		}
+
 		while(true) {
 			net.setCurrentMark(m);
+			m.setGroup(createGenVec(net));
 			
 			// check stop conditions
 			if (time > endTime) {
@@ -135,40 +199,34 @@ public class MCSimulation2 {
 
 			// update remainingTime
 			for (GenTrans tr : genTrans) { // except for PRI
-				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
-				case DISABLE:
+				switch (m.getGenVec().get(tr.getIndex())) {
+				case 0: // DISABLE
 					genTransRemainingTime[tr.getIndex()] = 0.0;
-					this.genTransState[tr.getIndex()] = 0;
 					break;
-				case ENABLE:
+				case 1: // ENABLE
 					if (genTransRemainingTime[tr.getIndex()] == 0.0) {
 						genTransRemainingTime[tr.getIndex()] = this.nextGenTime(net, tr);
 					}
-					this.genTransState[tr.getIndex()] = 1;
 					break;
-				case PREEMPTION:
-					this.genTransState[tr.getIndex()] = 2;
+				case 2: // PREEMPTION
 					break;
 				default:
 				}
 			}
 			for (GenTrans tr : genTransPRI) { // for PRI
-				switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
-				case DISABLE:
+				switch (m.getGenVec().get(tr.getIndex())) {
+				case 0: // DISABLE
 					genTransRemainingTime[tr.getIndex()] = 0.0;
 					genTransTimeInit[tr.getIndex()] = 0.0;
-					this.genTransState[tr.getIndex()] = 0;
 					break;
-				case ENABLE:
+				case 1: // ENABLE
 					if (genTransRemainingTime[tr.getIndex()] == 0.0) {
 						genTransRemainingTime[tr.getIndex()] = this.nextGenTime(net, tr);
 						genTransTimeInit[tr.getIndex()] = genTransRemainingTime[tr.getIndex()];
 					}
-					this.genTransState[tr.getIndex()] = 2;
 					break;
-				case PREEMPTION:
+				case 2: // PREEMPTION
 					genTransRemainingTime[tr.getIndex()] = genTransTimeInit[tr.getIndex()];
-					this.genTransState[tr.getIndex()] = 2;
 					break;
 				default:
 				}
@@ -179,6 +237,7 @@ public class MCSimulation2 {
 			Trans selected = null;
 			double minFiringTime = 0.0;
 			if (enabledIMMList.size() > 0) {
+				m.setIMM();
 				double totalWeight = 0.0;
 				for (ImmTrans tr : enabledIMMList) {
 					double weight = Utility.convertObjctToDouble(tr.getWeight().eval(net));
@@ -188,6 +247,7 @@ public class MCSimulation2 {
 					totalWeight += weight;
 				}
 			} else {
+				m.setGEN();
 				minFiringTime = Double.MAX_VALUE;
 				for (GenTrans tr : net.getGenTransSet()) {
 					if (m.getGenVec().get(tr.getIndex()) == 1) { // ENABLE
@@ -217,14 +277,24 @@ public class MCSimulation2 {
 			}
 
 			Mark next = PetriAnalysis.doFiring(net, selected);
-			for (GenTrans tr : net.getGenTransSet()) {
-				if (this.genTransState[tr.getIndex()] == 1) { // ENABLE
-					genTransRemainingTime[tr.getIndex()] -= minFiringTime;				
-				}
+			if (createdMarks.containsKey(next)) {
+				next = createdMarks.get(next);
+			} else {
+				createdMarks.put(next, next);
 			}
+			updateGenTransRemainingTime(m.getGenVec(), minFiringTime);
 			time += minFiringTime;
 			count++;
+			this.createdArcs.add(new MarkMarkTrans(m, next, selected));
 			m = next;
+		}
+
+		// post processing
+		List<ImmTrans> enabledIMMList = createEnabledIMM(net);
+		if (enabledIMMList.size() > 0) {
+			m.setIMM();
+		} else {
+			m.setGEN();
 		}
 		return eventValues;
 	}

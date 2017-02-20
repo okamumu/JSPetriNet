@@ -7,12 +7,12 @@ import jspetrinet.ast.AST;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.petri.Net;
 
-class SimRwd {
+class SimValue {
 	private int count;
 	private double value;
 	private double value2;
 	
-	public SimRwd() {
+	public SimValue() {
 		count = 0;
 		value = 0.0;
 		value2 = 0.0;
@@ -33,21 +33,23 @@ class SimRwd {
 	}
 }
 
-public class SimResultArray {
+public class SimReward {
 
+	private final Net net;
 	private final AST reward;
-	private SimRwd icount;
-	private SimRwd ccount;
-	private SimRwd tcount;
+	private SimValue icount;
+	private SimValue ccount;
+	private SimValue tcount;
 	
-	public SimResultArray(AST reward) {
+	public SimReward(Net net, AST reward) {
+		this.net = net;
 		this.reward = reward;
-		this.icount = new SimRwd();
-		this.ccount = new SimRwd();
-		this.tcount = new SimRwd();
+		this.icount = new SimValue();
+		this.ccount = new SimValue();
+		this.tcount = new SimValue();
 	}
 	
-	public void add(Net net, List<EventValue> event, double endTime) throws JSPNException {
+	public void add(List<EventValue> event, double endTime) throws JSPNException {
 		double[] tmp = CompReward.resultCumulativeReward(net, event, reward, endTime);
 		icount.add(tmp[0]);
 		ccount.add(tmp[1]);

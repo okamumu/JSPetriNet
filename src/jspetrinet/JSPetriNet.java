@@ -47,7 +47,7 @@ public class JSPetriNet {
 	}
 	
 	public static MarkingGraph marking(PrintWriter pw, Net net, Mark m, int depth, boolean tangible) throws JSPNException {
-		MarkingGraph mp = new MarkingGraph(net);
+		MarkingGraph mp = new MarkingGraph();
 		if (depth == 0) {
 			if (tangible) {
 				mp.setCreateMarking(new CreateMarkingDFStangible(mp));
