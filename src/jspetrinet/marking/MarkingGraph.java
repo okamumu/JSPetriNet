@@ -28,10 +28,11 @@ public class MarkingGraph {
 //		numOfGenTrans = 0;
 //	}
 	
-	public MarkingGraph() {
+	public MarkingGraph(Mark imark) {
 //		markSet = new ArrayList<Mark>();
 		genGroup = new HashMap<GenVec,MarkGroup>();
 		immGroup = new HashMap<GenVec,MarkGroup>();
+		this.imark = imark;
 //		this.net = net;
 //		numOfGenTrans = net.getGenTransSet().size();
 	}

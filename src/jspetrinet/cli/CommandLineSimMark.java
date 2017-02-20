@@ -140,7 +140,7 @@ public class CommandLineSimMark {
 			return;
 		}
 
-		MarkingGraph mp = new MarkingGraph();
+		MarkingGraph mp = new MarkingGraph(imark);
 		MCSimCreateMarking mc = new MCSimCreateMarking(net, new Random(seed));
 
 		PrintWriter pw0 = new PrintWriter(System.out);
