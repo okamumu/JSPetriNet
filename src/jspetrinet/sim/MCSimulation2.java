@@ -44,8 +44,6 @@ public class MCSimulation2 {
 	private final List<GenTrans> genTrans;
 	private final List<GenTrans> genTransPRI;
 
-//	private final List<Trans> sortedImmTrans;
-
 	private int count;
 	private double time;
 	private Random rnd;
@@ -69,18 +67,15 @@ public class MCSimulation2 {
 				genTrans.add(tr);
 			}
 		}
-
-//		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
-//		sortedImmTrans.sort(new PriorityComparator());
 	}
 	
 	public void makeMarking() {
 		for (Mark m : createdMarks.keySet()) {
 			if (m.isIMM()) {
-				setGenVecToImm(net, m.getGenVec(), m);				
+				setGenVecToImm(net, m);				
 			} else {
-				setGenVecToGen(net, m.getGenVec(), m);
-			}			
+				setGenVecToGen(net, m);
+			}
 		}
 		for (MarkMarkTrans mmt : createdArcs) {
 			new MarkingArc(mmt.getSrc(), mmt.getDest(), mmt.getTrans());
@@ -148,87 +143,20 @@ public class MCSimulation2 {
 		return enabledIMMList;
 	}
 
-	private void setGenVecToImm(Net net, GenVec genv, Mark m) {
+	private void setGenVecToImm(Net net, Mark m) {
+		GenVec genv = m.getGenVec();
 		if (!markGraph.getImmGroup().containsKey(genv)) {
 			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
 		}
-		markGraph.addMark(m);
 		markGraph.getImmGroup().get(genv).add(m);					
 	}
 
-	private void setGenVecToGen(Net net, GenVec genv, Mark m) {
+	private void setGenVecToGen(Net net, Mark m) {
+		GenVec genv = m.getGenVec();
 		if (!markGraph.getGenGroup().containsKey(genv)) {
 			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
 		}
-		markGraph.addMark(m);
 		markGraph.getGenGroup().get(genv).add(m);
-	}
-
-	private Mark visitImmMark(Net net, List<ImmTrans> enabledIMMList, Mark m) throws JSPNException {
-		ImmTrans selected = null;
-		double totalWeight = 0.0;
-		for (ImmTrans tr : enabledIMMList) {
-			double weight = Utility.convertObjctToDouble(tr.getWeight().eval(net));
-			if (weight >= rnd.nextUnif(0.0, weight + totalWeight)) {
-				selected = tr;
-			}
-			totalWeight += weight;
-		}
-		if (selected != null) {
-			Mark dest = PetriAnalysis.doFiring(net, selected);
-			if (createdMarks.containsKey(dest)) {
-				dest = createdMarks.get(dest);
-			} else {
-				createdMarks.put(dest, dest);
-			}
-			createdArcs.add(new MarkMarkTrans(m, dest, selected));
-//			new MarkingArc(m, dest, selected);
-			count++;
-			return dest;
-		} else {
-			return null;
-		}
-	}
-
-	private Mark visitGenMark(Net net, GenVec genv, Mark m) throws JSPNException {
-		Trans selected = null;
-		double minFiringTime = Double.MAX_VALUE;
-		for (GenTrans tr : net.getGenTransSet()) {
-			if (genv.get(tr.getIndex()) == 1) { // ENABLE
-				if (genTransRemainingTime[tr.getIndex()] < minFiringTime) {
-					selected = tr;
-					minFiringTime = genTransRemainingTime[tr.getIndex()];
-				}
-			}
-		}
-		for (ExpTrans tr : net.getExpTransSet()) {
-			switch (PetriAnalysis.isEnable(net, tr)) {
-			case ENABLE:
-				double expftime = nextExpTime(net, tr);
-				if (expftime < minFiringTime) {
-					selected = tr;
-					minFiringTime = expftime;
-				}
-				break;
-			default:
-			}
-		}
-		if (selected != null) {
-			Mark dest = PetriAnalysis.doFiring(net, selected);
-			if (createdMarks.containsKey(dest)) {
-				dest = createdMarks.get(dest);
-			} else {
-				createdMarks.put(dest, dest);
-			}
-			createdArcs.add(new MarkMarkTrans(m, dest, selected));
-//			new MarkingArc(m, dest, selected);
-			updateGenTransRemainingTime(genv, minFiringTime);
-			time += minFiringTime;
-			count++;
-			return dest;
-		} else {
-			return null;
-		}
 	}
 
 	public List<EventValue> runSimulation(Mark init, double endTime, int limitFiring, AST stopCondition) throws JSPNException {
@@ -246,16 +174,34 @@ public class MCSimulation2 {
 		} else {
 			createdMarks.put(m, m);
 		}
-		eventValues.add(new EventValue(m, time));
 
 		while(true) {
 			net.setCurrentMark(m);
-			GenVec genv = createGenVec(net);
-			m.setGroup(genv);
+			m.setGroup(createGenVec(net));
 			
+			// check stop conditions
+			if (time > endTime) {
+				eventValues.add(new EventValue(time, m, true));				
+				break;
+			} else if (count > limitFiring) {
+				eventValues.add(new EventValue(time, m, true));				
+				break;
+			} else if (stopCondition != null) {
+				Object obj = stopCondition.eval(net);
+				if (obj instanceof Boolean) {
+					if ((Boolean) obj) {
+						eventValues.add(new EventValue(time, m, true));				
+						break;
+					}
+				}
+			} else {
+				eventValues.add(new EventValue(time, m));				
+			}
+
+
 			// update remainingTime
 			for (GenTrans tr : genTrans) { // except for PRI
-				switch (genv.get(tr.getIndex())) {
+				switch (m.getGenVec().get(tr.getIndex())) {
 				case 0: // DISABLE
 					genTransRemainingTime[tr.getIndex()] = 0.0;
 					break;
@@ -270,7 +216,7 @@ public class MCSimulation2 {
 				}
 			}
 			for (GenTrans tr : genTransPRI) { // for PRI
-				switch (genv.get(tr.getIndex())) {
+				switch (m.getGenVec().get(tr.getIndex())) {
 				case 0: // DISABLE
 					genTransRemainingTime[tr.getIndex()] = 0.0;
 					genTransTimeInit[tr.getIndex()] = 0.0;
@@ -290,42 +236,67 @@ public class MCSimulation2 {
 
 			// for IMM
 			List<ImmTrans> enabledIMMList = createEnabledIMM(net);
-			Mark next;
+			Trans selected = null;
+			double minFiringTime = 0.0;
 			if (enabledIMMList.size() > 0) {
 				m.setIMM();
-//				setGenVecToImm(net, genv, m);
-				next = visitImmMark(net, enabledIMMList, m);
+				double totalWeight = 0.0;
+				for (ImmTrans tr : enabledIMMList) {
+					double weight = Utility.convertObjctToDouble(tr.getWeight().eval(net));
+					if (weight >= rnd.nextUnif(0.0, weight + totalWeight)) {
+						selected = tr;
+					}
+					totalWeight += weight;
+				}
 			} else {
 				m.setGEN();
-//				setGenVecToGen(net, genv, m);
-				next = visitGenMark(net, genv, m);
-			}
-
-			// m is absorbing state
-			if (next == null) {
-				break;
-			}
-
-			// check stop conditions
-			if (stopCondition != null) {
-				Object obj = stopCondition.eval(net);
-				if (obj instanceof Boolean) {
-					if ((Boolean) obj) {
+				minFiringTime = Double.MAX_VALUE;
+				for (GenTrans tr : net.getGenTransSet()) {
+					if (m.getGenVec().get(tr.getIndex()) == 1) { // ENABLE
+						if (genTransRemainingTime[tr.getIndex()] < minFiringTime) {
+							selected = tr;
+							minFiringTime = genTransRemainingTime[tr.getIndex()];
+						}
+					}
+				}
+				for (ExpTrans tr : net.getExpTransSet()) {
+					switch (PetriAnalysis.isEnable(net, tr)) {
+					case ENABLE:
+						double expftime = nextExpTime(net, tr);
+						if (expftime < minFiringTime) {
+							selected = tr;
+							minFiringTime = expftime;
+						}
 						break;
+					default:
 					}
 				}
 			}
 
-			if (time > endTime) {
-				break;
-			}
-			
-			if (count > limitFiring) {
+			// m is absorbing state
+			if (selected == null) {
 				break;
 			}
 
-			eventValues.add(new EventValue(next, time));
+			Mark next = PetriAnalysis.doFiring(net, selected);
+			if (createdMarks.containsKey(next)) {
+				next = createdMarks.get(next);
+			} else {
+				createdMarks.put(next, next);
+			}
+			updateGenTransRemainingTime(m.getGenVec(), minFiringTime);
+			time += minFiringTime;
+			count++;
+			this.createdArcs.add(new MarkMarkTrans(m, next, selected));
 			m = next;
+		}
+
+		// post processing
+		List<ImmTrans> enabledIMMList = createEnabledIMM(net);
+		if (enabledIMMList.size() > 0) {
+			m.setIMM();
+		} else {
+			m.setGEN();
 		}
 		return eventValues;
 	}

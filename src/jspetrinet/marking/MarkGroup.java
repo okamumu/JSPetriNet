@@ -1,17 +1,16 @@
 package jspetrinet.marking;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MarkGroup extends jspetrinet.graph.Node {
 
 	private final String label;
-	private final Set<Mark> markSet;
+	private final List<Mark> markSet;
 	
 	public MarkGroup(String label) {
 		this.label = label;
-		markSet = new HashSet<Mark>();
+		markSet = new ArrayList<Mark>();
 	}
 	
 	public String getLabel() {
@@ -22,23 +21,23 @@ public class MarkGroup extends jspetrinet.graph.Node {
 		markSet.add(m);
 	}
 
-	public final void addAll(Collection<Mark> m) {
-		markSet.addAll(m);
-	}
+//	public final void addAll(Collection<Mark> m) {
+//		markSet.addAll(m);
+//	}
 
-	public final void remove(Mark m) {
-		markSet.remove(m);
-	}
+//	public final void remove(Mark m) {
+//		markSet.remove(m);
+//	}
 
-	public final boolean contains(Mark m) {
-		return markSet.contains(m);
-	}
+//	public final boolean contains(Mark m) {
+//		return markSet.contains(m);
+//	}
 	
 	public final int size() {
 		return markSet.size();
 	}
 	
-	public final Set<Mark> getMarkSet() {
+	public final List<Mark> getMarkSet() {
 		return markSet;
 	}
 }

@@ -134,11 +134,12 @@ public class JSPetriNet {
 	public static String markingToString(Net net, MarkingGraph mp) {
 		String linesep = System.getProperty("line.separator").toString();
 		String res = "";
-		int total = mp.size();
 		int immtotal = mp.immSize();
+		int gentotal = mp.genSize();
+		int total = immtotal + gentotal;
 		res += "# of total states   : " + total + linesep;
 		res += "# of IMM states     : " + immtotal + linesep;
-		res += "# of EXP/GEN states : " + (total - immtotal) + linesep;
+		res += "# of EXP/GEN states : " + gentotal + linesep;
 		Set<GenVec> all = new TreeSet<GenVec>();
 		all.addAll(mp.getImmGroup().keySet());
 		all.addAll(mp.getGenGroup().keySet());

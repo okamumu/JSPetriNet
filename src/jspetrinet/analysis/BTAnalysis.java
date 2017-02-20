@@ -74,15 +74,15 @@ public class BTAnalysis {
 				if (!slowTransSet.contains(ma.getTrans())) {
 					Mark dest = (Mark) ma.getDest();
 					if (!determined.contains(dest)) {
-						if (allState.contains(dest) && !slowSet.contains(dest)) {
-							mg.add(dest);
-							determined.add(dest);
-							novisited.push(dest);
-						} else {
-							determined.add(dest);
-//							mg.setTransient(true);
-//							mg.getExitMarkSet().add(m);
-						}
+//						if (allState.contains(dest) && !slowSet.contains(dest)) {
+//							mg.add(dest);
+//							determined.add(dest);
+//							novisited.push(dest);
+//						} else {
+//							determined.add(dest);
+////							mg.setTransient(true);
+////							mg.getExitMarkSet().add(m);
+//						}
 					}
 				}
 			}

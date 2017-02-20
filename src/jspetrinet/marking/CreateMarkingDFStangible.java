@@ -74,7 +74,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 		if (!markGraph.getImmGroup().containsKey(genv)) {
 			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
 		}
-		markGraph.addMark(m);
+//		markGraph.addMark(m);
 		markGraph.getImmGroup().get(genv).add(m);
 	}
 
@@ -83,7 +83,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 		if (!markGraph.getGenGroup().containsKey(genv)) {
 			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
 		}
-		markGraph.addMark(m);
+//		markGraph.addMark(m);
 		markGraph.getGenGroup().get(genv).add(m);
 	}
 
@@ -263,12 +263,21 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	 * Post processing
 	 */
 	private void postProcessing(Net net) {
-		// post processing 1		
+		// post processing 1
+		for (Mark m : visited) {
+			if (m.isIMM()) {
+				if (!exitMarkSet.get(m).canVanishing()) {
+					setGenVecToImm(net, m);
+				}
+			} else {
+				setGenVecToGen(net, m);				
+			}
+		}
 		for (MarkMarkTrans a : arcListGEN) {
 			Mark src = a.getSrc();
 			Mark dest = a.getDest();
 			Trans tr = a.getTrans();
-			setGenVecToGen(net, src);
+//			setGenVecToGen(net, src);
 			if (exitMarkSet.containsKey(dest)) {
 				if (!exitMarkSet.get(dest).canVanishing()) {
 					new MarkingArc(src, dest, tr);
@@ -286,7 +295,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 			if (!exitMarkSet.get(src).canVanishing()) {
 				Mark dest = a.getDest();
 				Trans tr = a.getTrans();
-				setGenVecToImm(net, src);
+//				setGenVecToImm(net, src);
 				if (exitMarkSet.containsKey(dest)) {
 					if (!exitMarkSet.get(dest).canVanishing()) {
 						new MarkingArc(src, dest, tr);

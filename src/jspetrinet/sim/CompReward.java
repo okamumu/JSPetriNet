@@ -13,34 +13,27 @@ public class CompReward {
 		return Utility.convertObjctToDouble(reward.eval(net));
 	}
 
-	public static double[] resultCumulativeReward(Net net, List<EventValue> simResult, AST reward, double startTime, double endTime) throws JSPNException {
-		double[] totalReward = new double [2];
-		totalReward[0] = 0;
-		for (int i=0; i<simResult.size(); i++) {
-			net.setCurrentMark(simResult.get(i).getEventMarking());
-			double tmp = evalReward(net, reward);
-			if (startTime <= simResult.get(i).getEventTime()) {
-				if (i == simResult.size()-1) {
-					totalReward[0] += (endTime - simResult.get(i).getEventTime()) * tmp;
-					totalReward[1] = tmp;
-					break;
-				} else {
-					if (endTime >= simResult.get(i+1).getEventTime()) {
-						totalReward[0] += (simResult.get(i+1).getEventTime() - simResult.get(i).getEventTime()) * tmp;
-					} else {
-						totalReward[0] += (endTime - simResult.get(i).getEventTime()) * tmp;
-						totalReward[1] = tmp;
-						break;
-					}
-				}
-			} else if (i == simResult.size()-1) {
-				totalReward[0] += (endTime - startTime) * tmp;
-				totalReward[1] = tmp;
-			} else if (startTime <= simResult.get(i+1).getEventTime()) {
-				totalReward[0] += (simResult.get(i+1).getEventTime() - startTime) * tmp;
+	public static double[] resultCumulativeReward(Net net, List<EventValue> simResult, AST reward, double endTime) throws JSPNException {
+		double totalReward = 0.0;
+		double lastReward = Double.NaN;
+		double time = 0.0;
+		double rwd = 0.0;
+		for (EventValue ev : simResult) {
+			if (ev.getTime() <= endTime) {
+				totalReward += rwd * (ev.getTime() - time);
+				time = ev.getTime();
+			} else {
+				totalReward += rwd * (endTime - time);
+				time = endTime;
+				lastReward = rwd;
+				break;
 			}
+			if (ev.isStop()) {
+				break;
+			}
+			net.setCurrentMark(ev.getEvent());
+			rwd = evalReward(net, reward);
 		}
-		return totalReward;
+		return new double[] {lastReward, totalReward, time};
 	}
-
 }

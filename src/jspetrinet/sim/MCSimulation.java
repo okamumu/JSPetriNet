@@ -86,7 +86,7 @@ public class MCSimulation {
 		}else{
 			currentMarking = markSet.get(currentMarking);
 		}
-		eventValues.add(new EventValue(initMarking, currentTime));
+		eventValues.add(new EventValue(currentTime, initMarking));
 		while (true) {
 			net.setCurrentMark(currentMarking);
 			if(firingcount>=limitFiring){
@@ -175,7 +175,7 @@ public class MCSimulation {
 				new MarkingArc(previousMarking, currentMarking, selTrans);
 
 			}
-			eventValues.add(new EventValue(currentMarking, currentTime));
+			eventValues.add(new EventValue(currentTime, currentMarking));
 			firingcount++;
 		}
 		return eventValues;
@@ -191,7 +191,7 @@ public class MCSimulation {
 		}else{
 			currentMarking = markSet.get(currentMarking);
 		}
-		eventValues.add(new EventValue(initMarking, currentTime));
+		eventValues.add(new EventValue(currentTime, initMarking));
 		while (true) {
 			net.setCurrentMark(currentMarking);
 			if (Utility.convertObjctToBoolean(stopCondition.eval(net))) {
@@ -282,7 +282,7 @@ public class MCSimulation {
 				new MarkingArc(previousMarking, currentMarking, selTrans);
 
 			}
-			eventValues.add(new EventValue(currentMarking, currentTime));
+			eventValues.add(new EventValue(currentTime, currentMarking));
 			firingcount++;
 		}
 		return eventValues;
@@ -296,18 +296,18 @@ public class MCSimulation {
 		double[] totalReward = new double [2];
 		totalReward[0] = 0;
 		for (int i=0; i<simResult.size(); i++) {
-			net.setCurrentMark(simResult.get(i).getEventMarking());
+			net.setCurrentMark(simResult.get(i).getEvent());
 			double tmp = evalReward(net, reward);
-			if (startTime <= simResult.get(i).getEventTime()) {
+			if (startTime <= simResult.get(i).getTime()) {
 				if (i == simResult.size()-1) {
-					totalReward[0] += (endTime - simResult.get(i).getEventTime()) * tmp;
+					totalReward[0] += (endTime - simResult.get(i).getTime()) * tmp;
 					totalReward[1] = tmp;
 					break;
 				} else {
-					if (endTime >= simResult.get(i+1).getEventTime()) {
-						totalReward[0] += (simResult.get(i+1).getEventTime() - simResult.get(i).getEventTime()) * tmp;
+					if (endTime >= simResult.get(i+1).getTime()) {
+						totalReward[0] += (simResult.get(i+1).getTime() - simResult.get(i).getTime()) * tmp;
 					} else {
-						totalReward[0] += (endTime - simResult.get(i).getEventTime()) * tmp;
+						totalReward[0] += (endTime - simResult.get(i).getTime()) * tmp;
 						totalReward[1] = tmp;
 						break;
 					}
@@ -315,8 +315,8 @@ public class MCSimulation {
 			} else if (i == simResult.size()-1) {
 				totalReward[0] += (endTime - startTime) * tmp;
 				totalReward[1] = tmp;
-			} else if (startTime <= simResult.get(i+1).getEventTime()) {
-				totalReward[0] += (simResult.get(i+1).getEventTime() - startTime) * tmp;
+			} else if (startTime <= simResult.get(i+1).getTime()) {
+				totalReward[0] += (simResult.get(i+1).getTime() - startTime) * tmp;
 			}
 		}
 		return totalReward;
@@ -324,8 +324,8 @@ public class MCSimulation {
 
 	public void resultEvent(PrintWriter pw, List<EventValue> eventValues){
 		for (EventValue ev : eventValues) {
-			pw.print(String.format("%.2f", ev.getEventTime())+" : ");
-			pw.println(JSPetriNet.markToString(net, ev.getEventMarking()));
+			pw.print(String.format("%.2f", ev.getTime())+" : ");
+			pw.println(JSPetriNet.markToString(net, ev.getEvent()));
 		}
 	}
 }
