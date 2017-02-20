@@ -72,7 +72,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	private void setGenVecToImm(Net net, Mark m) {
 		GenVec genv = m.getGenVec();
 		if (!markGraph.getImmGroup().containsKey(genv)) {
-			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
+			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv), genv, true));
 		}
 //		markGraph.addMark(m);
 		markGraph.getImmGroup().get(genv).add(m);
@@ -81,7 +81,7 @@ public class CreateMarkingDFStangible implements CreateMarking {
 	private void setGenVecToGen(Net net, Mark m) {
 		GenVec genv = m.getGenVec();
 		if (!markGraph.getGenGroup().containsKey(genv)) {
-			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
+			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv), genv, false));
 		}
 //		markGraph.addMark(m);
 		markGraph.getGenGroup().get(genv).add(m);

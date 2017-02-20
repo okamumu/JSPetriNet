@@ -33,7 +33,7 @@ public class BTAnalysis {
 		Set<Mark> remain = new HashSet<Mark>(allState);
 		Set<MarkGroup> mgg = new HashSet<MarkGroup>();
 
-		MarkGroup slowSet = new MarkGroup("");
+		MarkGroup slowSet = new MarkGroup("", null, false);
 		for (Mark m : allState) {
 			if (hasFastTrans(m) == false) {
 				slowSet.add(m);
@@ -58,7 +58,7 @@ public class BTAnalysis {
 			Set<Mark> visited, Set<Mark> determined,
 			Set<Mark> allState, Set<Trans> slowTransSet, MarkGroup slowSet) {
 		
-		MarkGroup mg = new MarkGroup("");
+		MarkGroup mg = new MarkGroup("", null, false);
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
 		novisited.push(start);
 		while (!novisited.isEmpty()) {

@@ -69,7 +69,7 @@ public class MCSimCreateMarking {
 	private void setGenVecToImm(Net net, MarkingGraph markGraph, Mark m) {
 		GenVec genv = m.getGenVec();
 		if (!markGraph.getImmGroup().containsKey(genv)) {
-			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
+			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv), genv, true));
 		}
 		markGraph.getImmGroup().get(genv).add(m);					
 	}
@@ -77,7 +77,7 @@ public class MCSimCreateMarking {
 	private void setGenVecToGen(Net net, MarkingGraph markGraph, Mark m) {
 		GenVec genv = m.getGenVec();
 		if (!markGraph.getGenGroup().containsKey(genv)) {
-			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
+			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv), genv, false));
 		}
 		markGraph.getGenGroup().get(genv).add(m);
 	}

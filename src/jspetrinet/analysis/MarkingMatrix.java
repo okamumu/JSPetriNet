@@ -101,6 +101,69 @@ public class MarkingMatrix {
 		return revMarkGroupIndex.get(mg);
 	}
 
+//	protected List<List<Object>> getMatrixI(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+//		List< List<Object>> result = new ArrayList< List<Object> >();
+//		for (Mark src: srcMarkGroup.getMarkSet()) {
+//			net.setCurrentMark(src);
+//			for (Arc arc: src.getOutArc()) {
+//				List<Object> elem = new ArrayList<Object>();
+//				Mark dest = (Mark) arc.getDest();
+//				if (destMarkGroup.getMarkSet().contains(dest)) {
+//					MarkingArc markingArc = (MarkingArc) arc;
+//					elem.add(revMarkIndex.get(src));
+//					elem.add(revMarkIndex.get(dest));
+//					if (markingArc.getTrans() instanceof ImmTrans) {
+//						ImmTrans tr = (ImmTrans) markingArc.getTrans();
+//						try {
+//							elem.add(tr.getWeight().eval(net));
+//						} catch (JSPNException e) {
+//							System.err.println("Fail to get weight: " + tr.getLabel());
+//						}
+//						result.add(elem);
+//					}
+//				}
+//			}
+//		}
+//		return result;
+//	}
+
+//	protected Map<Trans,List<List<Object>>> getMatrixG(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
+//		Map<Trans,List<List<Object>>> result = new HashMap<Trans,List<List<Object>>>();
+//		List<List<Object>> resultE = new ArrayList<List<Object>>();
+//		result.put(null, resultE);
+//		for (Mark src: srcMarkGroup.getMarkSet()) {
+//			net.setCurrentMark(src);
+//			for (Arc arc: src.getOutArc()) {
+//				Mark dest = (Mark) arc.getDest();
+//				if (destMarkGroup.getMarkSet().contains(dest)) {
+//					List<Object> elem = new ArrayList<Object>();
+//					MarkingArc markingArc = (MarkingArc) arc;
+//					if (markingArc.getTrans() instanceof ExpTrans) {
+//						elem.add(revMarkIndex.get(src));
+//						elem.add(revMarkIndex.get(dest));
+//						ExpTrans tr = (ExpTrans) markingArc.getTrans();
+//						try {
+//							elem.add(tr.getRate().eval(net));
+//						} catch (JSPNException e) {
+//							System.err.println("Fail to get rate: " + tr.getLabel());
+//						}
+//						resultE.add(elem);
+//					} else if (markingArc.getTrans() instanceof GenTrans) {
+//						elem.add(revMarkIndex.get(src));
+//						elem.add(revMarkIndex.get(dest));
+//						GenTrans tr = (GenTrans) markingArc.getTrans();
+//						elem.add(1);
+//						if (!result.containsKey(tr)) {
+//							result.put(tr, new ArrayList<List<Object>>());
+//						}
+//						result.get(tr).add(elem);
+//					}
+//				}
+//			}
+//		}
+//		return result;
+//	}
+
 	protected List<List<Object>> getMatrixI(Net net, MarkGroup srcMarkGroup, MarkGroup destMarkGroup) {
 		List< List<Object>> result = new ArrayList< List<Object> >();
 		for (Mark src: srcMarkGroup.getMarkSet()) {
@@ -108,7 +171,7 @@ public class MarkingMatrix {
 			for (Arc arc: src.getOutArc()) {
 				List<Object> elem = new ArrayList<Object>();
 				Mark dest = (Mark) arc.getDest();
-				if (destMarkGroup.getMarkSet().contains(dest)) {
+				if (dest.getGenVec().equals(destMarkGroup.getGenVec()) && (dest.isIMM() == destMarkGroup.isIMM())) {
 					MarkingArc markingArc = (MarkingArc) arc;
 					elem.add(revMarkIndex.get(src));
 					elem.add(revMarkIndex.get(dest));
@@ -135,7 +198,7 @@ public class MarkingMatrix {
 			net.setCurrentMark(src);
 			for (Arc arc: src.getOutArc()) {
 				Mark dest = (Mark) arc.getDest();
-				if (destMarkGroup.getMarkSet().contains(dest)) {
+				if (dest.getGenVec().equals(destMarkGroup.getGenVec()) && (dest.isIMM() == destMarkGroup.isIMM())) {
 					List<Object> elem = new ArrayList<Object>();
 					MarkingArc markingArc = (MarkingArc) arc;
 					if (markingArc.getTrans() instanceof ExpTrans) {

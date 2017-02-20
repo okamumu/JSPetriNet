@@ -99,7 +99,7 @@ public class CreateMarkingBFS2 implements CreateMarking {
 	
 	private void setGenVecToImm(Net net, GenVec genv, Mark m) {
 		if (!markGraph.getImmGroup().containsKey(genv)) {
-			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
+			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv), genv, true));
 		}
 //		markGraph.addMark(m);
 		markGraph.getImmGroup().get(genv).add(m);					
@@ -107,7 +107,7 @@ public class CreateMarkingBFS2 implements CreateMarking {
 
 	private void setGenVecToGen(Net net, GenVec genv, Mark m) {
 		if (!markGraph.getGenGroup().containsKey(genv)) {
-			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
+			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv), genv, false));
 		}
 //		markGraph.addMark(m);
 		markGraph.getGenGroup().get(genv).add(m);
