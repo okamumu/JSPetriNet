@@ -29,23 +29,9 @@ import jspetrinet.petri.Net;
 
 public class CommandLineMark {
 
-	private static void checkOptionMark(CommandLine cmd) {
-		if (cmd.hasOption(CommandLineOptions.MATLAB) && cmd.hasOption(CommandLineOptions.TEXT)) {
-			System.err.println("Output mode should be chosen either '-text' or '-bin'.");
-			System.exit(1);
-		}
-		if (cmd.hasOption(CommandLineOptions.MATLAB)) {
-			if (!cmd.hasOption(CommandLineOptions.OUT)) {
-				System.err.println("The option '-bin' requires the option '-o' to write binary filise.");				
-				System.exit(1);
-			}
-		}
-	}
-	
-	private static MarkingMatrix outputBin(CommandLine cmd, MarkingGraph mp) {
-		Net net = mp.getNet();
+	public static MarkingMatrix outputBin(CommandLine cmd, Net net, MarkingGraph mp) {
 		Mark imark = mp.getInitialMark();
-		MRGPMatrixMATLABWriter matlab = new MRGPMatrixMATLABWriter(mp);
+		MRGPMatrixMATLABWriter matlab = new MRGPMatrixMATLABWriter(net, mp);
 		if (cmd.hasOption(CommandLineOptions.OUT)) {
 			try {
 				PrintWriter pw = new PrintWriter(System.out);
@@ -75,10 +61,9 @@ public class CommandLineMark {
 		return matlab;
 	}
 
-	private static MarkingMatrix outputText(CommandLine cmd, MarkingGraph mp) {
-		Net net = mp.getNet();
+	public static MarkingMatrix outputText(CommandLine cmd, Net net, MarkingGraph mp) {
 		Mark imark = mp.getInitialMark();
-		MRGPMatrixASCIIWriter mrgp = new MRGPMatrixASCIIWriter(mp, true);
+		MRGPMatrixASCIIWriter mrgp = new MRGPMatrixASCIIWriter(net, mp, true);
 		if (cmd.hasOption(CommandLineOptions.OUT)) {
 			try {
 				PrintWriter pw1, pw2, pw6, pw7;
@@ -153,13 +138,13 @@ public class CommandLineMark {
 		options.addOption(CommandLineOptions.INITMARK, true, "initial marking");
 		options.addOption(CommandLineOptions.FIRINGLIMIT, true, "test mode (input depth for DFS)");
 		options.addOption(CommandLineOptions.OUT, true, "matrix (output)");
+		options.addOption(CommandLineOptions.TEXT, false, "TEXT mat file");
+		options.addOption(CommandLineOptions.MATLAB, false, "MATLAB mat file");
 		options.addOption(CommandLineOptions.VANISHING, false, "vanish IMM");
 		options.addOption(CommandLineOptions.GROUPGRAPH, true, "marking group graph (output)");
 		options.addOption(CommandLineOptions.MARKGRAPH, true, "marking graph (output)");
 		options.addOption(CommandLineOptions.REWARD, true, "reward");
 //		options.addOption(CommandLineOptions.EXP, true, "exp trans");
-		options.addOption(CommandLineOptions.TEXT, false, "TEXT mat file");
-		options.addOption(CommandLineOptions.MATLAB, false, "MATLAB mat file");
 		options.addOption(CommandLineOptions.SCC, true, "scc");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
@@ -170,7 +155,7 @@ public class CommandLineMark {
 			return;
 		}
 
-		checkOptionMark(cmd);
+		CommandLineCommons.checkOptionMark(cmd);
 
 		Net net = CommandLineCommons.loadNet(cmd);
 		Mark imark = CommandLineCommons.getInitialMark(cmd, net);
@@ -202,9 +187,9 @@ public class CommandLineMark {
 
 		MarkingMatrix mmat;
 		if (cmd.hasOption(CommandLineOptions.MATLAB)) {
-			mmat = outputBin(cmd, mp);
+			mmat = outputBin(cmd, net, mp);
 		} else {
-			mmat = outputText(cmd, mp); // default -text
+			mmat = outputText(cmd, net, mp); // default -text
 		}
 
 		if (cmd.hasOption(CommandLineOptions.GROUPGRAPH)) {
@@ -242,7 +227,7 @@ public class CommandLineMark {
 				PrintWriter pw;
 				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.SCC))));
 				Collection<Mark> am = mp.getImmGroup().get(mp.getImmGroup().keySet().iterator().next()).getMarkSet();
-				MarkClassAnalysis mca = new MarkClassAnalysis(mp, am);
+				MarkClassAnalysis mca = new MarkClassAnalysis(net, mp, am);
 				mca.dotMarkGroup(pw);
 				pw.close();
 			} catch (FileNotFoundException e) {

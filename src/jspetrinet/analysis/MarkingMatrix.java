@@ -22,6 +22,7 @@ import jspetrinet.marking.PetriAnalysis;
 import jspetrinet.petri.*;
 
 public class MarkingMatrix {
+	protected final Net net;
 	private final MarkingGraph mp;
 
 	private final Map<Mark,Integer> revMarkIndex;
@@ -33,7 +34,8 @@ public class MarkingMatrix {
 	private List<GenVec> sortedAllGenVec;
 //	private List<Trans> sortedImmTrans;
 	
-	public MarkingMatrix(MarkingGraph mp, boolean oneBased) {
+	public MarkingMatrix(Net net, MarkingGraph mp, boolean oneBased) {
+		this.net = net;
 		this.mp = mp;
 		revMarkIndex = new HashMap<Mark,Integer>();
 		revMarkGroupIndex = new HashMap<MarkGroup,String>();
@@ -414,7 +416,6 @@ public class MarkingMatrix {
 	private static String arcFormat = "\"%s\" -> \"%s\" [label=\"%s\"];" + ln;
 
 	public void dotMarking(PrintWriter bw) {
-		Net net = mp.getNet();
 		bw.println("digraph { layout=dot; overlap=false; splines=true;");
 		for (MarkGroup mg : immGroup.values()) {
 			for (Mark m : mg.getMarkSet()) {
@@ -450,7 +451,7 @@ public class MarkingMatrix {
 			bw.printf(genFormatG, entry.getValue(),
 					revMarkGroupIndex.get(entry.getValue()),
 					entry.getValue().getMarkSet().size(),
-					JSPetriNet.genvecToString(mp.getNet(), entry.getKey()));
+					JSPetriNet.genvecToString(net, entry.getKey()));
 			for (Arc a : entry.getValue().getOutArc()) {
 				MarkingArc ma = (MarkingArc) a;
 				if (ma.getTrans() instanceof ExpTrans) {
@@ -464,7 +465,7 @@ public class MarkingMatrix {
 			bw.printf(immFormatG, entry.getValue(),
 					revMarkGroupIndex.get(entry.getValue()),
 					entry.getValue().getMarkSet().size(),
-					JSPetriNet.genvecToString(mp.getNet(), entry.getKey()));
+					JSPetriNet.genvecToString(net, entry.getKey()));
 			for (Arc a : entry.getValue().getOutArc()) {
 				MarkingArc ma = (MarkingArc) a;
 				bw.printf(arcFormat, ma.getSrc(), ma.getDest(),  "IMM(" + ma.getTrans().getLabel() + ")");

@@ -5,6 +5,7 @@ public class CommandLineOptions {
 	public static String VIEW="view";
 	public static String MARKING="mark";
 	public static String SIMULATION="sim";
+	public static String SIMMARK="simmark";
 
 	// options
 	public static String INPETRI="i";

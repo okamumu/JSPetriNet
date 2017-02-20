@@ -21,13 +21,12 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 	private final Map<GroupPair,String> matrixName;	
 	private static String colsep = "\t";
 	
-	public MRGPMatrixASCIIWriter(MarkingGraph mp, boolean oneBased) {
-		super(mp, oneBased);
+	public MRGPMatrixASCIIWriter(Net net, MarkingGraph mp, boolean oneBased) {
+		super(net, mp, oneBased);
 		matrixName = new HashMap<GroupPair,String>();
 	}
 
 	public void writeMarkSet(PrintWriter pw) {
-		Net net = this.getMarkingGraph().getNet();
 		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
 		for (GenVec gv : this.getSortedAllGenVec()) {
@@ -55,7 +54,6 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 	}
 	
 	public void writeStateVec(PrintWriter pw, Mark imark) {
-		Net net = this.getMarkingGraph().getNet();
 		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
 		for (GenVec gv : this.getSortedAllGenVec()) {
@@ -97,7 +95,6 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 	}
 
 	public void writeStateRewardVec(PrintWriter pw, List<AST> reward) throws JSPNException {
-		Net net = this.getMarkingGraph().getNet();
 //		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
 		for (GenVec gv : this.getSortedAllGenVec()) {
@@ -121,7 +118,6 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 	}
 
 	public void writeSumVec(PrintWriter pw) throws JSPNException {
-		Net net = this.getMarkingGraph().getNet();
 		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
 		for (GenVec gv : this.getSortedAllGenVec()) {
@@ -191,7 +187,6 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 	}
 
 	private void writeImm(PrintWriter pw, MarkGroup src, MarkGroup dest) {
-		Net net = this.getMarkingGraph().getNet();
 		if (dest.size() == 0) {
 			return;
 		}
@@ -208,7 +203,6 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 	}
 
 	private void writeGen(PrintWriter pw, MarkGroup src, MarkGroup dest) throws JSPNException {
-		Net net = this.getMarkingGraph().getNet();
 		if (dest.size() == 0) {
 			return;
 		}

@@ -26,13 +26,12 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 
 	private final Map<GroupPair,String> matrixName;
 	
-	public MRGPMatrixMATLABWriter(MarkingGraph mp) {
-		super(mp, false);
+	public MRGPMatrixMATLABWriter(Net net, MarkingGraph mp) {
+		super(net, mp, false);
 		matrixName = new HashMap<GroupPair,String>();
 	}
 
 	public void writeMarkSet(PrintWriter pw) {
-		Net net = this.getMarkingGraph().getNet();
 		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
 		for (GenVec gv : this.getSortedAllGenVec()) {
@@ -60,7 +59,6 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 	}
 	
 	public void writeStateVec(DataOutputStream dos, PrintWriter pw, Mark imark) throws IOException {
-		Net net = this.getMarkingGraph().getNet();
 		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
 		for (GenVec gv : this.getSortedAllGenVec()) {
@@ -112,7 +110,6 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 	}
 
 	public void writeStateRewardVec(DataOutputStream dos, PrintWriter pw, List<AST> reward) throws JSPNException, IOException {
-		Net net = this.getMarkingGraph().getNet();
 //		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
 		for (GenVec gv : this.getSortedAllGenVec()) {
@@ -153,7 +150,6 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 	}
 
 	public void writeSumVec(DataOutputStream dos, PrintWriter pw) throws IOException, JSPNException {
-		Net net = this.getMarkingGraph().getNet();
 		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
 		for (GenVec gv : this.getSortedAllGenVec()) {
@@ -279,7 +275,6 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 	}
 
 	private void writeImm(DataOutputStream dos, PrintWriter pw, MarkGroup src, MarkGroup dest) throws JSPNException, IOException {
-		Net net = this.getMarkingGraph().getNet();
 		if (dest.size() == 0) {
 			return;
 		}
@@ -297,7 +292,6 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 	}
 
 	private void writeGen(DataOutputStream dos, PrintWriter pw, MarkGroup src, MarkGroup dest) throws JSPNException, IOException {
-		Net net = this.getMarkingGraph().getNet();
 		if (dest.size() == 0) {
 			return;
 		}

@@ -60,9 +60,9 @@ public class MarkingGraph {
 		return total;
 	}
 
-	public final Net getNet() {
-		return net;
-	}
+//	public final Net getNet() {
+//		return net;
+//	}
 
 	public final Mark getInitialMark() {
 		return imark;

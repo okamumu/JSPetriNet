@@ -24,8 +24,8 @@ public class MarkClassAnalysis {
 	private final Set<MarkGroup> dagMarkGroup;
 	private final Map<Mark,MarkGroup> markToGroup;
 	
-	public MarkClassAnalysis(MarkingGraph mp, Collection<Mark> allmark) {
-		this.net = mp.getNet();
+	public MarkClassAnalysis(Net net, MarkingGraph mp, Collection<Mark> allmark) {
+		this.net = net;
 		allMarkGroup = new HashSet<MarkGroup>();
 		markToGroup = new HashMap<Mark,MarkGroup>();
 		dagMarkGroup = new HashSet<MarkGroup>();
