@@ -117,7 +117,7 @@ public class MCSimulation2 {
 			if (time > endTime) {
 				eventValues.add(new EventValue(time, m, true));				
 				break;
-			} else if (count > limitFiring) {
+			} else if (limitFiring > 0 && count > limitFiring) {
 				eventValues.add(new EventValue(time, m, true));				
 				break;
 			} else if (stopCondition != null) {

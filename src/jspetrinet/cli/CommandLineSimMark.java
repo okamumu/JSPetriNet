@@ -123,7 +123,7 @@ public class CommandLineSimMark {
 
 		Net net = CommandLineCommons.loadNet(cmd);
 		Mark imark = CommandLineCommons.getInitialMark(cmd, net);
-		int limits = CommandLineCommons.getLimit(cmd, 1000);
+		int limits = CommandLineCommons.getLimit(cmd, 0);
 		int run = CommandLineCommons.getRun(cmd, 1);
 		long seed = CommandLineCommons.getSeed(cmd);
 
