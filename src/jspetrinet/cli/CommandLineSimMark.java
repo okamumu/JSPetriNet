@@ -21,6 +21,7 @@ import jspetrinet.analysis.MarkingMatrix;
 import jspetrinet.ast.AST;
 import jspetrinet.common.Utility;
 import jspetrinet.exception.JSPNException;
+import jspetrinet.marking.CreateMarking;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingGraph;
 import jspetrinet.petri.Net;
@@ -140,8 +141,8 @@ public class CommandLineSimMark {
 			return;
 		}
 
-		MarkingGraph mp = new MarkingGraph(imark);
-		MCSimCreateMarking mc = new MCSimCreateMarking(net, new Random(seed));
+		MarkingGraph mp = new MarkingGraph(net);
+		MCSimCreateMarking mc = new MCSimCreateMarking(mp, new Random(seed), new CreateMarking(mp));
 
 		PrintWriter pw0 = new PrintWriter(System.out);
 		pw0.print("Start simulation...");
@@ -207,7 +208,7 @@ public class CommandLineSimMark {
 			e.printStackTrace();
 			return;
 		}
-		mc.makeMarking(mp);
+		mc.makeMarking();
 		pw0.println("done");
 		pw0.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
 		pw0.println(JSPetriNet.markingToString(net, mp));

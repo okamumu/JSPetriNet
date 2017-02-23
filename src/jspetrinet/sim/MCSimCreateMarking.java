@@ -16,6 +16,7 @@ import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.exception.TypeMismatch;
 import jspetrinet.marking.CreateGroupMarkingGraph;
+import jspetrinet.marking.CreateMarking;
 import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkGroup;
@@ -32,10 +33,15 @@ import jspetrinet.petri.Trans;
 
 public class MCSimCreateMarking {
 
+//	private final Net net;
+//
+//	private final Map<Mark,Mark> createdMarks;
 	private final Net net;
+	private final CreateMarking cm;
 
-	private final Map<Mark,Mark> createdMarks;
+	private final Set<Mark> visited;
 	private final Set<MarkMarkTrans> createdArcs;
+
 	protected final double[] genTransRemainingTime;
 	protected final double[] genTransTimeInit;
 	
@@ -46,11 +52,12 @@ public class MCSimCreateMarking {
 	private double time;
 	private Random rnd;
 	
-	public MCSimCreateMarking(Net net, Random rnd) {
-		this.net = net;
+	public MCSimCreateMarking(MarkingGraph mp, Random rnd, CreateMarking cm) {
+		this.net = mp.getNet();
 		this.rnd = rnd;
+		this.cm = cm;
 
-		createdMarks = new HashMap<Mark,Mark>();
+		visited = new HashSet<Mark>();
 		createdArcs = new HashSet<MarkMarkTrans>();
 
 		genTransRemainingTime = new double [net.getGenTransSet().size()];
@@ -66,34 +73,35 @@ public class MCSimCreateMarking {
 		}
 	}
 	
-	private void setGenVecToImm(Net net, MarkingGraph markGraph, Mark m) {
-		GenVec genv = m.getGenVec();
-		if (!markGraph.getImmGroup().containsKey(genv)) {
-			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv), genv, true));
-		}
-		markGraph.getImmGroup().get(genv).add(m);					
-	}
+//	private void setGenVecToImm(Net net, MarkingGraph markGraph, Mark m) {
+//		GenVec genv = m.getGenVec();
+//		if (!markGraph.getImmGroup().containsKey(genv)) {
+//			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv), genv, true));
+//		}
+//		markGraph.getImmGroup().get(genv).add(m);					
+//	}
+//
+//	private void setGenVecToGen(Net net, MarkingGraph markGraph, Mark m) {
+//		GenVec genv = m.getGenVec();
+//		if (!markGraph.getGenGroup().containsKey(genv)) {
+//			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv), genv, false));
+//		}
+//		markGraph.getGenGroup().get(genv).add(m);
+//	}
 
-	private void setGenVecToGen(Net net, MarkingGraph markGraph, Mark m) {
-		GenVec genv = m.getGenVec();
-		if (!markGraph.getGenGroup().containsKey(genv)) {
-			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv), genv, false));
-		}
-		markGraph.getGenGroup().get(genv).add(m);
-	}
 
-	public void makeMarking(MarkingGraph markGraph) {
-		for (Mark m : createdMarks.keySet()) {
+	public void makeMarking() {
+		for (Mark m : visited) {
 			if (m.isIMM()) {
-				setGenVecToImm(net, markGraph, m);				
+				cm.setGenVecToImm(m);				
 			} else {
-				setGenVecToGen(net, markGraph, m);
+				cm.setGenVecToGen(m);
 			}
 		}
 		for (MarkMarkTrans mmt : createdArcs) {
 			new MarkingArc(mmt.getSrc(), mmt.getDest(), mmt.getTrans());
 		}
-		CreateGroupMarkingGraph.createMarkGroupGraph(net, markGraph.getImmGroup(), markGraph.getGenGroup());
+		cm.createMarkGroupGraph();
 	}
 	
 	private double nextExpTime(Net net, ExpTrans tr) throws JSPNException {
@@ -123,39 +131,39 @@ public class MCSimCreateMarking {
 		}
 	}
 	
-	private GenVec createGenVec(Net net) throws JSPNException {
-		GenVec genv = new GenVec(net);
-		for (GenTrans tr : net.getGenTransSet()) {
-			switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
-			case ENABLE:
-				genv.set(tr.getIndex(), 1);
-				break;
-			case PREEMPTION:
-				genv.set(tr.getIndex(), 2);
-				break;
-			default:
-			}
-		}
-		return genv;
-	}
+//	private GenVec createGenVec(Net net) throws JSPNException {
+//		GenVec genv = new GenVec(net);
+//		for (GenTrans tr : net.getGenTransSet()) {
+//			switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
+//			case ENABLE:
+//				genv.set(tr.getIndex(), 1);
+//				break;
+//			case PREEMPTION:
+//				genv.set(tr.getIndex(), 2);
+//				break;
+//			default:
+//			}
+//		}
+//		return genv;
+//	}
 
-	private List<ImmTrans> createEnabledIMM(Net net) throws JSPNException {
-		List<ImmTrans> enabledIMMList = new ArrayList<ImmTrans>();
-		int highestPriority = 0;
-		for (ImmTrans tr : net.getImmTransSet()) {
-			if (highestPriority > tr.getPriority()) {
-				break;
-			}
-			switch (PetriAnalysis.isEnable(net, tr)) {
-			case ENABLE:
-				highestPriority = tr.getPriority();
-				enabledIMMList.add(tr);
-				break;
-			default:
-			}
-		}
-		return enabledIMMList;
-	}
+//	private List<ImmTrans> createEnabledIMM(Net net) throws JSPNException {
+//		List<ImmTrans> enabledIMMList = new ArrayList<ImmTrans>();
+//		int highestPriority = 0;
+//		for (ImmTrans tr : net.getImmTransSet()) {
+//			if (highestPriority > tr.getPriority()) {
+//				break;
+//			}
+//			switch (PetriAnalysis.isEnable(net, tr)) {
+//			case ENABLE:
+//				highestPriority = tr.getPriority();
+//				enabledIMMList.add(tr);
+//				break;
+//			default:
+//			}
+//		}
+//		return enabledIMMList;
+//	}
 
 	public List<EventValue> runSimulation(Mark init, double endTime, int limitFiring, AST stopCondition) throws JSPNException {
 		List<EventValue> eventValues = new ArrayList<EventValue>();
@@ -163,19 +171,18 @@ public class MCSimCreateMarking {
 			genTransRemainingTime[tr.getIndex()] = 0.0;
 		}
 
-		this.count = 0;
-		this.time = 0.0;
+		count = 0;
+		time = 0.0;
 
 		Mark m = init;
-		if (createdMarks.containsKey(m)) {
-			m = createdMarks.get(m);
-		} else {
-			createdMarks.put(m, m);
-		}
+		m = cm.createMark(m, count);
+		cm.getMarkingGraph().setInitialMark(m);
 
 		while(true) {
 			net.setCurrentMark(m);
-			m.setGroup(createGenVec(net));
+			GenVec genv = cm.createGenVec();
+			m.setGroup(genv);
+			visited.add(m);
 			
 			// check stop conditions
 			if (time > endTime) {
@@ -233,7 +240,7 @@ public class MCSimCreateMarking {
 			}
 
 			// for IMM
-			List<ImmTrans> enabledIMMList = createEnabledIMM(net);
+			List<ImmTrans> enabledIMMList = cm.createEnabledIMM();
 			Trans selected = null;
 			double minFiringTime = 0.0;
 			if (enabledIMMList.size() > 0) {
@@ -276,21 +283,16 @@ public class MCSimCreateMarking {
 				break;
 			}
 
-			Mark next = PetriAnalysis.doFiring(net, selected);
-			if (createdMarks.containsKey(next)) {
-				next = createdMarks.get(next);
-			} else {
-				createdMarks.put(next, next);
-			}
 			updateGenTransRemainingTime(m.getGenVec(), minFiringTime);
 			time += minFiringTime;
 			count++;
+			Mark next = cm.doFiring(selected, count);
 			this.createdArcs.add(new MarkMarkTrans(m, next, selected));
 			m = next;
 		}
 
 		// post processing
-		List<ImmTrans> enabledIMMList = createEnabledIMM(net);
+		List<ImmTrans> enabledIMMList = cm.createEnabledIMM();
 		if (enabledIMMList.size() > 0) {
 			m.setIMM();
 		} else {
@@ -298,4 +300,5 @@ public class MCSimCreateMarking {
 		}
 		return eventValues;
 	}
+
 }

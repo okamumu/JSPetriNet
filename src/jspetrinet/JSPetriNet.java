@@ -47,22 +47,26 @@ public class JSPetriNet {
 	}
 	
 	public static MarkingGraph marking(PrintWriter pw, Net net, Mark init, int depth, boolean tangible) throws JSPNException {
-		MarkingGraph mp = new MarkingGraph(init);
-		if (depth == 0) {
+		MarkingGraph mp = new MarkingGraph(net);
+		CreateMarkingStrategyAnalysis cm;
+//		if (depth == 0) {
 			if (tangible) {
-				mp.setCreateMarking(new CreateMarkingDFStangible(mp));
+				cm = new CreateMarkingDFStangible(mp, new CreateMarking(mp));
+//				mp.setCreateMarking(new CreateMarkingDFStangible(mp));
 			} else {
 //				CreateMarkingDFS cmdt = new CreateMarkingDFS(mp);
 //				cmdt.setGenTransSet(expTransSet);
 //				mp.setCreateMarking(cmdt);
-				mp.setCreateMarking(new CreateMarkingDFS2(mp));
+				cm = new CreateMarkingDFS(mp, depth, new CreateMarking(mp));
+//				mp.setCreateMarking(new CreateMarkingBFS2(mp, 0));
 			}
-		} else {
-			mp.setCreateMarking(new CreateMarkingBFS2(mp, depth));
-		}
+//		} else {
+//			mp.setCreateMarking(new CreateMarkingBFS2(mp, depth));
+//		}
 		pw.print("Create marking...");
 		long start = System.nanoTime();
-		mp.create(init, net);
+		cm.create(init);
+//		mp.create(init, net);
 		pw.println("done");
 		pw.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
 		pw.println(markingToString(net, mp));
