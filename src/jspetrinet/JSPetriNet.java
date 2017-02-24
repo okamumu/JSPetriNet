@@ -141,11 +141,11 @@ public class JSPetriNet {
 //		all.addAll(mp.getGenGroup().keySet());
 //		for (GenVec gv : all) {
 //			String g = genvecToString(net, gv);
-			res += mg.getID() + " (" + mg.getLabel() + ")" + linesep;
+			res += mg.getID() + " " + mg.getLabel() + " ";
 			if (mg.isIMM()) {
-				res += "  # of IMM states     : " + mg.size() + linesep;				
+				res += mg.size() + linesep;				
 			} else {
-				res += "  # of EXP/GEN states : " + mg.size() + linesep;				
+				res += mg.size() + linesep;				
 			}
 		}
 		return res;

@@ -39,7 +39,8 @@ public class CreateMarking {
 //			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv), genv, true));
 //		}
 //		markGraph.getImmGroup().get(genv).add(m);					
-		markGraph.getImmGroup().add(m);					
+		markGraph.getImmGroup().add(m);
+		markGraph.setGenVec(m.getGenVec());
 	}
 
 	public void setGenVecToGen(Mark m) {
@@ -49,6 +50,7 @@ public class CreateMarking {
 //		}
 //		markGraph.getGenGroup().get(genv).add(m);
 		markGraph.getGenGroup().add(m);
+		markGraph.setGenVec(m.getGenVec());
 	}
 
 	public Mark createMark(Mark m, int depth) throws JSPNException {

@@ -1,6 +1,8 @@
 package jspetrinet.marking;
 
 import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.Set;
 
 import jspetrinet.JSPetriNet;
 import jspetrinet.graph.Arc;
@@ -16,6 +18,7 @@ public class MarkingGraph {
 
 	private final MarkGroup genGroup;
 	private final MarkGroup immGroup;
+	private final Set<GenVec> genvec;
 	
 //	private CreateMarking createMarking;
 	
@@ -23,6 +26,7 @@ public class MarkingGraph {
 		this.net = net;
 		immGroup = new MarkGroup("I0", "Imm", true);
 		genGroup = new MarkGroup("G0", "Gen", false);
+		genvec = new HashSet<GenVec>();
 	}
 	
 	public final Net getNet() {
@@ -53,6 +57,14 @@ public class MarkingGraph {
 //	public final Map<GenVec,MarkGroup> getGenGroup() {
 //		return genGroup;
 //	}
+	
+	public final void setGenVec(GenVec genv) {
+		genvec.add(genv);
+	}
+
+	public final Set<GenVec> getGenVec() {
+		return genvec;
+	}
 
 	public final MarkGroup getImmGroup() {
 		return immGroup;

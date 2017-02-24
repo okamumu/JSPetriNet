@@ -2,6 +2,7 @@ package jspetrinet.analysis;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,20 +57,25 @@ public class GroupMarkingGraph {
 	}
 
 	private void setIndex() {
-		Set<GenVec> allgen = new TreeSet<GenVec>();
 		Map<GenVec,MarkGroup> immGroup = new HashMap<GenVec,MarkGroup>();
 		Map<GenVec,MarkGroup> genGroup = new HashMap<GenVec,MarkGroup>();
+		Map<GenVec,Integer> revGenIndex = new HashMap<GenVec,Integer>();
 
-		int ix = 0;
-		int gx = 0;
+		List<GenVec> ge = new ArrayList<GenVec>(markGraph.getGenVec());
+		Collections.sort(ge);
+		int i = 0;
+		for (GenVec genv : ge) {
+			revGenIndex.put(genv, i);
+			i++;
+		}
+				
 		for (Mark m : markGraph.getImmGroup().getMarkSet()) {
 			GenVec genv = m.getGenVec();
 			MarkGroup mg;
 			if (!immGroup.containsKey(genv)) {
-				mg = new MarkGroup("I"+ix, "Imm: " + JSPetriNet.genvecToString(net, genv), true);
+				int ix = revGenIndex.get(genv);
+				mg = new MarkGroup("I"+ix, "IMM " + JSPetriNet.genvecToString(net, genv), true);
 				immGroup.put(genv, mg);
-				allgen.add(genv);
-				ix++;
 			} else {
 				mg = immGroup.get(genv);
 			}
@@ -80,10 +86,9 @@ public class GroupMarkingGraph {
 			GenVec genv = m.getGenVec();
 			MarkGroup mg;
 			if (!genGroup.containsKey(genv)) {
-				mg = new MarkGroup("G"+gx, "Gen: " + JSPetriNet.genvecToString(net, genv), false);
+				int gx = revGenIndex.get(genv);
+				mg = new MarkGroup("G"+gx, "GEN " + JSPetriNet.genvecToString(net, genv), false);
 				genGroup.put(genv, mg);
-				allgen.add(genv);
-				gx++;
 			} else {
 				mg = genGroup.get(genv);
 			}
@@ -91,12 +96,12 @@ public class GroupMarkingGraph {
 			revMarkGroup.put(m, mg);
 		}
 		
-		for (GenVec genv : allgen) {
+		for (GenVec genv : ge) {
 			if (immGroup.containsKey(genv)) {
 				allGroup.add(immGroup.get(genv));
 			}
 			if (genGroup.containsKey(genv)) {
-				allGroup.add(immGroup.get(genv));
+				allGroup.add(genGroup.get(genv));
 			}
 		}
 	}
