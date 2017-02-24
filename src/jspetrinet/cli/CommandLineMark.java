@@ -18,20 +18,26 @@ import org.apache.commons.cli.ParseException;
 
 import jmatout.MATLABHeader;
 import jspetrinet.JSPetriNet;
+import jspetrinet.analysis.GroupMarkingGraph;
 import jspetrinet.analysis.MRGPMatrixASCIIWriter;
 import jspetrinet.analysis.MRGPMatrixMATLABWriter;
 import jspetrinet.analysis.MarkClassAnalysis;
 import jspetrinet.analysis.MarkingMatrix;
 import jspetrinet.exception.JSPNException;
+import jspetrinet.marking.CreateMarking;
+import jspetrinet.marking.CreateMarkingDFS;
+import jspetrinet.marking.CreateMarkingDFStangible;
+import jspetrinet.marking.CreateMarkingStrategyAnalysis;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingGraph;
 import jspetrinet.petri.Net;
 
 public class CommandLineMark {
 
-	public static MarkingMatrix outputBin(CommandLine cmd, Net net, MarkingGraph mp) {
-		Mark imark = mp.getInitialMark();
-		MRGPMatrixMATLABWriter matlab = new MRGPMatrixMATLABWriter(net, mp);
+	public static void outputBin(CommandLine cmd, GroupMarkingGraph markGroups) {
+		Mark imark = markGroups.getMarkingGraph().getInitialMark();
+		Net net = markGroups.getNet();
+		MRGPMatrixMATLABWriter matlab = new MRGPMatrixMATLABWriter(markGroups);
 		if (cmd.hasOption(CommandLineOptions.OUT)) {
 			try {
 				PrintWriter pw = new PrintWriter(System.out);
@@ -58,12 +64,12 @@ public class CommandLineMark {
 			System.err.println("The option bin requires the option '-o' to write binary filise.");
 			System.exit(1);
 		}
-		return matlab;
 	}
 
-	public static MarkingMatrix outputText(CommandLine cmd, Net net, MarkingGraph mp) {
-		Mark imark = mp.getInitialMark();
-		MRGPMatrixASCIIWriter mrgp = new MRGPMatrixASCIIWriter(net, mp, true);
+	public static void outputText(CommandLine cmd, GroupMarkingGraph markGroups) {
+		Mark imark = markGroups.getMarkingGraph().getInitialMark();
+		Net net = markGroups.getNet();
+		MRGPMatrixASCIIWriter mrgp = new MRGPMatrixASCIIWriter(markGroups, true);
 		if (cmd.hasOption(CommandLineOptions.OUT)) {
 			try {
 				PrintWriter pw1, pw2, pw6, pw7;
@@ -87,10 +93,10 @@ public class CommandLineMark {
 				}
 			} catch (FileNotFoundException e) {
 				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.OUT));
-				return mrgp;
+				System.exit(1);
 			} catch (IOException e) {
 				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.OUT));
-				return mrgp;
+				System.exit(1);
 			} catch (JSPNException e) {
 				System.err.println(e.getMessage());
 				e.printStackTrace();
@@ -124,12 +130,11 @@ public class CommandLineMark {
 				} catch (JSPNException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-					return mrgp;
+					System.exit(1);
 				}
 				pw5.flush();
 			}
 		}
-		return mrgp;
 	}
 
 	public static void cmdAnalysis(String[] args) {
@@ -176,27 +181,39 @@ public class CommandLineMark {
 		
 		PrintWriter pw0;
 		pw0 = new PrintWriter(System.out);
-		MarkingGraph mp;
+		MarkingGraph mp = new MarkingGraph(net);
+		GroupMarkingGraph markGroups = new GroupMarkingGraph(mp);
 		try {
-			mp = JSPetriNet.marking(pw0, net, imark, depth, vanishing);
+			CreateMarkingStrategyAnalysis cm;
+			if (vanishing) {
+				cm = new CreateMarkingDFStangible(mp, new CreateMarking(mp));
+			} else {
+				cm = new CreateMarkingDFS(mp, depth, new CreateMarking(mp));
+			}
+			pw0.print("Create marking...");
+			long start = System.nanoTime();
+			cm.create(imark);
+			markGroups.makeGroup();
+			pw0.println("done");
+			pw0.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
+			pw0.println(JSPetriNet.markingToString(net, mp, markGroups));
 		} catch (JSPNException e1) {
 			System.err.println(e1.getMessage());
 			return;
 		}
 		pw0.flush();
 
-		MarkingMatrix mmat;
 		if (cmd.hasOption(CommandLineOptions.MATLAB)) {
-			mmat = outputBin(cmd, net, mp);
+			outputBin(cmd, markGroups);
 		} else {
-			mmat = outputText(cmd, net, mp); // default -text
+			outputText(cmd, markGroups); // default -text
 		}
 
 		if (cmd.hasOption(CommandLineOptions.GROUPGRAPH)) {
 			try {
 				PrintWriter pw;
 				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.GROUPGRAPH))));
-				mmat.dotMarkGroup(pw);
+				markGroups.dotMarkGroup(pw);
 				pw.close();
 			} catch (FileNotFoundException e) {
 				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.GROUPGRAPH));
@@ -211,7 +228,7 @@ public class CommandLineMark {
 			try {
 				PrintWriter pw;
 				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.MARKGRAPH))));
-				mmat.dotMarking(pw);
+				mp.dotMarking(pw);
 				pw.close();
 			} catch (FileNotFoundException e) {
 				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.MARKGRAPH));
@@ -223,20 +240,20 @@ public class CommandLineMark {
 		}
 
 		if (cmd.hasOption(CommandLineOptions.SCC)) {
-			try {
-				PrintWriter pw;
-				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.SCC))));
-				Collection<Mark> am = mp.getImmGroup().get(mp.getImmGroup().keySet().iterator().next()).getMarkSet();
-				MarkClassAnalysis mca = new MarkClassAnalysis(net, mp, am);
-				mca.dotMarkGroup(pw);
-				pw.close();
-			} catch (FileNotFoundException e) {
-				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.SCC));
-				return;
-			} catch (IOException e) {
-				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.SCC));
-				return;
-			}
+//			try {
+//				PrintWriter pw;
+//				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.SCC))));
+//				Collection<Mark> am = mp.getImmGroup().get(mp.getImmGroup().keySet().iterator().next()).getMarkSet();
+//				MarkClassAnalysis mca = new MarkClassAnalysis(net, mp, am);
+//				mca.dotMarkGroup(pw);
+//				pw.close();
+//			} catch (FileNotFoundException e) {
+//				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.SCC));
+//				return;
+//			} catch (IOException e) {
+//				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.SCC));
+//				return;
+//			}
 		}
 
 	}

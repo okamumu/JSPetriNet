@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import jspetrinet.analysis.GroupMarkingGraph;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.marking.*;
@@ -46,32 +47,22 @@ public class JSPetriNet {
 		return m;
 	}
 	
-	public static MarkingGraph marking(PrintWriter pw, Net net, Mark init, int depth, boolean tangible) throws JSPNException {
-		MarkingGraph mp = new MarkingGraph(net);
-		CreateMarkingStrategyAnalysis cm;
-//		if (depth == 0) {
-			if (tangible) {
-				cm = new CreateMarkingDFStangible(mp, new CreateMarking(mp));
-//				mp.setCreateMarking(new CreateMarkingDFStangible(mp));
-			} else {
-//				CreateMarkingDFS cmdt = new CreateMarkingDFS(mp);
-//				cmdt.setGenTransSet(expTransSet);
-//				mp.setCreateMarking(cmdt);
-				cm = new CreateMarkingDFS(mp, depth, new CreateMarking(mp));
-//				mp.setCreateMarking(new CreateMarkingBFS2(mp, 0));
-			}
+//	public static MarkingGraph marking(PrintWriter pw, Net net, Mark init, int depth, boolean tangible) throws JSPNException {
+//		MarkingGraph mp = new MarkingGraph(net);
+//		CreateMarkingStrategyAnalysis cm;
+//		if (tangible) {
+//			cm = new CreateMarkingDFStangible(mp, new CreateMarking(mp));
 //		} else {
-//			mp.setCreateMarking(new CreateMarkingBFS2(mp, depth));
+//			cm = new CreateMarkingDFS(mp, depth, new CreateMarking(mp));
 //		}
-		pw.print("Create marking...");
-		long start = System.nanoTime();
-		cm.create(init);
-//		mp.create(init, net);
-		pw.println("done");
-		pw.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
-		pw.println(markingToString(net, mp));
-		return mp;
-	}
+//		pw.print("Create marking...");
+//		long start = System.nanoTime();
+//		cm.create(init);
+//		pw.println("done");
+//		pw.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
+//		pw.println(markingToString(net, mp));
+//		return mp;
+//	}
 
 	/// utils
 	
@@ -135,7 +126,7 @@ public class JSPetriNet {
 		return result + ")";
 	}
 
-	public static String markingToString(Net net, MarkingGraph mp) {
+	public static String markingToString(Net net, MarkingGraph mp, GroupMarkingGraph markGroups) {
 		String linesep = System.getProperty("line.separator").toString();
 		String res = "";
 		int immtotal = mp.immSize();
@@ -144,19 +135,17 @@ public class JSPetriNet {
 		res += "# of total states   : " + total + linesep;
 		res += "# of IMM states     : " + immtotal + linesep;
 		res += "# of EXP/GEN states : " + gentotal + linesep;
-		Set<GenVec> all = new TreeSet<GenVec>();
-		all.addAll(mp.getImmGroup().keySet());
-		all.addAll(mp.getGenGroup().keySet());
-		for (GenVec gv : all) {
-			String g = genvecToString(net, gv);
-			res += g + linesep;
-			if (mp.getImmGroup().containsKey(gv)) {
-				int im = mp.getImmGroup().get(gv).size();
-				res += "  # of IMM states     : " + im + linesep;
-			}
-			if (mp.getGenGroup().containsKey(gv)) {
-				int em = mp.getGenGroup().get(gv).size();
-				res += "  # of EXP/GEN states : " + em + linesep;
+		for (MarkGroup mg : markGroups.getAllMarkGroupList()) {
+//		Set<GenVec> all = new TreeSet<GenVec>();
+//		all.addAll(mp.getImmGroup().keySet());
+//		all.addAll(mp.getGenGroup().keySet());
+//		for (GenVec gv : all) {
+//			String g = genvecToString(net, gv);
+			res += mg.getID() + " (" + mg.getLabel() + ")" + linesep;
+			if (mg.isIMM()) {
+				res += "  # of IMM states     : " + mg.size() + linesep;				
+			} else {
+				res += "  # of EXP/GEN states : " + mg.size() + linesep;				
 			}
 		}
 		return res;

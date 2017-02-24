@@ -1,13 +1,12 @@
 package jspetrinet.cli;
+
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -17,17 +16,15 @@ import org.apache.commons.cli.ParseException;
 
 import jp.rel.jmtrandom.Random;
 import jspetrinet.JSPetriNet;
+import jspetrinet.analysis.GroupMarkingGraph;
 import jspetrinet.analysis.MarkingMatrix;
 import jspetrinet.ast.AST;
-import jspetrinet.common.Utility;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.marking.CreateMarking;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingGraph;
 import jspetrinet.petri.Net;
-import jspetrinet.sim.CompReward;
 import jspetrinet.sim.EventValue;
-import jspetrinet.sim.MCSimulation;
 import jspetrinet.sim.MCSimCreateMarking;
 import jspetrinet.sim.SimReward;
 
@@ -142,6 +139,7 @@ public class CommandLineSimMark {
 		}
 
 		MarkingGraph mp = new MarkingGraph(net);
+		GroupMarkingGraph markGroups = new GroupMarkingGraph(mp);
 		MCSimCreateMarking mc = new MCSimCreateMarking(mp, new Random(seed), new CreateMarking(mp));
 
 		PrintWriter pw0 = new PrintWriter(System.out);
@@ -209,23 +207,23 @@ public class CommandLineSimMark {
 			return;
 		}
 		mc.makeMarking();
+		markGroups.makeGroup();
 		pw0.println("done");
 		pw0.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
-		pw0.println(JSPetriNet.markingToString(net, mp));
+		pw0.println(JSPetriNet.markingToString(net, mp, markGroups));
 		pw0.flush();
 
-		MarkingMatrix mmat;
 		if (cmd.hasOption(CommandLineOptions.MATLAB)) {
-			mmat = CommandLineMark.outputBin(cmd, net, mp);
+			CommandLineMark.outputBin(cmd, markGroups);
 		} else {
-			mmat = CommandLineMark.outputText(cmd, net, mp); // default -text
+			CommandLineMark.outputText(cmd, markGroups); // default -text
 		}
 
 		if (cmd.hasOption(CommandLineOptions.GROUPGRAPH)) {
 			try {
 				PrintWriter pw;
 				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.GROUPGRAPH))));
-				mmat.dotMarkGroup(pw);
+				markGroups.dotMarkGroup(pw);
 				pw.close();
 			} catch (FileNotFoundException e) {
 				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.GROUPGRAPH));
@@ -240,7 +238,7 @@ public class CommandLineSimMark {
 			try {
 				PrintWriter pw;
 				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.MARKGRAPH))));
-				mmat.dotMarking(pw);
+				mp.dotMarking(pw);
 				pw.close();
 			} catch (FileNotFoundException e) {
 				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.MARKGRAPH));

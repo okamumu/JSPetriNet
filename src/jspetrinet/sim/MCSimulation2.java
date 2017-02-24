@@ -9,13 +9,13 @@ import java.util.Set;
 
 import jp.rel.jmtrandom.Random;
 import jspetrinet.JSPetriNet;
+import jspetrinet.analysis.GroupMarkingGraph;
 import jspetrinet.ast.AST;
 import jspetrinet.common.Utility;
 import jspetrinet.dist.Dist;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.exception.TypeMismatch;
-import jspetrinet.marking.CreateGroupMarkingGraph;
 import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkGroup;

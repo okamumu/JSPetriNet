@@ -110,7 +110,6 @@ public class CreateMarkingDFStangible implements CreateMarkingStrategyAnalysis {
 		novisited.push(imark);
 		createMarking();
 		postProcessing();
-		cm.createMarkGroupGraph();
 	}
 	
 	private void visitImmMark(List<ImmTrans> enabledIMMList, Mark m) throws JSPNException {

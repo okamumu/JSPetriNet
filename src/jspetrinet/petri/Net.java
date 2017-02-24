@@ -21,9 +21,6 @@ public class Net extends ASTEnv {
 	private final Map<String,Net> child;
 	
 	protected final List<Place> placeList;
-//	protected final List<Trans> immTransList;
-//	protected final List<Trans> expTransList;
-//	protected final List<Trans> genTransList;
 	protected final List<ImmTrans> immTransList;
 	protected final List<ExpTrans> expTransList;
 	protected final List<GenTrans> genTransList;
@@ -115,22 +112,6 @@ public class Net extends ASTEnv {
 		return genTransList;
 	}
 
-//	public final int getNumOfGenTrans() {
-//		return genTransList.size();
-//	}
-
-//	public final int getNumOfImmTrans() {
-//		return immTransList.size();
-//	}
-	
-//	public final int getNumOfExpTrans() {
-//		return expTransList.size();
-//	}
-	
-//	public final int getNumOfPlace() {
-//		return placeList.size();
-//	}
-
 	public void setIndexAndSortIMM() {
 		
 		// sort IMM with Priority
@@ -174,10 +155,6 @@ public class Net extends ASTEnv {
 		return tmp;
 	}
 
-//	public final ExpTrans createExpTrans(String label, double rate) throws JSPNException {
-//		return createExpTrans(label, new ASTValue(rate));
-//	}
-
 	public final ImmTrans createImmTrans(String label, AST weight) throws JSPNException {
 		if (this.contains(label)) {
 			throw new AlreadyExistException(label);
@@ -187,10 +164,6 @@ public class Net extends ASTEnv {
 		immTransList.add(tmp);
 		return tmp;
 	}
-
-//	public final ImmTrans createImmTrans(String label, double weight) throws JSPNException {
-//		return createImmTrans(label, new ASTValue(weight));
-//	}
 
 	public final GenTrans createGenTrans(String label, AST dist, GenTransPolicy policy) throws JSPNException {
 		if (this.contains(label)) {

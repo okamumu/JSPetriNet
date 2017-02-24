@@ -9,13 +9,13 @@ import java.util.Set;
 
 import jp.rel.jmtrandom.Random;
 import jspetrinet.JSPetriNet;
+import jspetrinet.analysis.GroupMarkingGraph;
 import jspetrinet.ast.AST;
 import jspetrinet.common.Utility;
 import jspetrinet.dist.Dist;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.exception.TypeMismatch;
-import jspetrinet.marking.CreateGroupMarkingGraph;
 import jspetrinet.marking.CreateMarking;
 import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
@@ -101,7 +101,6 @@ public class MCSimCreateMarking {
 		for (MarkMarkTrans mmt : createdArcs) {
 			new MarkingArc(mmt.getSrc(), mmt.getDest(), mmt.getTrans());
 		}
-		cm.createMarkGroupGraph();
 	}
 	
 	private double nextExpTime(Net net, ExpTrans tr) throws JSPNException {

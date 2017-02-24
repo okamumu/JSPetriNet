@@ -77,7 +77,7 @@ public class MarkClassAnalysis2 {
 			if (visited.contains(s)) {
 				continue;
 			}
-			MarkGroup mg = new MarkGroup(JSPetriNet.markToString(net, s), s.getGenVec(), s.isIMM());
+			MarkGroup mg = new MarkGroup("", JSPetriNet.markToString(net, s), s.isIMM());
 			novisited.push(s);
 			while (!novisited.isEmpty()) {
 				Mark m = novisited.pop();

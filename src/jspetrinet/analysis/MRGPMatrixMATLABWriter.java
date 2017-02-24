@@ -24,100 +24,112 @@ import jspetrinet.petri.Trans;
 
 public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 
-	private final Map<GroupPair,String> matrixName;
+//	private final Map<GroupPair,String> matrixName;
 	
-	public MRGPMatrixMATLABWriter(Net net, MarkingGraph mp) {
-		super(net, mp, false);
-		matrixName = new HashMap<GroupPair,String>();
+	public MRGPMatrixMATLABWriter(GroupMarkingGraph markGroups) {
+		super(markGroups, false);
+//		matrixName = new HashMap<GroupPair,String>();
 	}
 
 	public void writeMarkSet(PrintWriter pw) {
-		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
-		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
-		for (GenVec gv : this.getSortedAllGenVec()) {
-			if (immGroup.containsKey(gv)) {
-				MarkGroup mg = immGroup.get(gv);
-				String glabel = JSPetriNet.genvecToString(net, gv);
-				pw.println(this.getGroupLabel(mg) + " " + glabel);
-				List<List<Object>> s = this.getMakingSet(mg);
-				for (List<Object> e: s) {
-					Mark m = (Mark) e.get(1);
-					pw.println(e.get(0) + " : " + JSPetriNet.markToString(net, m));
-				}
-			}
-			if (genGroup.containsKey(gv)) {
-				MarkGroup mg = genGroup.get(gv);
-				String glabel = JSPetriNet.genvecToString(net, gv);
-				pw.println(this.getGroupLabel(mg) + " " + glabel);
-				List<List<Object>> s = this.getMakingSet(mg);
-				for (List<Object> e: s) {
-					Mark m = (Mark) e.get(1);
-					pw.println(e.get(0) + " : " + JSPetriNet.markToString(net, m));
-				}
-			}
-		}
-	}
-	
-	public void writeStateVec(DataOutputStream dos, PrintWriter pw, Mark imark) throws IOException {
-		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
-		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
-		for (GenVec gv : this.getSortedAllGenVec()) {
-			if (immGroup.containsKey(gv)) {
-				MarkGroup mg = immGroup.get(gv);
-				String glabel = JSPetriNet.genvecToString(net, gv);
-				String name = this.getGroupLabel(mg) + "init";
-				pw.println("# " + name + " " + glabel);
-				pw.println("# size " + mg.size() + " 1");
-				List<List<Object>> s = this.getMakingSet(mg);
-				double[] data = new double [mg.size()];
-				for (List<Object> e: s) {
-					int i = (int) e.get(0);
-					Mark m = (Mark) e.get(1);
-					double value;
-					if (m == imark) {
-						value = 1;
-					} else {
-						value = 0;
-					}
-					data[i] = value;
-				}
-				MATLABDoubleMatrix matlab = new MATLABDoubleMatrix(name, new int[] {1, mg.size()}, data);
-				matlab.write(dos);
-			}
-			if (genGroup.containsKey(gv)) {
-				MarkGroup mg = genGroup.get(gv);
-				String glabel = JSPetriNet.genvecToString(net, gv);
-				String name = this.getGroupLabel(mg) + "init";
-				pw.println("# " + name + " " + glabel);
-				pw.println("# size " + mg.size() + " 1");
-				List<List<Object>> s = this.getMakingSet(mg);
-				double[] data = new double [mg.size()];
-				for (List<Object> e: s) {
-					int i = (int) e.get(0);
-					Mark m = (Mark) e.get(1);
-					double value;
-					if (m == imark) {
-						value = 1;
-					} else {
-						value = 0;
-					}
-					data[i] = value;
-				}
-				MATLABDoubleMatrix matlab = new MATLABDoubleMatrix(name, new int[] {1, mg.size()}, data);
-				matlab.write(dos);
+		for (MarkGroup mg : allMarkGroup) {
+			pw.println(mg.getID() + " " + mg.getLabel());
+			List<List<Object>> s = this.getMakingSet(mg);
+			for (List<Object> e: s) {
+				Mark m = (Mark) e.get(1);
+				pw.println(e.get(0) + " : " + JSPetriNet.markToString(net, m));
 			}
 		}
 	}
 
-	public void writeStateRewardVec(DataOutputStream dos, PrintWriter pw, List<AST> reward) throws JSPNException, IOException {
+//	public void writeMarkSet(PrintWriter pw) {
 //		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
-		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
-		for (GenVec gv : this.getSortedAllGenVec()) {
-			if (genGroup.containsKey(gv)) {
-				MarkGroup mg = genGroup.get(gv);
-				String glabel = JSPetriNet.genvecToString(net, gv);
-				String name = this.getGroupLabel(mg) + "rwd";
-				pw.println("# " + name + " " + glabel);
+//		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
+//		for (GenVec gv : this.getSortedAllGenVec()) {
+//			if (immGroup.containsKey(gv)) {
+//				MarkGroup mg = immGroup.get(gv);
+//				String glabel = JSPetriNet.genvecToString(net, gv);
+//				pw.println(this.getGroupLabel(mg) + " " + glabel);
+//				List<List<Object>> s = this.getMakingSet(mg);
+//				for (List<Object> e: s) {
+//					Mark m = (Mark) e.get(1);
+//					pw.println(e.get(0) + " : " + JSPetriNet.markToString(net, m));
+//				}
+//			}
+//			if (genGroup.containsKey(gv)) {
+//				MarkGroup mg = genGroup.get(gv);
+//				String glabel = JSPetriNet.genvecToString(net, gv);
+//				pw.println(this.getGroupLabel(mg) + " " + glabel);
+//				List<List<Object>> s = this.getMakingSet(mg);
+//				for (List<Object> e: s) {
+//					Mark m = (Mark) e.get(1);
+//					pw.println(e.get(0) + " : " + JSPetriNet.markToString(net, m));
+//				}
+//			}
+//		}
+//	}
+	
+	public void writeStateVec(DataOutputStream dos, PrintWriter pw, Mark imark) throws IOException {
+		for (MarkGroup mg : allMarkGroup) {
+//		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
+//		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
+//		for (GenVec gv : this.getSortedAllGenVec()) {
+			if (mg.isIMM()) {
+//				MarkGroup mg = immGroup.get(gv);
+				String name = mg.getID() + "init";
+				pw.println("# " + name + " " + mg.getLabel());
+				pw.println("# size " + mg.size() + " 1");
+				List<List<Object>> s = this.getMakingSet(mg);
+				double[] data = new double [mg.size()];
+				for (List<Object> e: s) {
+					int i = (int) e.get(0);
+					Mark m = (Mark) e.get(1);
+					double value;
+					if (m.equals(imark)) {
+						value = 1;
+					} else {
+						value = 0;
+					}
+					data[i] = value;
+				}
+				MATLABDoubleMatrix matlab = new MATLABDoubleMatrix(name, new int[] {1, mg.size()}, data);
+				matlab.write(dos);
+			}
+		}
+//			if (genGroup.containsKey(gv)) {
+//				MarkGroup mg = genGroup.get(gv);
+//				String name = mg.getID() + "init";
+//				pw.println("# " + name + " " + mg.getLabel());
+//				pw.println("# size " + mg.size() + " 1");
+//				List<List<Object>> s = this.getMakingSet(mg);
+//				double[] data = new double [mg.size()];
+//				for (List<Object> e: s) {
+//					int i = (int) e.get(0);
+//					Mark m = (Mark) e.get(1);
+//					double value;
+//					if (m == imark) {
+//						value = 1;
+//					} else {
+//						value = 0;
+//					}
+//					data[i] = value;
+//				}
+//				MATLABDoubleMatrix matlab = new MATLABDoubleMatrix(name, new int[] {1, mg.size()}, data);
+//				matlab.write(dos);
+//			}
+//		}
+	}
+
+	public void writeStateRewardVec(DataOutputStream dos, PrintWriter pw, List<AST> reward) throws JSPNException, IOException {
+		for (MarkGroup mg : allMarkGroup) {
+////		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
+//		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
+//		for (GenVec gv : this.getSortedAllGenVec()) {
+//			if (genGroup.containsKey(gv)) {
+//				MarkGroup mg = genGroup.get(gv);
+			if (!mg.isIMM()) {
+				String name = mg.getID() + "rwd";
+				pw.println("# " + name + " " + mg.getLabel());
 				List<List<Object>> s = this.getMakingSet(mg);
 				pw.println("# size " + mg.size() + " " + reward.size());
 				int nrow = mg.size();
@@ -150,14 +162,15 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 	}
 
 	public void writeSumVec(DataOutputStream dos, PrintWriter pw) throws IOException, JSPNException {
-		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
-		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
-		for (GenVec gv : this.getSortedAllGenVec()) {
-			if (immGroup.containsKey(gv)) {
-				MarkGroup mg = immGroup.get(gv);
-				String glabel = JSPetriNet.genvecToString(net, gv);
-				String name = this.getGroupLabel(mg) + "sum";
-				pw.println("# " + name + " " + glabel);
+		for (MarkGroup mg : allMarkGroup) {
+//		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
+//		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
+//		for (GenVec gv : this.getSortedAllGenVec()) {
+//			if (immGroup.containsKey(gv)) {
+//				MarkGroup mg = immGroup.get(gv);
+			if (mg.isIMM()) {
+				String name = mg.getID() + "sum";
+				pw.println("# " + name + " " + mg.getLabel());
 				List<List<Object>> s = this.getSumVecI(net, mg);
 				pw.println("# size " + mg.size() + " 1");
 				double[] data = new double [mg.size()];
@@ -181,15 +194,14 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 				}
 				MATLABDoubleMatrix matlab = new MATLABDoubleMatrix(name, new int[] {1, mg.size()}, data);
 				matlab.write(dos);
-			}
-			if (genGroup.containsKey(gv)) {
-				MarkGroup mg = genGroup.get(gv);
-				String glabel = JSPetriNet.genvecToString(net, gv);
+			} else {
+//			if (genGroup.containsKey(gv)) {
+//				MarkGroup mg = genGroup.get(gv);
 				Map<Trans,List<List<Object>>> d0 = this.getSumVecG(net, mg);
 				{
 					List<List<Object>> s = d0.get(null);
-					String name = this.getGroupLabel(mg) + "Esum";
-					pw.println("# " + name + " " + glabel);
+					String name = mg.getID() + "Esum";
+					pw.println("# " + name + " " + mg.getLabel());
 					pw.println("# size " + mg.size() + " 1");
 					double[] data = new double [mg.size()];
 					for (List<Object> e: s) {
@@ -216,8 +228,8 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 				for (Map.Entry<Trans, List<List<Object>>> entry : d0.entrySet()) {
 					if (entry.getKey() != null) {
 						List<List<Object>> s = entry.getValue();
-						String name = this.getGroupLabel(mg) + "P" + entry.getKey().getIndex() + "sum";
-						pw.println("# " + name + " " + glabel);
+						String name = mg.getID() + "P" + entry.getKey().getIndex() + "sum";
+						pw.println("# " + name + " " + mg.getLabel());
 						pw.println("# size " + mg.size() + " 1");
 						double[] data = new double [mg.size()];
 						for (List<Object> e: s) {
@@ -248,14 +260,14 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 
 	private SparseMatrixCSC defineMatrix(PrintWriter pw, String matrixName, MarkGroup src, MarkGroup dest, List<List<Object>> s) {
 		s.sort(new SparseMatrixCSCComparator());
-		pw.println("# " + matrixName + " " + this.getGroupLabel(src) + " to " + this.getGroupLabel(dest));
+		pw.println("# " + matrixName + " " + src.getID() + " to " + dest.getID());
 		pw.println("# size " + src.size() + " " + dest.size() + " " + s.size());
 		return new SparseMatrixCSC(matrixName, src.size(), dest.size(), s.size());
 	}
 
 	private SparseMatrixCSC defineMatrix(PrintWriter pw, String matrixName, MarkGroup src, MarkGroup dest, String dist, List<List<Object>> s) {
 		s.sort(new SparseMatrixCSCComparator());
-		pw.println("# " + matrixName + " " + this.getGroupLabel(src) + " to " + this.getGroupLabel(dest) + " " + dist);
+		pw.println("# " + matrixName + " " + src.getID() + " to " + dest.getID() + " " + dist);
 		pw.println("# size " + src.size() + " " + dest.size() + " " + s.size());
 		return new SparseMatrixCSC(matrixName, src.size(), dest.size(), s.size());
 	}
@@ -282,12 +294,12 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 		if (s.size() == 0) {
 			return;
 		}
-		String matname = this.getGroupLabel(src) + this.getGroupLabel(dest);
+		String matname = src.getID() + dest.getID();
 		SparseMatrixCSC mm = this.defineMatrix(pw, matname, src, dest, s);
 		for (List<Object> e: s) {
 			this.putElement(mm, e.get(0), e.get(1), e.get(2));
 		}
-		matrixName.put(new GroupPair(src, dest), matname);
+//		matrixName.put(new GroupPair(src, dest), matname);
 		mm.write(dos);
 	}
 
@@ -298,26 +310,26 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 		Map<Trans,List<List<Object>>> elem = this.getMatrixG(net, src, dest);
 		List<List<Object>> s = elem.get(null); // get EXP
 		if (s.size() != 0 || src == dest) {
-			String matname = this.getGroupLabel(src) + this.getGroupLabel(dest) + "E";
+			String matname = src.getID() + dest.getID() + "E";
 			SparseMatrixCSC mm = this.defineMatrix(pw, matname, src, dest, s);
 			for (List<Object> e: s) {
 				this.putElement(mm, e.get(0), e.get(1), e.get(2));
 			}
-			matrixName.put(new GroupPair(src, dest), matname);
+//			matrixName.put(new GroupPair(src, dest), matname);
 			mm.write(dos);
 		}
 		for (Map.Entry<Trans, List<List<Object>>> entry: elem.entrySet()) {
 			if (entry.getKey() != null) {
 				s = entry.getValue();
 				if (s.size() != 0) {
-					String matname = this.getGroupLabel(src) + this.getGroupLabel(dest)
+					String matname = src.getID() + dest.getID()
 						+ "P" + entry.getKey().getIndex();
 					String dist = entry.getKey().getLabel() + " " + ((GenTrans) entry.getKey()).getDist().eval(net);
 					SparseMatrixCSC mm = this.defineMatrix(pw, matname, src, dest, dist, s);
 					for (List<Object> e: s) {
 						this.putElement(mm, e.get(0), e.get(1), e.get(2));
 					}
-					matrixName.put(new GroupPair(src, dest, entry.getKey()), matname);
+//					matrixName.put(new GroupPair(src, dest, entry.getKey()), matname);
 					mm.write(dos);
 				}
 			}
@@ -325,25 +337,34 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 	}
 
 	public void writeMatrix(DataOutputStream dos, PrintWriter pw) throws JSPNException, IOException {
-		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
-		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
-		for (GenVec srcgv : this.getSortedAllGenVec()) {
-			for (GenVec destgv : this.getSortedAllGenVec()) {
-				if (immGroup.containsKey(srcgv) && immGroup.containsKey(destgv)) {
-					writeImm(dos, pw, immGroup.get(srcgv), immGroup.get(destgv));
-				}
-				if (immGroup.containsKey(srcgv) && genGroup.containsKey(destgv)) {
-					writeImm(dos, pw, immGroup.get(srcgv), genGroup.get(destgv));
-				}
-			}
-			for (GenVec destgv : this.getSortedAllGenVec()) {
-				if (genGroup.containsKey(srcgv) && immGroup.containsKey(destgv)) {
-					writeGen(dos, pw, genGroup.get(srcgv), immGroup.get(destgv));
-				}
-				if (genGroup.containsKey(srcgv) && genGroup.containsKey(destgv)) {
-					writeGen(dos, pw, genGroup.get(srcgv), genGroup.get(destgv));
+		for (MarkGroup src : allMarkGroup) {
+			for (MarkGroup dest : allMarkGroup) {
+				if (src.isIMM()) {
+					writeImm(dos, pw, src, dest);
+				} else {
+					writeGen(dos, pw, src, dest);
 				}
 			}
 		}
+//		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
+//		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
+//		for (GenVec srcgv : this.getSortedAllGenVec()) {
+//			for (GenVec destgv : this.getSortedAllGenVec()) {
+//				if (immGroup.containsKey(srcgv) && immGroup.containsKey(destgv)) {
+//					writeImm(dos, pw, immGroup.get(srcgv), immGroup.get(destgv));
+//				}
+//				if (immGroup.containsKey(srcgv) && genGroup.containsKey(destgv)) {
+//					writeImm(dos, pw, immGroup.get(srcgv), genGroup.get(destgv));
+//				}
+//			}
+//			for (GenVec destgv : this.getSortedAllGenVec()) {
+//				if (genGroup.containsKey(srcgv) && immGroup.containsKey(destgv)) {
+//					writeGen(dos, pw, genGroup.get(srcgv), immGroup.get(destgv));
+//				}
+//				if (genGroup.containsKey(srcgv) && genGroup.containsKey(destgv)) {
+//					writeGen(dos, pw, genGroup.get(srcgv), genGroup.get(destgv));
+//				}
+//			}
+//		}
 	}
 }

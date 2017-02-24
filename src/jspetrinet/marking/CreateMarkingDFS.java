@@ -10,7 +10,6 @@ import jspetrinet.petri.ExpTrans;
 import jspetrinet.petri.GenTrans;
 import jspetrinet.petri.ImmTrans;
 import jspetrinet.petri.Net;
-import jspetrinet.petri.Trans;
 
 public class CreateMarkingDFS implements CreateMarkingStrategyAnalysis {
 
@@ -42,7 +41,6 @@ public class CreateMarkingDFS implements CreateMarkingStrategyAnalysis {
 		cm.getMarkingGraph().setInitialMark(imark);
 		novisited.push(imark);
 		createMarking();
-		cm.createMarkGroupGraph();
 	}
 
 	private void visitImmMark(List<ImmTrans> enabledIMMList, Mark m) throws JSPNException {

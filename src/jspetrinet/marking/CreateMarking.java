@@ -34,19 +34,21 @@ public class CreateMarking {
 	}
 	
 	public void setGenVecToImm(Mark m) {
-		GenVec genv = m.getGenVec();
-		if (!markGraph.getImmGroup().containsKey(genv)) {
-			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv), genv, true));
-		}
-		markGraph.getImmGroup().get(genv).add(m);					
+//		GenVec genv = m.getGenVec();
+//		if (!markGraph.getImmGroup().containsKey(genv)) {
+//			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv), genv, true));
+//		}
+//		markGraph.getImmGroup().get(genv).add(m);					
+		markGraph.getImmGroup().add(m);					
 	}
 
 	public void setGenVecToGen(Mark m) {
-		GenVec genv = m.getGenVec();
-		if (!markGraph.getGenGroup().containsKey(genv)) {
-			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv), genv, false));
-		}
-		markGraph.getGenGroup().get(genv).add(m);
+//		GenVec genv = m.getGenVec();
+//		if (!markGraph.getGenGroup().containsKey(genv)) {
+//			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv), genv, false));
+//		}
+//		markGraph.getGenGroup().get(genv).add(m);
+		markGraph.getGenGroup().add(m);
 	}
 
 	public Mark createMark(Mark m, int depth) throws JSPNException {
@@ -125,58 +127,58 @@ public class CreateMarking {
 	}
 
 	// Group Net
-	public void createMarkGroupGraph() {
-		Map<GenVec,MarkGroup> immGroup = markGraph.getImmGroup();
-		Map<GenVec,MarkGroup> genGroup = markGraph.getGenGroup();
-		Set<GvGvTrans> gvItoI = new HashSet<GvGvTrans>();
-		Set<GvGvTrans> gvGtoI = new HashSet<GvGvTrans>();
-		Set<GvGvTrans> gvItoG = new HashSet<GvGvTrans>();
-		Set<GvGvTrans> gvGtoG = new HashSet<GvGvTrans>();
-		for (MarkGroup srcG : immGroup.values()) {
-			for (Mark src : srcG.getMarkSet()) {
-//				System.out.println("srcI " + JSPetriNet.markToString(net, src));
-				for (Arc a : src.getOutArc()) {
-					MarkingArc ma = (MarkingArc) a;
-					Mark dest = (Mark) ma.getDest();
-//					System.out.println("destI " + JSPetriNet.markToString(net, dest));
-					if (dest.isIMM()) {
-						GvGvTrans gvtrans = new GvGvTrans(src.getGenVec(), dest.getGenVec(), ma.getTrans());
-						if (!gvItoI.contains(gvtrans)) {
-							new MarkingArc(srcG, immGroup.get(dest.getGenVec()), ma.getTrans());
-							gvItoI.add(gvtrans);						
-						}
-					} else if (!dest.isIMM()) {
-						GvGvTrans gvtrans = new GvGvTrans(src.getGenVec(), dest.getGenVec(), ma.getTrans());
-						if (!gvItoG.contains(gvtrans)) {
-							new MarkingArc(srcG, genGroup.get(dest.getGenVec()), ma.getTrans());
-							gvItoG.add(gvtrans);
-						}
-					}
-				}
-			}
-		}
-		for (MarkGroup srcG : genGroup.values()) {
-			for (Mark src : srcG.getMarkSet()) {
-//				System.out.println("srcG " + JSPetriNet.markToString(net, src));
-				for (Arc a : src.getOutArc()) {
-					MarkingArc ma = (MarkingArc) a;
-					Mark dest = (Mark) ma.getDest();
-//					System.out.println("destG " + JSPetriNet.markToString(net, dest));
-					if (!dest.isIMM() && !src.getGenVec().equals(dest.getGenVec())) {
-						GvGvTrans gvtrans = new GvGvTrans(src.getGenVec(), dest.getGenVec(), ma.getTrans());
-						if (!gvGtoG.contains(gvtrans)) {
-							new MarkingArc(srcG, genGroup.get(dest.getGenVec()), ma.getTrans());
-							gvGtoG.add(gvtrans);
-						}
-					} else if (dest.isIMM()) {
-						GvGvTrans gvtrans = new GvGvTrans(src.getGenVec(), dest.getGenVec(), ma.getTrans());
-						if (!gvGtoI.contains(gvtrans)) {
-							new MarkingArc(srcG, immGroup.get(dest.getGenVec()), ma.getTrans());
-							gvGtoI.add(gvtrans);
-						}
-					}
-				}
-			}
-		}
-	}
+//	public void createMarkGroupGraph() {
+//		Map<GenVec,MarkGroup> immGroup = markGraph.getImmGroup();
+//		Map<GenVec,MarkGroup> genGroup = markGraph.getGenGroup();
+//		Set<GvGvTrans> gvItoI = new HashSet<GvGvTrans>();
+//		Set<GvGvTrans> gvGtoI = new HashSet<GvGvTrans>();
+//		Set<GvGvTrans> gvItoG = new HashSet<GvGvTrans>();
+//		Set<GvGvTrans> gvGtoG = new HashSet<GvGvTrans>();
+//		for (MarkGroup srcG : immGroup.values()) {
+//			for (Mark src : srcG.getMarkSet()) {
+////				System.out.println("srcI " + JSPetriNet.markToString(net, src));
+//				for (Arc a : src.getOutArc()) {
+//					MarkingArc ma = (MarkingArc) a;
+//					Mark dest = (Mark) ma.getDest();
+////					System.out.println("destI " + JSPetriNet.markToString(net, dest));
+//					if (dest.isIMM()) {
+//						GvGvTrans gvtrans = new GvGvTrans(src.getGenVec(), dest.getGenVec(), ma.getTrans());
+//						if (!gvItoI.contains(gvtrans)) {
+//							new MarkingArc(srcG, immGroup.get(dest.getGenVec()), ma.getTrans());
+//							gvItoI.add(gvtrans);						
+//						}
+//					} else if (!dest.isIMM()) {
+//						GvGvTrans gvtrans = new GvGvTrans(src.getGenVec(), dest.getGenVec(), ma.getTrans());
+//						if (!gvItoG.contains(gvtrans)) {
+//							new MarkingArc(srcG, genGroup.get(dest.getGenVec()), ma.getTrans());
+//							gvItoG.add(gvtrans);
+//						}
+//					}
+//				}
+//			}
+//		}
+//		for (MarkGroup srcG : genGroup.values()) {
+//			for (Mark src : srcG.getMarkSet()) {
+////				System.out.println("srcG " + JSPetriNet.markToString(net, src));
+//				for (Arc a : src.getOutArc()) {
+//					MarkingArc ma = (MarkingArc) a;
+//					Mark dest = (Mark) ma.getDest();
+////					System.out.println("destG " + JSPetriNet.markToString(net, dest));
+//					if (!dest.isIMM() && !src.getGenVec().equals(dest.getGenVec())) {
+//						GvGvTrans gvtrans = new GvGvTrans(src.getGenVec(), dest.getGenVec(), ma.getTrans());
+//						if (!gvGtoG.contains(gvtrans)) {
+//							new MarkingArc(srcG, genGroup.get(dest.getGenVec()), ma.getTrans());
+//							gvGtoG.add(gvtrans);
+//						}
+//					} else if (dest.isIMM()) {
+//						GvGvTrans gvtrans = new GvGvTrans(src.getGenVec(), dest.getGenVec(), ma.getTrans());
+//						if (!gvGtoI.contains(gvtrans)) {
+//							new MarkingArc(srcG, immGroup.get(dest.getGenVec()), ma.getTrans());
+//							gvGtoI.add(gvtrans);
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
 }
