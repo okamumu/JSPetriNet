@@ -1,5 +1,5 @@
 /*
-  SPNP Example 3: MMmb queue
+  SPNP Example 3: M/M/m/b queue
 */
 
 place buf

@@ -36,6 +36,21 @@ public class ASTMathFunc implements AST {
 		}
 	}
 
+	private final Object sqrt() throws JSPNException {
+		if (arg.size() != 1) {
+			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Wrong definition of args of " + op);
+		}
+
+		Object arg1 = res.iterator().next();
+		if (arg1 instanceof Integer) {
+			return Math.sqrt((Integer) arg1);
+		} else if (arg1 instanceof Double) {
+			return Math.sqrt((Double) arg1);
+		} else {
+			throw new TypeMismatch();
+		}
+	}
+
 	private final Object log() throws JSPNException {
 		if (arg.size() != 1) {
 			throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Wrong definition of args of " + op);
@@ -148,6 +163,8 @@ public class ASTMathFunc implements AST {
 			return pow();
 		case "exp":
 			return exp();
+		case "sqrt":
+			return sqrt();
 		case "log":
 			return log();
 		case "min":

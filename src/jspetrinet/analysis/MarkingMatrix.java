@@ -1,5 +1,6 @@
 package jspetrinet.analysis;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,14 +9,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jspetrinet.JSPetriNet;
 import jspetrinet.ast.*;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.graph.Arc;
+import jspetrinet.marking.CreateGroupMarkingGraph;
 import jspetrinet.marking.GenVec;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkGroup;
 import jspetrinet.marking.MarkingArc;
 import jspetrinet.marking.MarkingGraph;
+import jspetrinet.marking.PetriAnalysis;
 import jspetrinet.petri.*;
 
 public class MarkingMatrix {
@@ -28,7 +32,8 @@ public class MarkingMatrix {
 	private final Map<GenVec,MarkGroup> genGroup;
 	
 	private List<GenVec> sortedAllGenVec;
-
+	private List<Trans> sortedImmTrans;
+	
 	public MarkingMatrix(MarkingGraph mp, boolean oneBased) {
 		this.mp = mp;
 		revMarkIndex = new HashMap<Mark,Integer>();
@@ -39,8 +44,11 @@ public class MarkingMatrix {
 		Set<GenVec> tmp = new HashSet<GenVec>();
 		tmp.addAll(mp.getImmGroup().keySet());
 		tmp.addAll(mp.getGenGroup().keySet());
+
 		sortedAllGenVec = new ArrayList<GenVec>(tmp);
 		Collections.sort(sortedAllGenVec);
+		sortedImmTrans = new ArrayList<Trans>(mp.getNet().getImmTransSet());
+		sortedImmTrans.sort(new PriorityComparator());
 
 		this.createIndex(oneBased);
 	}
@@ -145,11 +153,6 @@ public class MarkingMatrix {
 						elem.add(revMarkIndex.get(src));
 						elem.add(revMarkIndex.get(dest));
 						GenTrans tr = (GenTrans) markingArc.getTrans();
-//						try {
-//							elem.add(tr.getDist().eval(net));
-//						} catch (JSPNException e) {
-//							System.err.println("Fail to get dist: " + tr.getLabel());
-//						}
 						elem.add(1);
 						if (!result.containsKey(tr)) {
 							result.put(tr, new ArrayList<List<Object>>());
@@ -162,24 +165,60 @@ public class MarkingMatrix {
 		return result;
 	}
 
-	protected List<List<Object>> getSumVecI(Net net, MarkGroup srcMarkGroup) {
+//	protected List<List<Object>> getSumVecI(Net net, MarkGroup srcMarkGroup) {
+//		List<List<Object>> result = new ArrayList<List<Object>>();
+//		for (Mark src: srcMarkGroup.getMarkSet()) {
+//			AST d = null;
+//			for (Arc arc: src.getOutArc()) {
+//				MarkingArc markingArc = (MarkingArc) arc;
+//				if (markingArc.getTrans() instanceof ImmTrans) {
+//					ImmTrans tr = (ImmTrans) markingArc.getTrans();
+//					if (d == null) {
+//						d = tr.getWeight();
+//					} else {
+//						d = new ASTArithmetic(d, tr.getWeight(), "+");
+//					}
+//				}
+//			}
+//			List<Object> elem = new ArrayList<Object>();
+//			elem.add(revMarkIndex.get(src));
+//			elem.add(src);
+//			if (d == null) {
+//				elem.add(new ASTValue(0));
+//			} else {
+//				elem.add(d);
+//			}
+//			result.add(elem);
+//		}
+//		return result;
+//	}
+
+	protected List<List<Object>> getSumVecI(Net net, MarkGroup srcMarkGroup) throws JSPNException {
 		List<List<Object>> result = new ArrayList<List<Object>>();
-		for (Mark src: srcMarkGroup.getMarkSet()) {
+		for (Mark m : srcMarkGroup.getMarkSet()) {
+			net.setCurrentMark(m);
 			AST d = null;
-			for (Arc arc: src.getOutArc()) {
-				MarkingArc markingArc = (MarkingArc) arc;
-				if (markingArc.getTrans() instanceof ImmTrans) {
-					ImmTrans tr = (ImmTrans) markingArc.getTrans();
+			int highestPriority = 0;
+			for (Trans t : sortedImmTrans) {
+				ImmTrans tr = (ImmTrans) t;
+				if (highestPriority > tr.getPriority()) {
+					break;
+				}
+				switch (PetriAnalysis.isEnable(net, tr)) {
+				case ENABLE:
+					highestPriority = tr.getPriority();
 					if (d == null) {
 						d = tr.getWeight();
 					} else {
 						d = new ASTArithmetic(d, tr.getWeight(), "+");
 					}
+					break;
+				default:
 				}
 			}
 			List<Object> elem = new ArrayList<Object>();
-			elem.add(revMarkIndex.get(src));
-			elem.add(src);
+			elem.add(revMarkIndex.get(m));
+			elem.add(m);
 			if (d == null) {
 				elem.add(new ASTValue(0));
 			} else {
@@ -190,32 +229,88 @@ public class MarkingMatrix {
 		return result;
 	}
 
-	protected Map<Trans,List<List<Object>>> getSumVecG(Net net, MarkGroup mg) {
+//	protected Map<Trans,List<List<Object>>> getSumVecG(Net net, MarkGroup mg) {
+//		Map<Trans,List<List<Object>>> result = new HashMap<Trans,List<List<Object>>>();
+//		List<List<Object>> resultE = new ArrayList<List<Object>>();
+//		result.put(null, resultE);
+//		for (Mark m: mg.getMarkSet()) {
+//			Map<Trans,AST> tmp = new HashMap<Trans,AST>();
+//			tmp.put(null, null);
+//			for (Arc arc: m.getOutArc()) {
+//				MarkingArc markingArc = (MarkingArc) arc;
+//				if (markingArc.getTrans() instanceof ExpTrans) {
+//					ExpTrans tr = (ExpTrans) markingArc.getTrans();
+//					if (tmp.get(null) == null) {
+//						tmp.put(null, tr.getRate());
+//					} else {
+//						tmp.put(null, new ASTArithmetic(tmp.get(null), tr.getRate(), "+"));
+//					}
+//				} else if (markingArc.getTrans() instanceof GenTrans) {
+//					GenTrans tr = (GenTrans) markingArc.getTrans();
+//					if (!tmp.containsKey(tr)) {
+////						tmp.put(tr, tr.getDist());
+//						tmp.put(tr, new ASTValue(1));
+//					} else {
+////						tmp.put(tr, new ASTArithmetic(tmp.get(tr), tr.getDist(), "+"));
+//						tmp.put(tr, new ASTArithmetic(tmp.get(tr), new ASTValue(1), "+"));
+//					}
+//				}
+//			}
+//			for (Map.Entry<Trans, AST> entry : tmp.entrySet()) {
+//				List<Object> elem = new ArrayList<Object>();
+//				elem.add(revMarkIndex.get(m));
+//				elem.add(m);
+//				if (entry.getValue() == null) {
+//					elem.add(new ASTValue(0));
+//				} else {
+//					elem.add(entry.getValue());
+//				}
+//				List<List<Object>> listelem;
+//				if (!result.containsKey(entry.getKey())) {
+//					listelem = new ArrayList<List<Object>>();
+//					result.put(entry.getKey(), listelem);
+//				} else {
+//					listelem = result.get(entry.getKey());
+//				}
+//				listelem.add(elem);
+//			}
+//		}
+//		return result;
+//	}
+
+	protected Map<Trans,List<List<Object>>> getSumVecG(Net net, MarkGroup mg) throws JSPNException {
 		Map<Trans,List<List<Object>>> result = new HashMap<Trans,List<List<Object>>>();
 		List<List<Object>> resultE = new ArrayList<List<Object>>();
 		result.put(null, resultE);
 		for (Mark m: mg.getMarkSet()) {
+			net.setCurrentMark(m);
 			Map<Trans,AST> tmp = new HashMap<Trans,AST>();
 			tmp.put(null, null);
-			for (Arc arc: m.getOutArc()) {
-				MarkingArc markingArc = (MarkingArc) arc;
-				if (markingArc.getTrans() instanceof ExpTrans) {
-					ExpTrans tr = (ExpTrans) markingArc.getTrans();
+			for (Trans t : net.getExpTransSet()) {
+				ExpTrans tr = (ExpTrans) t;
+				switch (PetriAnalysis.isEnable(net, tr)) {
+				case ENABLE:
 					if (tmp.get(null) == null) {
 						tmp.put(null, tr.getRate());
 					} else {
 						tmp.put(null, new ASTArithmetic(tmp.get(null), tr.getRate(), "+"));
 					}
-				} else if (markingArc.getTrans() instanceof GenTrans) {
-					GenTrans tr = (GenTrans) markingArc.getTrans();
+					break;
+				default:
+				}				
+			}
+			for (Trans t : net.getGenTransSet()) {
+				GenTrans tr = (GenTrans) t;
+				switch (PetriAnalysis.isEnable(net, tr)) {
+				case ENABLE:
 					if (!tmp.containsKey(tr)) {
-//						tmp.put(tr, tr.getDist());
 						tmp.put(tr, new ASTValue(1));
 					} else {
-//						tmp.put(tr, new ASTArithmetic(tmp.get(tr), tr.getDist(), "+"));
 						tmp.put(tr, new ASTArithmetic(tmp.get(tr), new ASTValue(1), "+"));
 					}
-				}
+					break;
+				default:
+				}				
 			}
 			for (Map.Entry<Trans, AST> entry : tmp.entrySet()) {
 				List<Object> elem = new ArrayList<Object>();
@@ -249,4 +344,72 @@ public class MarkingMatrix {
 		}
 		return result;
 	}
-}
+	
+	// graph
+
+	private static String ln = "\n";
+	private static String genFormat = "\"%s\" [label=\"%s\n %s%s\"];" + ln;
+	private static String immFormat = "\"%s\" [label=\"%s\n %s%s\"];" + ln;
+	private static String genFormatG = "\"%s\" [label=\"%s(%d)\n %s\"];" + ln;
+	private static String immFormatG = "\"%s\" [label=\"%s(%d)\n %s\"];" + ln;
+	private static String arcFormat = "\"%s\" -> \"%s\" [label=\"%s\"];" + ln;
+
+	public void dotMarking(PrintWriter bw) {
+		Net net = mp.getNet();
+		bw.println("digraph { layout=dot; overlap=false; splines=true;");
+		for (MarkGroup mg : immGroup.values()) {
+			for (Mark m : mg.getMarkSet()) {
+				bw.printf(immFormat, m,
+						JSPetriNet.markToString(net, m),
+						revMarkGroupIndex.get(mg),
+						JSPetriNet.genvecToString(net, m.getGenVec()));
+				for (Arc a : m.getOutArc()) {
+					MarkingArc ma = (MarkingArc) a;
+					bw.printf(arcFormat, ma.getSrc(), ma.getDest(), ma.getTrans().getLabel());
+				}
+			}
+		}
+		for (MarkGroup mg : genGroup.values()) {
+			for (Mark m : mg.getMarkSet()) {
+				bw.printf(genFormat, m,
+						JSPetriNet.markToString(net, m),
+						revMarkGroupIndex.get(mg),
+						JSPetriNet.genvecToString(net, m.getGenVec()));
+				for (Arc a : m.getOutArc()) {
+					MarkingArc ma = (MarkingArc) a;
+					bw.printf(arcFormat, ma.getSrc(), ma.getDest(), ma.getTrans().getLabel());
+				}
+			}
+		}
+		bw.println("}");
+	}
+
+	public void dotMarkGroup(PrintWriter bw) {
+//		CreateGroupMarkingGraph.createMarkGroupGraph(mp.getNet(), immGroup, genGroup);
+		bw.println("digraph { layout=dot; overlap=false; splines=true;");
+		for (Map.Entry<GenVec, MarkGroup> entry : this.genGroup.entrySet()) {
+			bw.printf(genFormatG, entry.getValue(),
+					revMarkGroupIndex.get(entry.getValue()),
+					entry.getValue().getMarkSet().size(),
+					JSPetriNet.genvecToString(mp.getNet(), entry.getKey()));
+			for (Arc a : entry.getValue().getOutArc()) {
+				MarkingArc ma = (MarkingArc) a;
+				if (ma.getTrans() instanceof ExpTrans) {
+					bw.printf(arcFormat, ma.getSrc(), ma.getDest(), "EXP(" + ma.getTrans().getLabel() + ")");
+				} else {
+					bw.printf(arcFormat, ma.getSrc(), ma.getDest(), ma.getTrans().getLabel());
+				}
+			}
+		}
+		for (Map.Entry<GenVec, MarkGroup> entry : this.immGroup.entrySet()) {
+			bw.printf(immFormatG, entry.getValue(),
+					revMarkGroupIndex.get(entry.getValue()),
+					entry.getValue().getMarkSet().size(),
+					JSPetriNet.genvecToString(mp.getNet(), entry.getKey()));
+			for (Arc a : entry.getValue().getOutArc()) {
+				MarkingArc ma = (MarkingArc) a;
+				bw.printf(arcFormat, ma.getSrc(), ma.getDest(),  "IMM(" + ma.getTrans().getLabel() + ")");
+			}
+		}
+		bw.println("}");
+	}}

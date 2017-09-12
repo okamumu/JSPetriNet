@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jp.rel.jmtrandom.Random;
 import jspetrinet.JSPetriNet;
 import jspetrinet.ast.AST;
 import jspetrinet.dist.Dist;
@@ -113,7 +114,7 @@ public class MCSimulation {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					double weight = Utility.convertObjctToDouble(((ImmTrans)tr).getWeight().eval(net));
-					if(weight>=(rnd.nextUnif01()*(weight+totalWeight))){
+					if(weight>=(rnd.nextUnif()*(weight+totalWeight))){
 						selTrans = tr;
 					}
 					totalWeight += weight;
@@ -220,7 +221,7 @@ public class MCSimulation {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
 					double weight = Utility.convertObjctToDouble(((ImmTrans)tr).getWeight().eval(net));
-					if(weight>=(rnd.nextUnif01()*(weight+totalWeight))){
+					if(weight>=(rnd.nextUnif()*(weight+totalWeight))){
 						selTrans = tr;
 					}
 					totalWeight += weight;

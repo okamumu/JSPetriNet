@@ -1,14 +1,14 @@
 package jspetrinet.dist;
 
 import jspetrinet.ast.ASTEnv;
+import jp.rel.jmtrandom.Random;
 import jspetrinet.ast.AST;
 import jspetrinet.exception.JSPNException;
-import jspetrinet.sim.Random;
 import jspetrinet.sim.Utility;
 
 public class ExpDist extends Dist {
 	
-	public static final String dname = "exp";
+	public static final String dname = "expdist";
 
 	private AST rate;
 	private Object rateObj;
@@ -21,7 +21,7 @@ public class ExpDist extends Dist {
 		return rate;
 	}
 
-	public final void setRate(AST rate) {
+	public final void setParam(AST rate) {
 		this.rate = rate;
 	}
 
@@ -37,6 +37,7 @@ public class ExpDist extends Dist {
 
 	@Override
 	public double nextImpl(Random rnd) throws JSPNException {
-		return rnd.nextExp(Utility.convertObjctToDouble(rateObj));
+		double rate_value = Utility.convertObjctToDouble(rateObj);
+		return rnd.nextExp(rate_value);
 	}
 }

@@ -22,6 +22,7 @@ import jspetrinet.JSPetriNet;
 import jspetrinet.analysis.MRGPMatrixASCIIWriter;
 import jspetrinet.analysis.MRGPMatrixMATLABWriter;
 import jspetrinet.analysis.MarkClassAnalysis;
+import jspetrinet.analysis.MarkingMatrix;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.marking.Mark;
 import jspetrinet.marking.MarkingGraph;
@@ -43,7 +44,7 @@ public class CommandLineMark {
 		}
 	}
 	
-	private static void outputBin(CommandLine cmd, MarkingGraph mp) {
+	private static MarkingMatrix outputBin(CommandLine cmd, MarkingGraph mp) {
 		Net net = mp.getNet();
 		Mark imark = mp.getInitialMark();
 		MRGPMatrixMATLABWriter matlab = new MRGPMatrixMATLABWriter(mp);
@@ -73,9 +74,10 @@ public class CommandLineMark {
 			System.err.println("The option bin requires the option '-o' to write binary filise.");
 			System.exit(1);
 		}
+		return matlab;
 	}
 
-	private static void outputText(CommandLine cmd, MarkingGraph mp) {
+	private static MarkingMatrix outputText(CommandLine cmd, MarkingGraph mp) {
 		Net net = mp.getNet();
 		Mark imark = mp.getInitialMark();
 		MRGPMatrixASCIIWriter mrgp = new MRGPMatrixASCIIWriter(mp, true);
@@ -102,10 +104,10 @@ public class CommandLineMark {
 				}
 			} catch (FileNotFoundException e) {
 				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.OUT));
-				return;
+				return mrgp;
 			} catch (IOException e) {
 				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.OUT));
-				return;
+				return mrgp;
 			} catch (JSPNException e) {
 				System.err.println(e.getMessage());
 				e.printStackTrace();
@@ -139,11 +141,12 @@ public class CommandLineMark {
 				} catch (JSPNException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-					return;
+					return mrgp;
 				}
 				pw5.flush();
 			}
 		}
+		return mrgp;
 	}
 
 	public static void cmdAnalysis(String[] args) {
@@ -199,17 +202,18 @@ public class CommandLineMark {
 		}
 		pw0.flush();
 
+		MarkingMatrix mmat;
 		if (cmd.hasOption(CommandLineOptions.MATLAB)) {
-			outputBin(cmd, mp);
+			mmat = outputBin(cmd, mp);
 		} else {
-			outputText(cmd, mp); // default -text
+			mmat = outputText(cmd, mp); // default -text
 		}
 
 		if (cmd.hasOption(CommandLineOptions.GROUPGRAPH)) {
 			try {
 				PrintWriter pw;
 				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.GROUPGRAPH))));
-				mp.dotMarkGroup(pw);
+				mmat.dotMarkGroup(pw);
 				pw.close();
 			} catch (FileNotFoundException e) {
 				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.GROUPGRAPH));
@@ -224,7 +228,7 @@ public class CommandLineMark {
 			try {
 				PrintWriter pw;
 				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.MARKGRAPH))));
-				mp.dotMarking(pw);
+				mmat.dotMarking(pw);
 				pw.close();
 			} catch (FileNotFoundException e) {
 				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.MARKGRAPH));

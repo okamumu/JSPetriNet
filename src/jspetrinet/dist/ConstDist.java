@@ -1,9 +1,9 @@
 package jspetrinet.dist;
 
 import jspetrinet.ast.ASTEnv;
+import jp.rel.jmtrandom.Random;
 import jspetrinet.ast.AST;
 import jspetrinet.exception.JSPNException;
-import jspetrinet.sim.Random;
 import jspetrinet.sim.Utility;
 
 public class ConstDist extends Dist {
@@ -21,7 +21,7 @@ public class ConstDist extends Dist {
 		return constValue;
 	}
 
-	public final void setConstValue(AST constValue) {
+	public final void setParam(AST constValue) {
 		this.constValue = constValue;
 	}
 

@@ -1,9 +1,9 @@
 package jspetrinet.dist;
 
 import jspetrinet.ast.ASTEnv;
+import jp.rel.jmtrandom.Random;
 import jspetrinet.ast.AST;
 import jspetrinet.exception.JSPNException;
-import jspetrinet.sim.Random;
 
 abstract public class Dist implements AST {
 	

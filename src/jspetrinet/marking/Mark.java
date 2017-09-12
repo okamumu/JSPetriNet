@@ -9,13 +9,30 @@ import jspetrinet.graph.Arc;
 public final class Mark extends jspetrinet.graph.Node implements Comparable<Mark> {
 
 	private final int[] vec;
+	private GenVec genvec;
+	private boolean imm;
 
 	public Mark(int size) {
 		this.vec = new int [size];
+		this.genvec = null;
+		this.imm = false;
 	}
 
 	public Mark(Mark m) {
 		this.vec = Arrays.copyOf(m.vec, m.vec.length);
+		this.genvec = null;
+	}
+	
+	public final void setIMM() {
+		this.imm = true;
+	}
+
+	public final void setGEN() {
+		this.imm = false;
+	}
+	
+	public final boolean isIMM() {
+		return this.imm;
 	}
 
 	public final int get(int i) {
@@ -24,6 +41,14 @@ public final class Mark extends jspetrinet.graph.Node implements Comparable<Mark
 	
 	public final void set(int i, int v) {
 		vec[i] = v;
+	}
+	
+	public final GenVec getGenVec() {
+		return this.genvec;
+	}
+
+	public final void setGroup(GenVec genvec) {
+		this.genvec = genvec;
 	}
 
 	public final List<Mark> next() {

@@ -6,9 +6,7 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import jspetrinet.ast.AST;
-import jspetrinet.ast.ASTEnv;
 import jspetrinet.exception.JSPNException;
-import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.graph.Arc;
 import jspetrinet.graph.Component;
 import jspetrinet.graph.Visitor;
@@ -21,7 +19,7 @@ public class VizPrint implements Visitor {
 
 	private PrintWriter bw;
 	
-	private static String ln = "\n";	
+	private static String ln = "\n";
 	private static String placeFMT = "\"%s\" [shape = circle, label = \"%s\"];" + ln;
 	private static String expFMT = "\"%s\" [shape = box, label = \"%s\" width=0.8, height=0.2];" + ln;
 	private static String immFMT = "\"%s\" [shape = box, label = \"%s\" width=0.8, height=0.02, style=\"filled,dashed\"];" + ln;

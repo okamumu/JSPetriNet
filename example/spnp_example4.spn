@@ -1,6 +1,8 @@
 /*
   SPNP Example 4: C.mmp system performability
-  (Blake, Reibman and Trivedi, ACM SIGMTRICS, 1988)
+  (J. T. Blake, A. L. Reibman and K. S. Trivedi,
+   Sensitivity analysis of reliability and performability measures for multiprocessor systems,
+   Proc. 1988 ACM SIGMTRICS, 1988)
 */
 
 place procup (init = 16)
