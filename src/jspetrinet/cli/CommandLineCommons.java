@@ -1,8 +1,14 @@
 package jspetrinet.cli;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,11 +18,17 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 
+import jmatout.MATLABHeader;
 import jspetrinet.JSPetriNet;
+import jspetrinet.analysis.MRGPMatrixASCIIWriter;
+import jspetrinet.analysis.MRGPMatrixMATLABWriter;
+import jspetrinet.analysis.MarkingMatrix;
 import jspetrinet.ast.AST;
+import jspetrinet.common.Utility;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.TypeMismatch;
 import jspetrinet.marking.Mark;
+import jspetrinet.marking.MarkingGraph;
 import jspetrinet.petri.ExpTrans;
 import jspetrinet.petri.Net;
 import jspetrinet.petri.Trans;
@@ -89,9 +101,11 @@ public class CommandLineCommons {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		net.setIndex();
+		net.setIndexAndSortIMM();
 		return net;
 	}
+
+	// get option values
 
 	public static Mark getInitialMark(CommandLine cmd, Net net) {
 		Mark imark = null;
@@ -130,5 +144,40 @@ public class CommandLineCommons {
 			return defaultValue;
 		}
 	}
+	
+	public static int getRun(CommandLine cmd, int defaultValue) {
+		if (cmd.hasOption(CommandLineOptions.SIMRUN)) {
+			return Integer.parseInt(cmd.getOptionValue(CommandLineOptions.SIMRUN));
+		} else {
+			return defaultValue;
+		}
+	}
+	
+	public static double getTime(CommandLine cmd, Net net) throws JSPNException {
+		String label = "simtime" + System.currentTimeMillis();
+		JSPetriNet.eval(net, label + " = " + cmd.getOptionValue(CommandLineOptions.SIMTIME) + ";");
+		return Utility.convertObjctToDouble(((AST) net.get(label)).eval(net));
+	}
+	
+	public static long getSeed(CommandLine cmd) {
+		if (cmd.hasOption(CommandLineOptions.SEED)) {
+			return Long.valueOf(cmd.getOptionValue(CommandLineOptions.SEED));
+		} else {
+			return System.currentTimeMillis();
+		}
+	}
 
+	public static void checkOptionMark(CommandLine cmd) {
+		if (cmd.hasOption(CommandLineOptions.MATLAB) && cmd.hasOption(CommandLineOptions.TEXT)) {
+			System.err.println("Output mode should be chosen either '-text' or '-bin'.");
+			System.exit(1);
+		}
+		if (cmd.hasOption(CommandLineOptions.MATLAB)) {
+			if (!cmd.hasOption(CommandLineOptions.OUT)) {
+				System.err.println("The option '-bin' requires the option '-o' to write binary filise.");				
+				System.exit(1);
+			}
+		}
+	}
+	
 }

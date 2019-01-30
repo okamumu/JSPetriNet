@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import jspetrinet.JSPetriNet;
 import jspetrinet.graph.Arc;
 import jspetrinet.petri.Net;
 

@@ -9,11 +9,13 @@ import java.util.Map;
 import jp.rel.jmtrandom.Random;
 import jspetrinet.JSPetriNet;
 import jspetrinet.ast.AST;
+import jspetrinet.common.Utility;
 import jspetrinet.dist.Dist;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.exception.JSPNExceptionType;
 import jspetrinet.exception.TypeMismatch;
 import jspetrinet.marking.Mark;
+import jspetrinet.marking.MarkMarkTrans;
 import jspetrinet.marking.MarkingArc;
 import jspetrinet.marking.PetriAnalysis;
 import jspetrinet.petri.ExpTrans;
@@ -27,13 +29,13 @@ public class MCSimulation {
 	protected Net net;
 	protected Random rnd;
 	protected final Map<Mark, Mark> markSet;//結果表示用に通ったマーキングを保存
-	protected final Map<PairMark, PairMark> arcSet;
+	protected final Map<MarkMarkTrans, MarkMarkTrans> arcSet;
 	protected final Map<Trans, Double> remainingTime;//一般発火トランジションの残り時間
 
 	public MCSimulation(Net net) {
 		this.net = net;
 		markSet = new HashMap<Mark, Mark>();
-		arcSet = new HashMap<PairMark, PairMark>();
+		arcSet = new HashMap<MarkMarkTrans, MarkMarkTrans>();
 		remainingTime = new HashMap<Trans, Double>();
 		for (Trans tr : net.getGenTransSet()) {
 			remainingTime.put(tr, 0.0);
@@ -84,7 +86,7 @@ public class MCSimulation {
 		}else{
 			currentMarking = markSet.get(currentMarking);
 		}
-		eventValues.add(new EventValue(initMarking, currentTime));
+		eventValues.add(new EventValue(currentTime, initMarking));
 		while (true) {
 			net.setCurrentMark(currentMarking);
 			if(firingcount>=limitFiring){
@@ -110,10 +112,10 @@ public class MCSimulation {
 			Trans selTrans = null;
 			double mindt = 0;
 			double totalWeight = 0;
-			for (Trans tr : net.getImmTransSet()) {
+			for (ImmTrans tr : net.getImmTransSet()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
-					double weight = Utility.convertObjctToDouble(((ImmTrans)tr).getWeight().eval(net));
+					double weight = Utility.convertObjctToDouble(tr.getWeight().eval(net));
 					if(weight>=(rnd.nextUnif()*(weight+totalWeight))){
 						selTrans = tr;
 					}
@@ -124,7 +126,7 @@ public class MCSimulation {
 			}
 			if(totalWeight==0){
 				mindt = Double.POSITIVE_INFINITY;
-				for (Trans tr : net.getGenTransSet()) {
+				for (GenTrans tr : net.getGenTransSet()) {
 					switch (PetriAnalysis.isEnable(net, tr)) {
 					case ENABLE:
 						double dt = remainingTime.get(tr);
@@ -136,7 +138,7 @@ public class MCSimulation {
 					default:
 					}
 				}
-				for (Trans tr : net.getExpTransSet()) {
+				for (ExpTrans tr : net.getExpTransSet()) {
 					switch (PetriAnalysis.isEnable(net, tr)) {
 					case ENABLE:
 						double dt = this.nextTime(net, (ExpTrans) tr, rnd);
@@ -167,13 +169,13 @@ public class MCSimulation {
 			}else{//発火先がmarkSetにある場合、
 				currentMarking = markSet.get(currentMarking);
 			}
- 			PairMark pairMark = new PairMark(previousMarking, currentMarking);
+ 			MarkMarkTrans pairMark = new MarkMarkTrans(previousMarking, currentMarking, null);
 			if(!arcSet.containsValue(pairMark)){
 				arcSet.put(pairMark, pairMark);
 				new MarkingArc(previousMarking, currentMarking, selTrans);
 
 			}
-			eventValues.add(new EventValue(currentMarking, currentTime));
+			eventValues.add(new EventValue(currentTime, currentMarking));
 			firingcount++;
 		}
 		return eventValues;
@@ -189,7 +191,7 @@ public class MCSimulation {
 		}else{
 			currentMarking = markSet.get(currentMarking);
 		}
-		eventValues.add(new EventValue(initMarking, currentTime));
+		eventValues.add(new EventValue(currentTime, initMarking));
 		while (true) {
 			net.setCurrentMark(currentMarking);
 			if (Utility.convertObjctToBoolean(stopCondition.eval(net))) {
@@ -217,10 +219,10 @@ public class MCSimulation {
 			}
 			Trans selTrans = null;
 			double totalWeight = 0;
-			for (Trans tr : net.getImmTransSet()) {
+			for (ImmTrans tr : net.getImmTransSet()) {
 				switch (PetriAnalysis.isEnable(net, tr)) {
 				case ENABLE:
-					double weight = Utility.convertObjctToDouble(((ImmTrans)tr).getWeight().eval(net));
+					double weight = Utility.convertObjctToDouble(tr.getWeight().eval(net));
 					if(weight>=(rnd.nextUnif()*(weight+totalWeight))){
 						selTrans = tr;
 					}
@@ -243,10 +245,10 @@ public class MCSimulation {
 					default:
 					}
 				}
-				for (Trans tr : net.getExpTransSet()) {
+				for (ExpTrans tr : net.getExpTransSet()) {
 					switch (PetriAnalysis.isEnable(net, tr)) {
 					case ENABLE:
-						double dt = this.nextTime(net, (ExpTrans) tr, rnd);
+						double dt = this.nextTime(net, tr, rnd);
 						if(dt < mindt){
 							mindt = dt;
 							selTrans = tr;
@@ -274,13 +276,13 @@ public class MCSimulation {
 			}else{//発火先がmarkSetにある場合、
 				currentMarking = markSet.get(currentMarking);
 			}
- 			PairMark pairMark = new PairMark(previousMarking, currentMarking);
+ 			MarkMarkTrans pairMark = new MarkMarkTrans(previousMarking, currentMarking, null);
 			if(!arcSet.containsValue(pairMark)){
 				arcSet.put(pairMark, pairMark);
 				new MarkingArc(previousMarking, currentMarking, selTrans);
 
 			}
-			eventValues.add(new EventValue(currentMarking, currentTime));
+			eventValues.add(new EventValue(currentTime, currentMarking));
 			firingcount++;
 		}
 		return eventValues;
@@ -290,26 +292,31 @@ public class MCSimulation {
 		return Utility.convertObjctToDouble(reward.eval(net));
 	}
 
-	public double resultReward(Net net, List<EventValue> simResult, AST reward, double startTime, double endTime) throws JSPNException {
-		double totalReward = 0;
-		for(int i=0;i<simResult.size();i++){
-			net.setCurrentMark(simResult.get(i).getEventMarking());
-			if(startTime<=simResult.get(i).getEventTime()){
-				if(i==simResult.size()-1){
-					totalReward += (endTime - simResult.get(i).getEventTime()) * evalReward(net, reward);
+	public double[] resultCumulativeReward(Net net, List<EventValue> simResult, AST reward, double startTime, double endTime) throws JSPNException {
+		double[] totalReward = new double [2];
+		totalReward[0] = 0;
+		for (int i=0; i<simResult.size(); i++) {
+			net.setCurrentMark(simResult.get(i).getEvent());
+			double tmp = evalReward(net, reward);
+			if (startTime <= simResult.get(i).getTime()) {
+				if (i == simResult.size()-1) {
+					totalReward[0] += (endTime - simResult.get(i).getTime()) * tmp;
+					totalReward[1] = tmp;
 					break;
-				}else{
-					if(endTime>=simResult.get(i+1).getEventTime()){
-						totalReward += (simResult.get(i+1).getEventTime() - simResult.get(i).getEventTime()) * evalReward(net, reward);
-					}else{
-						totalReward += (endTime - simResult.get(i).getEventTime()) * evalReward(net, reward);
+				} else {
+					if (endTime >= simResult.get(i+1).getTime()) {
+						totalReward[0] += (simResult.get(i+1).getTime() - simResult.get(i).getTime()) * tmp;
+					} else {
+						totalReward[0] += (endTime - simResult.get(i).getTime()) * tmp;
+						totalReward[1] = tmp;
 						break;
 					}
 				}
-			}else if(i==simResult.size()-1){
-				totalReward += (endTime - startTime) * evalReward(net, reward);
-			}else if(startTime<=simResult.get(i+1).getEventTime()){
-				totalReward += (simResult.get(i+1).getEventTime() - startTime) * evalReward(net, reward);
+			} else if (i == simResult.size()-1) {
+				totalReward[0] += (endTime - startTime) * tmp;
+				totalReward[1] = tmp;
+			} else if (startTime <= simResult.get(i+1).getTime()) {
+				totalReward[0] += (simResult.get(i+1).getTime() - startTime) * tmp;
 			}
 		}
 		return totalReward;
@@ -317,8 +324,8 @@ public class MCSimulation {
 
 	public void resultEvent(PrintWriter pw, List<EventValue> eventValues){
 		for (EventValue ev : eventValues) {
-			pw.print(String.format("%.2f", ev.getEventTime())+" : ");
-			pw.println(JSPetriNet.markToString(net, ev.getEventMarking()));
+			pw.print(String.format("%.2f", ev.getTime())+" : ");
+			pw.println(JSPetriNet.markToString(net, ev.getEvent()));
 		}
 	}
 }

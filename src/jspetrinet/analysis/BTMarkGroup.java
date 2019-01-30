@@ -10,7 +10,7 @@ public class BTMarkGroup extends MarkGroup {
 	private Boolean isSlow;
 	
 	public BTMarkGroup() {
-		super("");
+		super("", null, false);
 		isTransient = false;
 		isSlow = false;
 	}

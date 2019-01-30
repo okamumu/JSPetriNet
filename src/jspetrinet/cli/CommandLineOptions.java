@@ -5,6 +5,7 @@ public class CommandLineOptions {
 	public static String VIEW="view";
 	public static String MARKING="mark";
 	public static String SIMULATION="sim";
+	public static String SIMMARK="simmark";
 
 	// options
 	public static String INPETRI="i";
@@ -13,7 +14,7 @@ public class CommandLineOptions {
 	public static String REWARD="reward";
 	public static String VANISHING="tangible";
 	public static String FIRINGLIMIT="limit";
-	public static String EXP="exp";
+//	public static String EXP="exp";
 	public static String MATLAB="bin";
 	public static String TEXT="text";
 

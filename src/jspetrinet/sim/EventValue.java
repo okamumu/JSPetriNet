@@ -2,20 +2,32 @@ package jspetrinet.sim;
 
 import jspetrinet.marking.Mark;
 
-public class EventValue {
-	private Mark eventMarking;
-	private double eventTime;
+public final class EventValue {
+	private final Mark event;
+	private final double time;
+	private final boolean stop;
 	
-	public EventValue(Mark mark, double time){
-		eventMarking = mark;
-		eventTime = time;
+	public EventValue(double time, Mark mark){
+		this.event = mark;
+		this.time = time;
+		stop = false;
 	}
 
-	public Mark getEventMarking() {
-		return eventMarking;
+	public EventValue(double time, Mark mark, boolean stop){
+		this.event = mark;
+		this.time = time;
+		this.stop = false;
 	}
 
-	public double getEventTime() {
-		return eventTime;
+	public final Mark getEvent() {
+		return event;
+	}
+
+	public final double getTime() {
+		return time;
+	}
+	
+	public final boolean isStop() {
+		return stop;
 	}
 }

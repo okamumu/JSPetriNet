@@ -11,26 +11,25 @@ import java.util.Set;
 import jspetrinet.JSPetriNet;
 import jspetrinet.exception.JSPNException;
 import jspetrinet.petri.Net;
-import jspetrinet.petri.PriorityComparator;
 import jspetrinet.petri.Trans;
+import jspetrinet.petri.ExpTrans;
+import jspetrinet.petri.GenTrans;
 import jspetrinet.petri.ImmTrans;
 
 public class CreateMarkingDFS2 implements CreateMarking {
 	
 	private final MarkingGraph markGraph;
-	private final List<Trans> expTransSet;
+//	private final List<Trans> expTransSet;
 
 	private Map<Mark,Mark> createdMarks;
 	private Set<Mark> visitedGEN;
 
-	private List<Trans> sortedImmTrans;
-	
 	private LinkedList<Mark> novisitedIMM;
 	private LinkedList<Mark> novisitedGEN;
 	
-	public CreateMarkingDFS2(MarkingGraph markGraph, List<Trans> genTransSet) {
+	public CreateMarkingDFS2(MarkingGraph markGraph) {
 		this.markGraph = markGraph;
-		this.expTransSet = genTransSet;
+//		this.expTransSet = genTransSet;
 	}
 	
 	@Override
@@ -39,9 +38,6 @@ public class CreateMarkingDFS2 implements CreateMarking {
 
 		visitedGEN = new HashSet<Mark>();
 
-		sortedImmTrans = new ArrayList<Trans>(net.getImmTransSet());
-		sortedImmTrans.sort(new PriorityComparator());
-		
 		novisitedGEN = new LinkedList<Mark>();
 		novisitedIMM = new LinkedList<Mark>();
 
@@ -54,7 +50,7 @@ public class CreateMarkingDFS2 implements CreateMarking {
 	
 	private GenVec createGenVec(Net net) throws JSPNException {
 		GenVec genv = new GenVec(net);
-		for (Trans tr : net.getGenTransSet()) {
+		for (GenTrans tr : net.getGenTransSet()) {
 			switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 			case ENABLE:
 				genv.set(tr.getIndex(), 1);
@@ -65,22 +61,21 @@ public class CreateMarkingDFS2 implements CreateMarking {
 			default:
 			}
 		}
-		for (Trans tr : expTransSet) {
-			switch (PetriAnalysis.isEnable(net, tr)) {
-			case ENABLE:
-				genv.set(tr.getIndex(), 1);
-				break;
-			default:
-			}
-		}
+//		for (Trans tr : expTransSet) {
+//			switch (PetriAnalysis.isEnable(net, tr)) {
+//			case ENABLE:
+//				genv.set(tr.getIndex(), 1);
+//				break;
+//			default:
+//			}
+//		}
 		return genv;
 	}
 	
 	private List<Trans> createEnabledIMM(Net net) throws JSPNException {
 		List<Trans> enabledIMMList = new ArrayList<Trans>();
 		int highestPriority = 0;
-		for (Trans t : sortedImmTrans) {
-			ImmTrans tr = (ImmTrans) t;
+		for (ImmTrans tr : net.getImmTransSet()) {
 			if (highestPriority > tr.getPriority()) {
 				break;
 			}
@@ -99,9 +94,9 @@ public class CreateMarkingDFS2 implements CreateMarking {
 		m.setGroup(genv);
 		m.setIMM();
 		if (!markGraph.getImmGroup().containsKey(genv)) {
-			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv)));
+			markGraph.getImmGroup().put(genv, new MarkGroup("Imm: " + JSPetriNet.genvecToString(net, genv), genv, true));
 		}
-		markGraph.addMark(m);
+//		markGraph.addMark(m);
 		markGraph.getImmGroup().get(genv).add(m);					
 	}
 
@@ -109,9 +104,9 @@ public class CreateMarkingDFS2 implements CreateMarking {
 		m.setGroup(genv);
 		m.setGEN();
 		if (!markGraph.getGenGroup().containsKey(genv)) {
-			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv)));
+			markGraph.getGenGroup().put(genv, new MarkGroup("Gen: " + JSPetriNet.genvecToString(net, genv), genv, false));
 		}
-		markGraph.addMark(m);
+//		markGraph.addMark(m);
 		markGraph.getGenGroup().get(genv).add(m);
 	}
 
@@ -130,7 +125,7 @@ public class CreateMarkingDFS2 implements CreateMarking {
 	}
 	
 	private void visitGenMark(Net net, Mark m) throws JSPNException {
-		for (Trans tr : net.getGenTransSet()) {
+		for (GenTrans tr : net.getGenTransSet()) {
 			switch (PetriAnalysis.isEnableGenTrans(net, tr)) {
 			case ENABLE:
 				Mark dest = PetriAnalysis.doFiring(net, tr);
@@ -145,7 +140,7 @@ public class CreateMarkingDFS2 implements CreateMarking {
 			default:
 			}
 		}
-		for (Trans tr : net.getExpTransSet()) {
+		for (ExpTrans tr : net.getExpTransSet()) {
 			switch (PetriAnalysis.isEnable(net, tr)) {
 			case ENABLE:
 				Mark dest = PetriAnalysis.doFiring(net, tr);

@@ -27,11 +27,10 @@ import jspetrinet.petri.Net;
 import jspetrinet.sim.CompReward;
 import jspetrinet.sim.EventValue;
 import jspetrinet.sim.MCSimulation;
-import jspetrinet.sim.MCSimulation2;
 import jspetrinet.sim.MCSimCreateMarking;
 import jspetrinet.sim.SimReward;
 
-public class CommandLineSim {
+public class CommandLineSimMark {
 	
 	private static void outRewardText(CommandLine cmd, List<SimReward> simresult) {
 		if (cmd.hasOption(CommandLineOptions.OUT)) {
@@ -109,6 +108,8 @@ public class CommandLineSim {
 		options.addOption(CommandLineOptions.OUT, true, "matrix (output)");
 		options.addOption(CommandLineOptions.TEXT, false, "TEXT mat file");
 		options.addOption(CommandLineOptions.MATLAB, false, "MATLAB mat file");
+		options.addOption(CommandLineOptions.GROUPGRAPH, true, "marking group graph (output)");
+		options.addOption(CommandLineOptions.MARKGRAPH, true, "marking graph (output)");
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd;
 		try {
@@ -139,7 +140,8 @@ public class CommandLineSim {
 			return;
 		}
 
-		MCSimulation2 mc = new MCSimulation2(net, new Random(seed));
+		MarkingGraph mp = new MarkingGraph(imark);
+		MCSimCreateMarking mc = new MCSimCreateMarking(net, new Random(seed));
 
 		PrintWriter pw0 = new PrintWriter(System.out);
 		pw0.print("Start simulation...");
@@ -161,43 +163,43 @@ public class CommandLineSim {
 				outRewardText(cmd, simresult);
 			} else {
 				if (cmd.hasOption(CommandLineOptions.OUT)) {
-					try {
-						PrintWriter pw1;
-						pw1 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.OUT) + ".sim")));
+//					try {
+//						PrintWriter pw1;
+//						pw1 = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.OUT) + ".sim")));
 						for (int k=0; k<run; k++) {
 							List<EventValue> result = mc.runSimulation(imark, endTime, limits, null);
-							pw1.println();
-							for (EventValue ev : result) {
-								pw1.print(ev.getTime());
-								pw1.print(" ");
-								pw1.print(ev.getEvent());
-								pw1.println(" # " + JSPetriNet.markToString(net, ev.getEvent()));
-							}
+//							pw1.println();
+//							for (EventValue ev : result) {
+//								pw1.print(ev.getTime());
+//								pw1.print(" ");
+//								pw1.print(ev.getEvent());
+//								pw1.println(" # " + JSPetriNet.markToString(net, ev.getEvent()));
+//							}
 						}
-						pw1.close();
-					} catch (FileNotFoundException e) {
-						System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.OUT));
-						e.printStackTrace();
-						System.exit(1);
-					} catch (IOException e) {
-						System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.OUT));
-						e.printStackTrace();
-						System.exit(1);
-					}
+//						pw1.close();
+//					} catch (FileNotFoundException e) {
+//						System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.OUT));
+//						e.printStackTrace();
+//						System.exit(1);
+//					} catch (IOException e) {
+//						System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.OUT));
+//						e.printStackTrace();
+//						System.exit(1);
+//					}
 				} else {
-					PrintWriter pw1;
-					pw1 = new PrintWriter(System.out);
+//					PrintWriter pw1;
+//					pw1 = new PrintWriter(System.out);
 					for (int k=0; k<run; k++) {
 						List<EventValue> result = mc.runSimulation(imark, endTime, limits, null);
-						pw1.println();
-						for (EventValue ev : result) {
-							pw1.print(ev.getTime());
-							pw1.print(" ");
-							pw1.print(ev.getEvent());
-							pw1.println(" # " + JSPetriNet.markToString(net, ev.getEvent()));
-						}
+//						pw1.println();
+//						for (EventValue ev : result) {
+//							pw1.print(ev.getTime());
+//							pw1.print(" ");
+//							pw1.print(ev.getEvent());
+//							pw1.println(" # " + JSPetriNet.markToString(net, ev.getEvent()));
+//						}
 					}
-					pw1.flush();
+//					pw1.flush();
 				}
 			}
 		} catch (JSPNException e) {
@@ -205,9 +207,48 @@ public class CommandLineSim {
 			e.printStackTrace();
 			return;
 		}
+		mc.makeMarking(mp);
 		pw0.println("done");
 		pw0.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
+		pw0.println(JSPetriNet.markingToString(net, mp));
 		pw0.flush();
+
+		MarkingMatrix mmat;
+		if (cmd.hasOption(CommandLineOptions.MATLAB)) {
+			mmat = CommandLineMark.outputBin(cmd, net, mp);
+		} else {
+			mmat = CommandLineMark.outputText(cmd, net, mp); // default -text
+		}
+
+		if (cmd.hasOption(CommandLineOptions.GROUPGRAPH)) {
+			try {
+				PrintWriter pw;
+				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.GROUPGRAPH))));
+				mmat.dotMarkGroup(pw);
+				pw.close();
+			} catch (FileNotFoundException e) {
+				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.GROUPGRAPH));
+				return;
+			} catch (IOException e) {
+				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.GROUPGRAPH));
+				return;
+			}
+		}
+
+		if (cmd.hasOption(CommandLineOptions.MARKGRAPH)) {
+			try {
+				PrintWriter pw;
+				pw = new PrintWriter(new BufferedWriter(new FileWriter(cmd.getOptionValue(CommandLineOptions.MARKGRAPH))));
+				mmat.dotMarking(pw);
+				pw.close();
+			} catch (FileNotFoundException e) {
+				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.MARKGRAPH));
+				return;
+			} catch (IOException e) {
+				System.err.println("Error: Fail to write in the file: " + cmd.getOptionValue(CommandLineOptions.MARKGRAPH));
+				return;
+			}
+		}
 	}
 
 }

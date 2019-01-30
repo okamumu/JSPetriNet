@@ -1,10 +1,10 @@
 package jspetrinet.dist;
 
 import jspetrinet.ast.ASTEnv;
+import jspetrinet.common.Utility;
 import jp.rel.jmtrandom.Random;
 import jspetrinet.ast.AST;
 import jspetrinet.exception.JSPNException;
-import jspetrinet.sim.Utility;
 
 public class UnifDist extends Dist {
 	

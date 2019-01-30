@@ -3,7 +3,6 @@ package jspetrinet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -31,7 +30,7 @@ public class JSPetriNet {
 	}
 
 	public static Mark mark(Net net, Map<String,Integer> map) throws JSPNException {
-		Mark m = new Mark(net.getNumOfPlace());
+		Mark m = new Mark(net.getPlaceSet().size());
 		for (Map.Entry<String, Integer> entry : map.entrySet()) {
 			Object obj = null;
 			try {
@@ -47,23 +46,23 @@ public class JSPetriNet {
 		return m;
 	}
 	
-	public static MarkingGraph marking(PrintWriter pw, Net net, Mark m, int depth, boolean tangible, List<Trans> expTransSet) throws JSPNException {
-		MarkingGraph mp = new MarkingGraph();
+	public static MarkingGraph marking(PrintWriter pw, Net net, Mark init, int depth, boolean tangible) throws JSPNException {
+		MarkingGraph mp = new MarkingGraph(init);
 		if (depth == 0) {
 			if (tangible) {
-				mp.setCreateMarking(new CreateMarkingDFStangible(mp, expTransSet));
+				mp.setCreateMarking(new CreateMarkingDFStangible(mp));
 			} else {
 //				CreateMarkingDFS cmdt = new CreateMarkingDFS(mp);
 //				cmdt.setGenTransSet(expTransSet);
 //				mp.setCreateMarking(cmdt);
-				mp.setCreateMarking(new CreateMarkingDFS2(mp, expTransSet));
+				mp.setCreateMarking(new CreateMarkingDFS2(mp));
 			}
 		} else {
-			mp.setCreateMarking(new CreateMarkingBFS2(mp, expTransSet, depth));
+			mp.setCreateMarking(new CreateMarkingBFS2(mp, depth));
 		}
 		pw.print("Create marking...");
 		long start = System.nanoTime();
-		mp.create(m, net);
+		mp.create(init, net);
 		pw.println("done");
 		pw.println("computation time    : " + (System.nanoTime() - start) / 1000000000.0 + " (sec)");
 		pw.println(markingToString(net, mp));
@@ -88,7 +87,7 @@ public class JSPetriNet {
 
 	public static String genvecToString(Net net, GenVec genv) {
 		String result = "(";
-		for (Trans t: net.getGenTransSet()) {
+		for (GenTrans t: net.getGenTransSet()) {
 			switch(genv.get(t.getIndex())) {
 			case 0:
 //				if (!result.equals("(")) {
@@ -112,20 +111,20 @@ public class JSPetriNet {
 				break;
 			}
 		}
-		for (Trans t: net.getExpTransSet()) {
-			switch(genv.get(t.getIndex())) {
-			case 0:
-				break;
-			case 1:
-				if (!result.equals("(")) {
-					result += " ";
-				}
-				result += t.getLabel() + "->enable";
-				break;
-			default:
-				break;
-			}
-		}
+//		for (Trans t: net.getExpTransSet()) {
+//			switch(genv.get(t.getIndex())) {
+//			case 0:
+//				break;
+//			case 1:
+//				if (!result.equals("(")) {
+//					result += " ";
+//				}
+//				result += t.getLabel() + "->enable";
+//				break;
+//			default:
+//				break;
+//			}
+//		}
 		if (result.equals("(")) {
 			result += "EXP";
 		}
@@ -135,11 +134,12 @@ public class JSPetriNet {
 	public static String markingToString(Net net, MarkingGraph mp) {
 		String linesep = System.getProperty("line.separator").toString();
 		String res = "";
-		int total = mp.size();
 		int immtotal = mp.immSize();
+		int gentotal = mp.genSize();
+		int total = immtotal + gentotal;
 		res += "# of total states   : " + total + linesep;
 		res += "# of IMM states     : " + immtotal + linesep;
-		res += "# of EXP/GEN states : " + (total - immtotal) + linesep;
+		res += "# of EXP/GEN states : " + gentotal + linesep;
 		Set<GenVec> all = new TreeSet<GenVec>();
 		all.addAll(mp.getImmGroup().keySet());
 		all.addAll(mp.getGenGroup().keySet());

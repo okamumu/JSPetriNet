@@ -24,8 +24,8 @@ public class MarkClassAnalysis {
 	private final Set<MarkGroup> dagMarkGroup;
 	private final Map<Mark,MarkGroup> markToGroup;
 	
-	public MarkClassAnalysis(MarkingGraph mp, Collection<Mark> allmark) {
-		this.net = mp.getNet();
+	public MarkClassAnalysis(Net net, MarkingGraph mp, Collection<Mark> allmark) {
+		this.net = net;
 		allMarkGroup = new HashSet<MarkGroup>();
 		markToGroup = new HashMap<Mark,MarkGroup>();
 		dagMarkGroup = new HashSet<MarkGroup>();
@@ -77,7 +77,7 @@ public class MarkClassAnalysis {
 			if (visited.contains(s)) {
 				continue;
 			}
-			MarkGroup mg = new MarkGroup(JSPetriNet.markToString(net, s));
+			MarkGroup mg = new MarkGroup(JSPetriNet.markToString(net, s), s.getGenVec(), s.isIMM());
 			novisited.push(s);
 			while (!novisited.isEmpty()) {
 				Mark m = novisited.pop();

@@ -21,9 +21,12 @@ public class Net extends ASTEnv {
 	private final Map<String,Net> child;
 	
 	protected final List<Place> placeList;
-	protected final List<Trans> immTransList;
-	protected final List<Trans> expTransList;
-	protected final List<Trans> genTransList;
+//	protected final List<Trans> immTransList;
+//	protected final List<Trans> expTransList;
+//	protected final List<Trans> genTransList;
+	protected final List<ImmTrans> immTransList;
+	protected final List<ExpTrans> expTransList;
+	protected final List<GenTrans> genTransList;
 
 	protected final Map<String,AST> imark;
 
@@ -34,9 +37,9 @@ public class Net extends ASTEnv {
 		this.outer = outer;
 
 		placeList = new ArrayList<Place>();
-		immTransList = new ArrayList<Trans>();
-		expTransList = new ArrayList<Trans>();
-		genTransList = new ArrayList<Trans>();
+		immTransList = new ArrayList<ImmTrans>();
+		expTransList = new ArrayList<ExpTrans>();
+		genTransList = new ArrayList<GenTrans>();
 
 		child = new HashMap<String,Net>();
 		if (outer != null) {
@@ -100,35 +103,39 @@ public class Net extends ASTEnv {
 		return placeList;
 	}
 	
-	public final List<Trans> getImmTransSet() {
+	public final List<ImmTrans> getImmTransSet() {
 		return immTransList;
 	}
 
-	public final List<Trans> getExpTransSet() {
+	public final List<ExpTrans> getExpTransSet() {
 		return expTransList;
 	}
 
-	public final List<Trans> getGenTransSet() {
+	public final List<GenTrans> getGenTransSet() {
 		return genTransList;
 	}
 
-	public final int getNumOfGenTrans() {
-		return genTransList.size();
-	}
+//	public final int getNumOfGenTrans() {
+//		return genTransList.size();
+//	}
 
-	public final int getNumOfImmTrans() {
-		return immTransList.size();
-	}
+//	public final int getNumOfImmTrans() {
+//		return immTransList.size();
+//	}
 	
-	public final int getNumOfExpTrans() {
-		return expTransList.size();
-	}
+//	public final int getNumOfExpTrans() {
+//		return expTransList.size();
+//	}
 	
-	public final int getNumOfPlace() {
-		return placeList.size();
-	}
+//	public final int getNumOfPlace() {
+//		return placeList.size();
+//	}
 
-	public void setIndex() {
+	public void setIndexAndSortIMM() {
+		
+		// sort IMM with Priority
+		immTransList.sort(new PriorityComparator());
+		
 		int i = 0;
 		for (Place p : placeList) {
 			p.setIndex(i);
@@ -167,9 +174,9 @@ public class Net extends ASTEnv {
 		return tmp;
 	}
 
-	public final ExpTrans createExpTrans(String label, double rate) throws JSPNException {
-		return createExpTrans(label, new ASTValue(rate));
-	}
+//	public final ExpTrans createExpTrans(String label, double rate) throws JSPNException {
+//		return createExpTrans(label, new ASTValue(rate));
+//	}
 
 	public final ImmTrans createImmTrans(String label, AST weight) throws JSPNException {
 		if (this.contains(label)) {
@@ -181,9 +188,9 @@ public class Net extends ASTEnv {
 		return tmp;
 	}
 
-	public final ImmTrans createImmTrans(String label, double weight) throws JSPNException {
-		return createImmTrans(label, new ASTValue(weight));
-	}
+//	public final ImmTrans createImmTrans(String label, double weight) throws JSPNException {
+//		return createImmTrans(label, new ASTValue(weight));
+//	}
 
 	public final GenTrans createGenTrans(String label, AST dist, GenTransPolicy policy) throws JSPNException {
 		if (this.contains(label)) {

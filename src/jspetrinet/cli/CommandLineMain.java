@@ -3,7 +3,10 @@ public class CommandLineMain {
 
 	public static void main(String[] args) {
 		if (args.length < 1) {
-			System.err.print("Require mode: " + CommandLineOptions.VIEW + ", " + CommandLineOptions.MARKING + ", " + CommandLineOptions.SIMULATION);
+			System.err.print("Require mode: "+ CommandLineOptions.VIEW
+					+ ", " + CommandLineOptions.MARKING
+					+ ", " + CommandLineOptions.SIMULATION
+					+ ", " + CommandLineOptions.SIMMARK);
 			System.err.println();
 			return;
 		}
@@ -20,8 +23,13 @@ public class CommandLineMain {
 			CommandLineMark.cmdAnalysis(newargs);
 		} else if (mode.equals(CommandLineOptions.SIMULATION)) {
 			CommandLineSim.cmdSimulation(newargs);
+		} else if (mode.equals(CommandLineOptions.SIMMARK)) {
+			CommandLineSimMark.cmdSimulation(newargs);
 		} else {
-			System.err.print("Require mode: " + CommandLineOptions.VIEW + ", " + CommandLineOptions.MARKING + ", " + CommandLineOptions.SIMULATION);
+			System.err.print("Require mode: "+ CommandLineOptions.VIEW
+					+ ", " + CommandLineOptions.MARKING
+					+ ", " + CommandLineOptions.SIMULATION
+					+ ", " + CommandLineOptions.SIMMARK);
 			System.err.println();
 			return;
 		}

@@ -33,7 +33,7 @@ public class BTAnalysis {
 		Set<Mark> remain = new HashSet<Mark>(allState);
 		Set<MarkGroup> mgg = new HashSet<MarkGroup>();
 
-		MarkGroup slowSet = new MarkGroup("");
+		MarkGroup slowSet = new MarkGroup("", null, false);
 		for (Mark m : allState) {
 			if (hasFastTrans(m) == false) {
 				slowSet.add(m);
@@ -58,7 +58,7 @@ public class BTAnalysis {
 			Set<Mark> visited, Set<Mark> determined,
 			Set<Mark> allState, Set<Trans> slowTransSet, MarkGroup slowSet) {
 		
-		MarkGroup mg = new MarkGroup("");
+		MarkGroup mg = new MarkGroup("", null, false);
 		LinkedList<Mark> novisited = new LinkedList<Mark>();
 		novisited.push(start);
 		while (!novisited.isEmpty()) {
@@ -74,15 +74,15 @@ public class BTAnalysis {
 				if (!slowTransSet.contains(ma.getTrans())) {
 					Mark dest = (Mark) ma.getDest();
 					if (!determined.contains(dest)) {
-						if (allState.contains(dest) && !slowSet.contains(dest)) {
-							mg.add(dest);
-							determined.add(dest);
-							novisited.push(dest);
-						} else {
-							determined.add(dest);
-//							mg.setTransient(true);
-//							mg.getExitMarkSet().add(m);
-						}
+//						if (allState.contains(dest) && !slowSet.contains(dest)) {
+//							mg.add(dest);
+//							determined.add(dest);
+//							novisited.push(dest);
+//						} else {
+//							determined.add(dest);
+////							mg.setTransient(true);
+////							mg.getExitMarkSet().add(m);
+//						}
 					}
 				}
 			}
