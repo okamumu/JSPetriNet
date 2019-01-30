@@ -25,7 +25,7 @@ import jspetrinet.petri.Trans;
 public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 
 	private final Map<GroupPair,String> matrixName;
-	
+
 	public MRGPMatrixMATLABWriter(Net net, MarkingGraph mp) {
 		super(net, mp, false);
 		matrixName = new HashMap<GroupPair,String>();
@@ -57,7 +57,7 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 			}
 		}
 	}
-	
+
 	public void writeStateVec(DataOutputStream dos, PrintWriter pw, Mark imark) throws IOException {
 		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
@@ -110,9 +110,42 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 	}
 
 	public void writeStateRewardVec(DataOutputStream dos, PrintWriter pw, List<AST> reward) throws JSPNException, IOException {
-//		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
+		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
 		for (GenVec gv : this.getSortedAllGenVec()) {
+			if (immGroup.containsKey(gv)) {
+				MarkGroup mg = immGroup.get(gv);
+				String glabel = JSPetriNet.genvecToString(net, gv);
+				String name = this.getGroupLabel(mg) + "rwd";
+				pw.println("# " + name + " " + glabel);
+				List<List<Object>> s = this.getMakingSet(mg);
+				pw.println("# size " + mg.size() + " " + reward.size());
+				int nrow = mg.size();
+				double[] data = new double [nrow * reward.size()];
+				for (List<Object> e: s) {
+					int i = (int) e.get(0);
+					Mark m = (Mark) e.get(1);
+					net.setCurrentMark(m);
+					int j = 0;
+					for (AST a : reward) {
+						try {
+							Object obj = a.eval(net);
+							if (obj instanceof Double) {
+								data[i + j * nrow] = (Double) a.eval(net);
+							} else if (obj instanceof Integer) {
+								data[i + j * nrow] = (Integer) a.eval(net);
+							} else {
+								throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error: Could not convert " + a.eval(net).toString() + " to Double at mark " + JSPetriNet.markToString(net, m));
+							}
+						} catch (JSPNException ex) {
+							throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error: Could not eval " + a.eval(net).toString() + " at mark " + JSPetriNet.markToString(net, m));
+						}
+						j++;
+					}
+				}
+				MATLABDoubleMatrix matlab = new MATLABDoubleMatrix(name, new int[] {nrow, reward.size()}, data);
+				matlab.write(dos);
+			}
 			if (genGroup.containsKey(gv)) {
 				MarkGroup mg = genGroup.get(gv);
 				String glabel = JSPetriNet.genvecToString(net, gv);
@@ -133,7 +166,7 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 							if (obj instanceof Double) {
 								data[i + j * nrow] = (Double) a.eval(net);
 							} else if (obj instanceof Integer) {
-								data[i + j * nrow] = (Integer) a.eval(net);								
+								data[i + j * nrow] = (Integer) a.eval(net);
 							} else {
 								throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error: Could not convert " + a.eval(net).toString() + " to Double at mark " + JSPetriNet.markToString(net, m));
 							}
@@ -171,7 +204,7 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 						if (obj instanceof Double) {
 							data[i] = (Double) d.eval(net);
 						} else if (obj instanceof Integer) {
-							data[i] = (Integer) d.eval(net);								
+							data[i] = (Integer) d.eval(net);
 						} else {
 							throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error: Could not convert " + d.eval(net).toString() + " to Double at IMM mark " + JSPetriNet.markToString(net, m));
 						}
@@ -202,17 +235,17 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 							if (obj instanceof Double) {
 								data[i] = (Double) d.eval(net);
 							} else if (obj instanceof Integer) {
-								data[i] = (Integer) d.eval(net);								
+								data[i] = (Integer) d.eval(net);
 							} else {
 								throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error: Could not convert " + d.eval(net).toString() + " to Double at EXP mark " + JSPetriNet.markToString(net, m));
 							}
 						} catch (JSPNException ex) {
 							throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error: Could not eval " + d.eval(net).toString() + " at EXP mark " + JSPetriNet.markToString(net, m));
 						}
-					}					
+					}
 					MATLABDoubleMatrix matlab = new MATLABDoubleMatrix(name, new int[] {1, mg.size()}, data);
 					matlab.write(dos);
-				}				
+				}
 				for (Map.Entry<Trans, List<List<Object>>> entry : d0.entrySet()) {
 					if (entry.getKey() != null) {
 						List<List<Object>> s = entry.getValue();
@@ -230,7 +263,7 @@ public class MRGPMatrixMATLABWriter extends MarkingMatrix {
 								if (obj instanceof Double) {
 									data[i] = (Double) d.eval(net);
 								} else if (obj instanceof Integer) {
-									data[i] = (Integer) d.eval(net);								
+									data[i] = (Integer) d.eval(net);
 								} else {
 									throw new JSPNException(JSPNExceptionType.TYPE_MISMATCH, "Error: Could not convert " + d.eval(net).toString() + " to Double at GEN mark " + JSPetriNet.markToString(net, m));
 								}

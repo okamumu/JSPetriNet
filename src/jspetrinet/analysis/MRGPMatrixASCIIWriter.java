@@ -18,9 +18,9 @@ import jspetrinet.petri.Trans;
 
 public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 
-	private final Map<GroupPair,String> matrixName;	
+	private final Map<GroupPair,String> matrixName;
 	private static String colsep = "\t";
-	
+
 	public MRGPMatrixASCIIWriter(Net net, MarkingGraph mp, boolean oneBased) {
 		super(net, mp, oneBased);
 		matrixName = new HashMap<GroupPair,String>();
@@ -52,7 +52,7 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 			}
 		}
 	}
-	
+
 	public void writeStateVec(PrintWriter pw, Mark imark) {
 		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
@@ -95,9 +95,25 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 	}
 
 	public void writeStateRewardVec(PrintWriter pw, List<AST> reward) throws JSPNException {
-//		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
+		Map<GenVec,MarkGroup> immGroup = this.getImmGroup();
 		Map<GenVec,MarkGroup> genGroup = this.getGenGroup();
 		for (GenVec gv : this.getSortedAllGenVec()) {
+			if (immGroup.containsKey(gv)) {
+				MarkGroup mg = immGroup.get(gv);
+				String glabel = JSPetriNet.genvecToString(net, gv);
+				pw.println("# " + this.getGroupLabel(mg) + "rwd" + " " + glabel);
+				List<List<Object>> s = this.getMakingSet(mg);
+				pw.println("# size " + mg.size() + " " + reward.size());
+				for (List<Object> e: s) {
+					Mark m = (Mark) e.get(1);
+					net.setCurrentMark(m);
+					pw.print(this.getGroupLabel(mg) + "rwd" + colsep + e.get(0));
+					for (AST a : reward) {
+						pw.print(colsep + a.eval(net));
+					}
+					pw.println();
+				}
+			}
 			if (genGroup.containsKey(gv)) {
 				MarkGroup mg = genGroup.get(gv);
 				String glabel = JSPetriNet.genvecToString(net, gv);
@@ -151,8 +167,8 @@ public class MRGPMatrixASCIIWriter extends MarkingMatrix {
 						pw.print(this.getGroupLabel(mg) + "Esum" + colsep + e.get(0));
 						pw.print(colsep + d.eval(net));
 						pw.println();
-					}					
-				}				
+					}
+				}
 				for (Map.Entry<Trans, List<List<Object>>> entry : d0.entrySet()) {
 					if (entry.getKey() != null) {
 						List<List<Object>> s = entry.getValue();
