@@ -1,4 +1,5 @@
 > This package is obsolete. Please refer to the new version written in Go.
+> https://github.com/JuliaReliab/gospn
 
 # JSPetriNet
 
