@@ -1,3 +1,5 @@
+> This package is obsolete. Please refer to the new version written in Go.
+
 # JSPetriNet
 
 MRSPN 解析が行えるツールです．
